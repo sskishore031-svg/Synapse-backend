@@ -1,0 +1,24 @@
+$kind: http-request
+name: Upload Profile
+url: 'http://localhost/Synapse_backend/auth/upload_profile.php'
+method: POST
+order: 1000
+body:
+  type: formdata
+  content:
+    - key: photo
+      type: file
+      src: ''
+      description: 'Profile image file (JPG, PNG, or WEBP, max 5 MB)'
+    - key: email
+      type: text
+      value: demo@example.com
+      description: 'User email address'
+    - key: name
+      type: text
+      value: Demo User
+      description: 'Display name'
+    - key: bio
+      type: text
+      value: 'Computer Science student interested in AI'
+      description: 'Short bio'
