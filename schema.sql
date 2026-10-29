@@ -17,7 +17,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ------------------------------------------------------------------------------
 
 -- 1. Table: users
--- Matches: '1. User Registration', '2. Login by User ID', '3. Login by Phone'
+-- Matches: '1. User Registration', '2. Login by User ID', '3. Login by Phone', Login Tracking
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -25,9 +25,25 @@ CREATE TABLE `users` (
   `email` VARCHAR(255) NOT NULL UNIQUE,
   `phone` VARCHAR(25) DEFAULT NULL,
   `password` VARCHAR(255) NOT NULL,
+  `last_login` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX `idx_users_email` (`email`),
   INDEX `idx_users_phone` (`phone`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 1b. Table: user_logins (Records login events)
+DROP TABLE IF EXISTS `user_logins`;
+CREATE TABLE `user_logins` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `ip_address` VARCHAR(45) DEFAULT NULL,
+  `login_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `status` VARCHAR(50) DEFAULT 'SUCCESS',
+  INDEX `idx_user_logins_uid` (`user_id`),
+  INDEX `idx_user_logins_email` (`email`),
+  CONSTRAINT `fk_user_logins_user` 
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. Table: password_resets

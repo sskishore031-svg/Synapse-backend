@@ -73,6 +73,32 @@ try {
         ? $protocol . $host . "/Synapse_backend/" . ltrim($user['profile_photo'], '/') 
         : null;
 
+    // Record login in user_logins table and update users table
+    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+    try {
+        $logStmt = $pdo->prepare("
+            INSERT INTO user_logins (user_id, email, ip_address, status) 
+            VALUES (:uid, :email, :ip, 'SUCCESS')
+        ");
+        $logStmt->execute([
+            'uid' => $user['id'],
+            'email' => $user['email'],
+            'ip' => $ipAddress
+        ]);
+
+        $updateStmt = $pdo->prepare("
+            UPDATE users 
+            SET last_login = CURRENT_TIMESTAMP 
+            WHERE id = :uid
+        ");
+        $updateStmt->execute([
+            'uid' => $user['id']
+        ]);
+    } catch (Exception $logEx) {
+        // Table logging error non-blocking
+    }
+
     http_response_code(200);
     echo json_encode([
         'status' => 'success',
@@ -89,7 +115,8 @@ try {
             'study_goal' => $user['study_goal'] ?? '25 min / day',
             'notifications_enabled' => (bool)($user['notifications_enabled'] ?? 1),
             'profile_photo' => $user['profile_photo'] ?? null,
-            'photo_url' => $photoUrl
+            'photo_url' => $photoUrl,
+            'last_login' => date('Y-m-d H:i:s')
         ]
     ]);
 

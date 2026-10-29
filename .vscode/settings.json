@@ -1,0 +1,17 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.postman": true,
+    "**/postman": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/*.log": true,
+    "**/*.tmp": true,
+    "**/*_migration.sql": true,
+    "**/schema_updates.sql": true,
+    "**/seed_*.sql": true,
+    "**/synapse_ai.sql": true,
+    "**/*.postman_collection.json": true,
+    "**/*.postman_environment.json": true
+  }
+}
