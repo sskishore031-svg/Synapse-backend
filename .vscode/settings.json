@@ -13,6 +13,8 @@
     "**/*.tmp": true,
     "**/*.sql": true,
     "*.sql": true,
+    "**/database": true,
+    "database": true,
     "**/*.postman_collection.json": true,
     "*.postman_collection.json": true,
     "**/*.postman_environment.json": true,
@@ -21,6 +23,7 @@
   "search.exclude": {
     "**/.vscode": true,
     "**/postman": true,
+    "**/database": true,
     "**/*.sql": true
   }
 }
