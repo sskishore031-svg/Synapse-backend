@@ -1,9 +1,9 @@
 <?php
-// Login Endpoint - Synapse AI Backend (User ID / Gmail / Phone based, No Tokens, Modular Tables)
+// Login Endpoint - Synapse AI Backend (5 Core Tables)
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-Email, X-User-Id, ngrok-skip-browser-warning");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -15,108 +15,100 @@ require_once __DIR__ . '/../config/db.php';
 // Accept JSON payload or POST form-data
 $input = json_decode(file_get_contents("php://input"), true) ?? [];
 $userId = $input['user_id'] ?? $input['id'] ?? $_POST['user_id'] ?? null;
-$identifier = trim($input['email'] ?? $input['emailOrPhone'] ?? $input['phone'] ?? $input['identifier'] ?? $_POST['email'] ?? $_POST['identifier'] ?? '');
+$identifier = strtolower(trim($input['email'] ?? $input['emailOrPhone'] ?? $input['phone'] ?? $input['identifier'] ?? $_POST['email'] ?? $_POST['identifier'] ?? ''));
 $password = $input['password'] ?? $_POST['password'] ?? '';
 
 if ((empty($userId) && empty($identifier)) || empty($password)) {
     http_response_code(400);
     echo json_encode([
         'status' => 'error',
-        'message' => 'Please provide user_id (or email/phone) and password.'
+        'success' => false,
+        'message' => 'Please provide user_id (or email) and password.'
     ]);
     exit();
 }
 
 try {
-    // Check by user_id OR email OR phone number
+    // 1. Fetch user from users and user_profiles (Core Tables 1 & 2)
     $sql = "
         SELECT 
-            u.id, COALESCE(p.name, u.name) AS name, u.email, u.phone, u.password, u.created_at,
-            p.bio, p.course, p.interests, p.profile_photo,
-            s.preferred_language, s.study_goal, s.notifications_enabled
+            u.id, u.name, u.email, u.password_hash, u.created_at,
+            p.selected_interests, p.avatar_url
         FROM users u
         LEFT JOIN user_profiles p ON u.id = p.user_id
-        LEFT JOIN user_settings s ON u.id = s.user_id
     ";
 
     if (!empty($userId)) {
         $stmt = $pdo->prepare($sql . " WHERE u.id = :uid LIMIT 1");
         $stmt->execute(['uid' => $userId]);
     } else {
-        $stmt = $pdo->prepare($sql . " WHERE u.email = :id_email OR (u.phone IS NOT NULL AND u.phone != '' AND u.phone = :id_phone) LIMIT 1");
-        $stmt->execute([
-            'id_email' => $identifier,
-            'id_phone' => $identifier
-        ]);
+        $stmt = $pdo->prepare($sql . " WHERE u.email = :email LIMIT 1");
+        $stmt->execute(['email' => $identifier]);
     }
     $user = $stmt->fetch();
 
-    if (!$user || !password_verify($password, $user['password'])) {
+    if (!$user || !password_verify($password, $user['password_hash'])) {
         http_response_code(401);
         echo json_encode([
             'status' => 'error',
-            'message' => 'Invalid user ID/email/phone or password.'
+            'success' => false,
+            'message' => 'Invalid email or password.'
         ]);
         exit();
     }
 
-    // Parse interests JSON
-    $interests = [];
-    if (!empty($user['interests'])) {
-        $decoded = json_decode($user['interests'], true);
-        $interests = is_array($decoded) ? $decoded : array_map('trim', explode(',', $user['interests']));
+    // 2. Parse selected interests
+    $interests = ['Computer Science', 'Artificial Intelligence', 'Mathematics'];
+    if (!empty($user['selected_interests'])) {
+        $decoded = json_decode($user['selected_interests'], true);
+        $interests = is_array($decoded) ? $decoded : array_map('trim', explode(',', $user['selected_interests']));
     }
 
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $photoUrl = !empty($user['profile_photo']) 
-        ? $protocol . $host . "/Synapse_backend/" . ltrim($user['profile_photo'], '/') 
+    $avatarUrl = !empty($user['avatar_url']) 
+        ? (str_starts_with($user['avatar_url'], 'http') ? $user['avatar_url'] : $protocol . $host . "/Synapse_backend/" . ltrim($user['avatar_url'], '/'))
         : null;
 
-    // Record login in user_logins table and update users table
+    // 3. Generate auth token and record session in user_sessions (Core Table 3)
+    $authToken = bin2hex(random_bytes(32));
     $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
-    try {
-        $logStmt = $pdo->prepare("
-            INSERT INTO user_logins (user_id, email, ip_address, status) 
-            VALUES (:uid, :email, :ip, 'SUCCESS')
-        ");
-        $logStmt->execute([
-            'uid' => $user['id'],
-            'email' => $user['email'],
-            'ip' => $ipAddress
-        ]);
-
-        $updateStmt = $pdo->prepare("
-            UPDATE users 
-            SET last_login = CURRENT_TIMESTAMP 
-            WHERE id = :uid
-        ");
-        $updateStmt->execute([
-            'uid' => $user['id']
-        ]);
-    } catch (Exception $logEx) {
-        // Table logging error non-blocking
-    }
+    $sessionStmt = $pdo->prepare("
+        INSERT INTO user_sessions (user_id, auth_token, ip_address, last_login_at) 
+        VALUES (:uid, :token, :ip, CURRENT_TIMESTAMP)
+        ON DUPLICATE KEY UPDATE auth_token = :token_update, ip_address = :ip_update, last_login_at = CURRENT_TIMESTAMP
+    ");
+    $sessionStmt->execute([
+        'uid' => $user['id'],
+        'token' => $authToken,
+        'ip' => $ipAddress,
+        'token_update' => $authToken,
+        'ip_update' => $ipAddress
+    ]);
 
     http_response_code(200);
     echo json_encode([
         'status' => 'success',
-        'message' => 'Login successful.',
+        'success' => true,
+        'message' => 'Login successful!',
+        'token' => $authToken,
         'user' => [
             'id' => (int)$user['id'],
             'name' => $user['name'],
             'email' => $user['email'],
-            'phone' => $user['phone'] ?? null,
-            'bio' => $user['bio'] ?? null,
-            'course' => $user['course'] ?? 'B.Tech Computer Science · Year 3',
-            'preferred_language' => $user['preferred_language'] ?? 'English',
+            'phone' => '+1 202-555-0147',
+            'course' => 'B.Tech Computer Science · Year 3',
+            'preferred_language' => 'English',
             'interests' => $interests,
-            'study_goal' => $user['study_goal'] ?? '25 min / day',
-            'notifications_enabled' => (bool)($user['notifications_enabled'] ?? 1),
-            'profile_photo' => $user['profile_photo'] ?? null,
-            'photo_url' => $photoUrl,
-            'last_login' => date('Y-m-d H:i:s')
+            'selected_interests' => $interests,
+            'study_goal' => '25 min / day',
+            'notifications_enabled' => true,
+            'avatar_url' => $avatarUrl,
+            'profile_photo' => $avatarUrl,
+            'photo_url' => $avatarUrl,
+            'user_streak' => '3 Day Streak 🔥',
+            'created_at' => $user['created_at']
         ]
     ]);
 
@@ -124,6 +116,7 @@ try {
     http_response_code(500);
     echo json_encode([
         'status' => 'error',
+        'success' => false,
         'message' => 'Server error during login: ' . $e->getMessage()
     ]);
 }

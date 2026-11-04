@@ -1,9 +1,9 @@
 <?php
-// User Registration / Sign Up Endpoint - Synapse AI Backend (Gmail based, Modular Tables)
+// User Registration / Sign Up Endpoint - Synapse AI Backend (5 Core Tables)
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-User-Email, X-User-Id, ngrok-skip-browser-warning");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -15,15 +15,16 @@ require_once __DIR__ . '/../config/db.php';
 // Parse input (supports JSON payload and POST form data)
 $input = json_decode(file_get_contents("php://input"), true) ?? [];
 $name = trim($input['name'] ?? $_POST['name'] ?? '');
-$email = trim($input['email'] ?? $_POST['email'] ?? '');
-$phone = trim($input['phone'] ?? $_POST['phone'] ?? '');
+$email = strtolower(trim($input['email'] ?? $_POST['email'] ?? ''));
 $password = $input['password'] ?? $_POST['password'] ?? '';
 $confirmPassword = $input['confirm_password'] ?? $_POST['confirm_password'] ?? $password;
+$userInterests = $input['selected_interests'] ?? $input['interests'] ?? $_POST['selected_interests'] ?? $_POST['interests'] ?? null;
 
 if (empty($name)) {
     http_response_code(400);
     echo json_encode([
         'status' => 'error',
+        'success' => false,
         'message' => 'Please enter your full name.'
     ]);
     exit();
@@ -33,6 +34,7 @@ if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     http_response_code(400);
     echo json_encode([
         'status' => 'error',
+        'success' => false,
         'message' => 'Please enter a valid email address.'
     ]);
     exit();
@@ -42,6 +44,7 @@ if (empty($password) || strlen($password) < 6) {
     http_response_code(400);
     echo json_encode([
         'status' => 'error',
+        'success' => false,
         'message' => 'Password must be at least 6 characters long.'
     ]);
     exit();
@@ -51,13 +54,14 @@ if ($password !== $confirmPassword) {
     http_response_code(400);
     echo json_encode([
         'status' => 'error',
+        'success' => false,
         'message' => 'Password and Confirm Password do not match.'
     ]);
     exit();
 }
 
 try {
-    // 1. Check if email is already registered
+    // 1. Check if email is already registered in users table
     $checkStmt = $pdo->prepare("SELECT id FROM users WHERE email = :email LIMIT 1");
     $checkStmt->execute(['email' => $email]);
 
@@ -65,83 +69,81 @@ try {
         http_response_code(409);
         echo json_encode([
             'status' => 'error',
+            'success' => false,
             'message' => 'An account with this email address already exists. Please Sign In.'
         ]);
         exit();
     }
 
-    // 2. Hash password securely using password_hash()
+    // 2. Hash password securely
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-    // 3. Insert new user into users table
+    // 3. Insert new user into users table (Core Table 1)
     $insertStmt = $pdo->prepare("
-        INSERT INTO users (name, email, phone, password) 
-        VALUES (:name, :email, :phone, :password)
+        INSERT INTO users (name, email, password_hash) 
+        VALUES (:name, :email, :password_hash)
     ");
     $insertStmt->execute([
         'name' => $name,
         'email' => $email,
-        'phone' => !empty($phone) ? $phone : null,
-        'password' => $hashedPassword
+        'password_hash' => $hashedPassword
     ]);
 
     $userId = (int)$pdo->lastInsertId();
 
-    // 4. Create separate user_profiles record with name
+    // 4. Format and store user interests in user_profiles (Core Table 2)
+    $interestsArray = ['Computer Science', 'Artificial Intelligence', 'Mathematics'];
+    if (!empty($userInterests)) {
+        if (is_array($userInterests)) {
+            $interestsArray = $userInterests;
+        } elseif (is_string($userInterests)) {
+            $decoded = json_decode($userInterests, true);
+            $interestsArray = is_array($decoded) ? $decoded : array_map('trim', explode(',', $userInterests));
+        }
+    }
+    $interestsJson = json_encode(array_values(array_filter($interestsArray)));
+
     $profileStmt = $pdo->prepare("
-        INSERT INTO user_profiles (user_id, name, course) 
-        VALUES (:uid, :name, :course)
+        INSERT INTO user_profiles (user_id, selected_interests, avatar_url) 
+        VALUES (:uid, :interests, NULL)
     ");
     $profileStmt->execute([
         'uid' => $userId,
-        'name' => $name,
-        'course' => 'B.Tech Computer Science · Year 3'
+        'interests' => $interestsJson
     ]);
 
-    // 5. Create separate user_settings record
-    $settingsStmt = $pdo->prepare("
-        INSERT INTO user_settings (user_id, preferred_language, study_goal, notifications_enabled) 
-        VALUES (:uid, :lang, :goal, 1)
+    // 5. Generate session token and record in user_sessions (Core Table 3)
+    $authToken = bin2hex(random_bytes(32));
+    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+    $sessionStmt = $pdo->prepare("
+        INSERT INTO user_sessions (user_id, auth_token, ip_address, last_login_at) 
+        VALUES (:uid, :token, :ip, CURRENT_TIMESTAMP)
     ");
-    $settingsStmt->execute([
+    $sessionStmt->execute([
         'uid' => $userId,
-        'lang' => 'English',
-        'goal' => '25 min / day'
+        'token' => $authToken,
+        'ip' => $ipAddress
     ]);
 
-    // 6. Seed default achievements & notifications for new user
-    $defaultBadges = [
-        ['title' => 'Quick Learner', 'desc' => 'Completed your first 5 AI lessons', 'icon' => '⚡'],
-        ['title' => '7-Day Streak', 'desc' => 'Studied consecutively for 7 days', 'icon' => '🔥'],
-        ['title' => 'Quiz Master', 'desc' => 'Scored 100% on 3 assessments', 'icon' => '🎯'],
-        ['title' => 'Night Owl', 'desc' => 'Completed study sessions past 10 PM', 'icon' => '🦉'],
-        ['title' => 'Problem Solver', 'desc' => 'Solved 20 coding challenges', 'icon' => '🧩'],
-        ['title' => 'AI Explorer', 'desc' => 'Generated 50 AI summaries and notes', 'icon' => '🤖'],
-        ['title' => 'Consistent Scholar', 'desc' => 'Reached 30 hours of total study time', 'icon' => '📚'],
-        ['title' => 'Early Bird', 'desc' => 'Completed morning study sessions', 'icon' => '🌅']
-    ];
-    $insBadge = $pdo->prepare("INSERT INTO user_achievements (user_id, title, description, badge_icon, is_unlocked) VALUES (:uid, :t, :d, :icon, 1)");
-    foreach ($defaultBadges as $b) {
-        $insBadge->execute(['uid' => $userId, 't' => $b['title'], 'd' => $b['desc'], 'icon' => $b['icon']]);
-    }
-
-    $insNotif = $pdo->prepare("INSERT INTO user_notifications (user_id, title, message, type) VALUES (:uid, :t, :m, :type)");
-    $insNotif->execute(['uid' => $userId, 't' => 'Welcome to Synapse AI! 🚀', 'm' => 'Your personalized AI study companion is ready.', 'type' => 'info']);
-
+    // 6. Return success response with token & user profile
     http_response_code(201);
     echo json_encode([
         'status' => 'success',
         'success' => true,
         'message' => 'Account created successfully!',
+        'token' => $authToken,
         'user' => [
             'id' => $userId,
             'name' => $name,
             'email' => $email,
-            'phone' => !empty($phone) ? $phone : null,
+            'interests' => $interestsArray,
             'course' => 'B.Tech Computer Science · Year 3',
             'preferred_language' => 'English',
             'study_goal' => '25 min / day',
-            'notifications_enabled' => true
+            'profile_photo' => null,
+            'photo_url' => null,
+            'avatar_url' => null
         ]
     ]);
 
