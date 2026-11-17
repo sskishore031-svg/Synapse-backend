@@ -53,16 +53,24 @@ if (empty($email) && !empty($authHeader)) {
 
 try {
     $user = null;
+    $userFields = "id, name, email, created_at";
+    try {
+        $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'phone'")->fetch();
+        if ($checkCol) {
+            $userFields = "id, name, email, phone, created_at";
+        }
+    } catch (Exception $e) {}
+
     if (!empty($userId)) {
-        $stmt = $pdo->prepare("SELECT id, name, email, created_at FROM users WHERE id = :id LIMIT 1");
+        $stmt = $pdo->prepare("SELECT $userFields FROM users WHERE id = :id LIMIT 1");
         $stmt->execute(['id' => $userId]);
         $user = $stmt->fetch();
     } elseif (!empty($email)) {
-        $stmt = $pdo->prepare("SELECT id, name, email, created_at FROM users WHERE email = :email LIMIT 1");
+        $stmt = $pdo->prepare("SELECT $userFields FROM users WHERE email = :email LIMIT 1");
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
     } else {
-        $stmt = $pdo->query("SELECT id, name, email, created_at FROM users ORDER BY id DESC LIMIT 1");
+        $stmt = $pdo->query("SELECT $userFields FROM users ORDER BY id DESC LIMIT 1");
         $user = $stmt->fetch();
     }
 
@@ -96,11 +104,13 @@ try {
     $avatarUrl = buildHomePhotoUrl($profileData['avatar_url'] ?? null);
     $rawAvatar = $profileData['avatar_url'] ?? null;
 
+    $userPhone = !empty($user['phone']) ? $user['phone'] : '';
+
     $student = [
         'id' => $uid,
         'name' => $user['name'],
         'email' => $user['email'],
-        'phone' => '+1 202-555-0147',
+        'phone' => $userPhone,
         'course' => 'B.Tech Computer Science · Year 3',
         'preferred_language' => 'English',
         'interests' => $interests,
@@ -109,7 +119,7 @@ try {
         'profile_photo' => $rawAvatar ?: $avatarUrl,
         'photo_url' => $avatarUrl,
         'avatar_url' => $avatarUrl,
-        'user_streak' => '3 Day Streak 🔥'
+        'user_streak' => '1 Day Streak 🔥'
     ];
 
     // 3. Quiz & Performance Statistics (Core Table 5: quiz_records)
@@ -248,18 +258,21 @@ try {
         'nodes' => $brainMapNodes
     ];
 
+    $calculatedTopicsDone = $notesCount + $totalQuizzesAttempted;
+    $overallProgress = min(100, (int)round(($calculatedTopicsDone / 30.0) * 100));
+
     $dashboardData = [
         'student' => $student,
         'greeting' => 'Welcome Back,',
         'mindPower' => $overallProgress,
         'overallProgress' => $overallProgress,
         'progressMessage' => 'Active Learning Mode',
-        'topicsDone' => max(3, $notesCount + $totalQuizzesAttempted),
+        'topicsDone' => $calculatedTopicsDone,
         'totalTopics' => 30,
-        'quizScore' => $averageQuizScore > 0 ? $averageQuizScore : 88,
-        'quizzesAttempted' => max(1, $totalQuizzesAttempted),
-        'latestQuizScore' => $latestQuizScore > 0 ? $latestQuizScore : 90,
-        'studyStreakDays' => 3,
+        'quizScore' => $averageQuizScore,
+        'quizzesAttempted' => $totalQuizzesAttempted,
+        'latestQuizScore' => $latestQuizScore,
+        'studyStreakDays' => 1,
         'continueLearning' => [
             'chapter_id' => 1,
             'chapterId' => 1,

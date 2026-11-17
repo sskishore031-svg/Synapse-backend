@@ -180,3 +180,4 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- Show remaining tables
 SHOW TABLES;
+

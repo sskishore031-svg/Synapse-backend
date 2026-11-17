@@ -30,9 +30,17 @@ if ((empty($userId) && empty($identifier)) || empty($password)) {
 
 try {
     // 1. Fetch user from users and user_profiles (Core Tables 1 & 2)
+    $phoneCol = "";
+    try {
+        $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'phone'")->fetch();
+        if ($checkCol) {
+            $phoneCol = ", u.phone";
+        }
+    } catch (Exception $e) {}
+
     $sql = "
         SELECT 
-            u.id, u.name, u.email, u.password_hash, u.created_at,
+            u.id, u.name, u.email $phoneCol, u.password_hash, u.created_at,
             p.selected_interests, p.avatar_url
         FROM users u
         LEFT JOIN user_profiles p ON u.id = p.user_id
@@ -97,7 +105,7 @@ try {
             'id' => (int)$user['id'],
             'name' => $user['name'],
             'email' => $user['email'],
-            'phone' => '+1 202-555-0147',
+            'phone' => !empty($user['phone']) ? $user['phone'] : '',
             'course' => 'B.Tech Computer Science · Year 3',
             'preferred_language' => 'English',
             'interests' => $interests,
@@ -107,7 +115,7 @@ try {
             'avatar_url' => $avatarUrl,
             'profile_photo' => $avatarUrl,
             'photo_url' => $avatarUrl,
-            'user_streak' => '3 Day Streak 🔥',
+            'user_streak' => '1 Day Streak 🔥',
             'created_at' => $user['created_at']
         ]
     ]);

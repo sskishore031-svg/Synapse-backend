@@ -16,6 +16,7 @@ require_once __DIR__ . '/../config/db.php';
 $input = json_decode(file_get_contents("php://input"), true) ?? [];
 $name = trim($input['name'] ?? $_POST['name'] ?? '');
 $email = strtolower(trim($input['email'] ?? $_POST['email'] ?? ''));
+$phone = trim($input['phone'] ?? $_POST['phone'] ?? '');
 $password = $input['password'] ?? $_POST['password'] ?? '';
 $confirmPassword = $input['confirm_password'] ?? $_POST['confirm_password'] ?? $password;
 $userInterests = $input['selected_interests'] ?? $input['interests'] ?? $_POST['selected_interests'] ?? $_POST['interests'] ?? null;
@@ -30,12 +31,12 @@ if (empty($name)) {
     exit();
 }
 
-if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+if (empty($email) || !preg_match('/^[A-Za-z0-9._%+-]+@gmail\.com$/i', $email)) {
     http_response_code(400);
     echo json_encode([
         'status' => 'error',
         'success' => false,
-        'message' => 'Please enter a valid email address.'
+        'message' => 'Please enter a valid @gmail.com address.'
     ]);
     exit();
 }
@@ -80,12 +81,13 @@ try {
 
     // 3. Insert new user into users table (Core Table 1)
     $insertStmt = $pdo->prepare("
-        INSERT INTO users (name, email, password_hash) 
-        VALUES (:name, :email, :password_hash)
+        INSERT INTO users (name, email, phone, password_hash) 
+        VALUES (:name, :email, :phone, :password_hash)
     ");
     $insertStmt->execute([
         'name' => $name,
         'email' => $email,
+        'phone' => !empty($phone) ? $phone : null,
         'password_hash' => $hashedPassword
     ]);
 
@@ -137,6 +139,7 @@ try {
             'id' => $userId,
             'name' => $name,
             'email' => $email,
+            'phone' => $phone,
             'interests' => $interestsArray,
             'course' => 'B.Tech Computer Science · Year 3',
             'preferred_language' => 'English',

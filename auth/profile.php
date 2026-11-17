@@ -51,7 +51,7 @@ function formatUserResponse($user, $pdo) {
         'id' => (int)$user['id'],
         'name' => $user['name'],
         'email' => $user['email'],
-        'phone' => '+1 202-555-0147',
+        'phone' => !empty($user['phone']) ? $user['phone'] : '',
         'bio' => 'Passionate student exploring AI, Computer Science & Mathematics.',
         'course' => 'B.Tech Computer Science · Year 3',
         'preferred_language' => 'English',
@@ -63,7 +63,7 @@ function formatUserResponse($user, $pdo) {
         'profile_photo' => $rawPath ?: $avatarUrl,
         'photo_url' => $avatarUrl,
         'achievements_count' => ($quizCount + $notesCount) . " milestones",
-        'user_streak' => '3 Day Streak 🔥',
+        'user_streak' => '1 Day Streak 🔥',
         'quiz_count' => $quizCount,
         'notes_count' => $notesCount,
         'created_at' => $user['created_at'] ?? null
@@ -92,8 +92,14 @@ if ($method === 'GET') {
     }
 
     try {
+        $phoneCol = "";
+        try {
+            $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'phone'")->fetch();
+            if ($checkCol) { $phoneCol = ", u.phone"; }
+        } catch (Exception $e) {}
+
         $sql = "
-            SELECT u.id, u.name, u.email, u.created_at, p.selected_interests, p.avatar_url
+            SELECT u.id, u.name, u.email $phoneCol, u.created_at, p.selected_interests, p.avatar_url
             FROM users u
             LEFT JOIN user_profiles p ON u.id = p.user_id
         ";
@@ -105,7 +111,9 @@ if ($method === 'GET') {
             $stmt = $pdo->prepare($sql . " WHERE u.email = :email LIMIT 1");
             $stmt->execute(['email' => $email]);
         } else {
-            $stmt = $pdo->query($sql . " ORDER BY u.id DESC LIMIT 1");
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'User ID or Email is required.']);
+            exit();
         }
 
         $user = $stmt->fetch();
@@ -152,8 +160,9 @@ if ($method === 'POST' || $method === 'PUT') {
             $stmt->execute(['email' => $email]);
             $user = $stmt->fetch();
         } else {
-            $stmt = $pdo->query("SELECT id, name, email FROM users ORDER BY id DESC LIMIT 1");
-            $user = $stmt->fetch();
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'User ID or Email is required.']);
+            exit();
         }
 
         if (!$user) {
@@ -168,6 +177,14 @@ if ($method === 'POST' || $method === 'PUT') {
         if (!empty($name)) {
             $uStmt = $pdo->prepare("UPDATE users SET name = :name WHERE id = :uid");
             $uStmt->execute(['name' => $name, 'uid' => $uid]);
+        }
+
+        $phone = trim($input['phone'] ?? $_POST['phone'] ?? '');
+        if (!empty($phone)) {
+            try {
+                $pStmt = $pdo->prepare("UPDATE users SET phone = :phone WHERE id = :uid");
+                $pStmt->execute(['phone' => $phone, 'uid' => $uid]);
+            } catch (Exception $e) {}
         }
 
         // Format interests JSON
@@ -204,8 +221,14 @@ if ($method === 'POST' || $method === 'PUT') {
         }
 
         // Fetch updated
+        $phoneCol = "";
+        try {
+            $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'phone'")->fetch();
+            if ($checkCol) { $phoneCol = ", u.phone"; }
+        } catch (Exception $e) {}
+
         $stmt = $pdo->prepare("
-            SELECT u.id, u.name, u.email, u.created_at, p.selected_interests, p.avatar_url
+            SELECT u.id, u.name, u.email $phoneCol, u.created_at, p.selected_interests, p.avatar_url
             FROM users u
             LEFT JOIN user_profiles p ON u.id = p.user_id
             WHERE u.id = :uid

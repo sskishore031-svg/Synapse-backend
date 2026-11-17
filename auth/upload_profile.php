@@ -97,8 +97,9 @@ try {
         $stmt->execute(["email" => $email]);
         $user = $stmt->fetch();
     } else {
-        $stmt = $pdo->query($sql . " ORDER BY u.id DESC LIMIT 1");
-        $user = $stmt->fetch();
+        http_response_code(400);
+        echo json_encode(["status" => "error", "message" => "User ID or Email is required."]);
+        exit;
     }
 
     if (!$user) {

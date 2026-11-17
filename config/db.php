@@ -18,6 +18,7 @@ try {
           `id` INT AUTO_INCREMENT PRIMARY KEY,
           `name` VARCHAR(255) NOT NULL,
           `email` VARCHAR(255) NOT NULL UNIQUE,
+          `phone` VARCHAR(20) DEFAULT NULL,
           `password_hash` VARCHAR(255) NOT NULL,
           `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           INDEX `idx_users_email` (`email`)
@@ -66,6 +67,12 @@ try {
           CONSTRAINT `fk_quiz_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
+
+    try {
+        $pdo->exec("ALTER TABLE `users` ADD COLUMN `phone` VARCHAR(20) DEFAULT NULL AFTER `email`");
+    } catch (Exception $e) {
+        // Column already exists or table alter not required
+    }
 } catch (PDOException $e) {
     http_response_code(500);
     header('Content-Type: application/json; charset=UTF-8');
