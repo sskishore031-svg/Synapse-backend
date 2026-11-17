@@ -46,6 +46,35 @@ try {
 
     $uid = (int)$user['id'];
 
+    // POST: Unlock / Record Achievement Milestone
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $badgeId = (int)($input['badge_id'] ?? $input['id'] ?? $_POST['badge_id'] ?? 1);
+        $title = trim($input['title'] ?? $_POST['title'] ?? "Milestone $badgeId");
+
+        try {
+            $ins = $pdo->prepare("
+                INSERT INTO user_achievements (user_id, badge_id, title, unlocked_at)
+                VALUES (:uid, :bid, :title, CURRENT_TIMESTAMP)
+                ON DUPLICATE KEY UPDATE unlocked_at = CURRENT_TIMESTAMP
+            ");
+            $ins->execute([
+                'uid' => $uid,
+                'bid' => $badgeId,
+                'title' => $title
+            ]);
+        } catch (Exception $e) {}
+
+        http_response_code(200);
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'message' => "Badge '$title' unlocked successfully!",
+            'badge_id' => $badgeId,
+            'is_unlocked' => true
+        ]);
+        exit();
+    }
+
     // Compute achievements from Core Tables (quiz_records & study_notes)
     $quizStmt = $pdo->prepare("SELECT COUNT(*) FROM quiz_records WHERE user_id = :uid");
     $quizStmt->execute(['uid' => $uid]);

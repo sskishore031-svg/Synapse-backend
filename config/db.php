@@ -60,19 +60,63 @@ try {
           `id` INT AUTO_INCREMENT PRIMARY KEY,
           `user_id` INT NOT NULL,
           `subject_id` VARCHAR(100) NOT NULL,
+          `chapter_id` INT DEFAULT NULL,
           `score` INT NOT NULL,
           `total_questions` INT NOT NULL,
           `completed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           INDEX `idx_quiz_user_subject` (`user_id`, `subject_id`),
           CONSTRAINT `fk_quiz_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+        CREATE TABLE IF NOT EXISTS `user_subjects` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `user_id` INT NOT NULL,
+          `subject_id` VARCHAR(100) NOT NULL,
+          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY `uq_user_subject` (`user_id`, `subject_id`),
+          CONSTRAINT `fk_us_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+        CREATE TABLE IF NOT EXISTS `user_chapter_completions` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `user_id` INT NOT NULL,
+          `subject_id` VARCHAR(100) NOT NULL,
+          `chapter_id` INT NOT NULL,
+          `completed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY `uq_user_chapter` (`user_id`, `chapter_id`),
+          CONSTRAINT `fk_ucc_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+        CREATE TABLE IF NOT EXISTS `learning_plan_tasks` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `user_id` INT NOT NULL,
+          `title` VARCHAR(255) NOT NULL,
+          `category` VARCHAR(100) DEFAULT 'Lesson',
+          `duration` VARCHAR(50) DEFAULT '15 min',
+          `is_completed` TINYINT(1) DEFAULT 0,
+          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX `idx_lpt_user` (`user_id`),
+          CONSTRAINT `fk_lpt_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+        CREATE TABLE IF NOT EXISTS `user_achievements` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `user_id` INT NOT NULL,
+          `badge_id` INT NOT NULL,
+          `title` VARCHAR(255) NOT NULL,
+          `unlocked_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY `uq_user_badge` (`user_id`, `badge_id`),
+          CONSTRAINT `fk_ach_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
-    try {
-        $pdo->exec("ALTER TABLE `users` ADD COLUMN `phone` VARCHAR(20) DEFAULT NULL AFTER `email`");
-    } catch (Exception $e) {
-        // Column already exists or table alter not required
-    }
+    try { $pdo->exec("ALTER TABLE `users` ADD COLUMN `phone` VARCHAR(20) DEFAULT NULL AFTER `email`"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `users` ADD COLUMN `phone_number` VARCHAR(20) DEFAULT NULL AFTER `phone`"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `user_profiles` ADD COLUMN `course` VARCHAR(255) DEFAULT 'B.Tech Computer Science · Year 3'"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `user_profiles` ADD COLUMN `study_goal` VARCHAR(100) DEFAULT '25 min / day'"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `user_profiles` ADD COLUMN `bio` TEXT DEFAULT NULL"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `quiz_records` ADD COLUMN `chapter_id` INT DEFAULT NULL AFTER `subject_id`"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE `study_notes` ADD COLUMN `chapter_id` INT DEFAULT NULL AFTER `subject_id`"); } catch (Exception $e) {}
 } catch (PDOException $e) {
     http_response_code(500);
     header('Content-Type: application/json; charset=UTF-8');

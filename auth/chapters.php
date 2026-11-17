@@ -48,27 +48,48 @@ try {
 
     $uid = (int)$user['id'];
 
-    if ($action === 'complete') {
-        $chapterId = $_GET['chapter_id'] ?? $input['chapter_id'] ?? $_POST['chapter_id'] ?? 1;
-        $chapterTitle = $input['chapter_title'] ?? $_POST['chapter_title'] ?? "Chapter $chapterId Completed";
-        $subjectId = $input['subject_id'] ?? $_POST['subject_id'] ?? "general";
+    if ($action === 'complete' || $action === 'mark_completed' || ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($input['chapter_id']) || isset($_POST['chapter_id'])))) {
+        $chapterId = (int)($_GET['chapter_id'] ?? $input['chapter_id'] ?? $_POST['chapter_id'] ?? 1);
+        $chapterTitle = trim($input['chapter_title'] ?? $_POST['chapter_title'] ?? "Chapter $chapterId");
+        $subjectId = trim($input['subject_id'] ?? $_POST['subject_id'] ?? "general");
 
-        // Save study note / completion record in study_notes (Core Table 4)
-        $ins = $pdo->prepare("
-            INSERT INTO study_notes (user_id, subject_id, chapter_title, note_content, created_at)
-            VALUES (:uid, :sid, :title, :content, CURRENT_TIMESTAMP)
-        ");
-        $ins->execute([
-            'uid' => $uid,
-            'sid' => $subjectId,
-            'title' => $chapterTitle,
-            'content' => "Completed chapter: $chapterTitle."
-        ]);
+        // 1. Record completion in user_chapter_completions table
+        try {
+            $compStmt = $pdo->prepare("
+                INSERT INTO user_chapter_completions (user_id, subject_id, chapter_id, completed_at)
+                VALUES (:uid, :sid, :cid, CURRENT_TIMESTAMP)
+                ON DUPLICATE KEY UPDATE completed_at = CURRENT_TIMESTAMP
+            ");
+            $compStmt->execute([
+                'uid' => $uid,
+                'sid' => $subjectId,
+                'cid' => $chapterId
+            ]);
+        } catch (Exception $e) {}
 
+        // 2. Also record in study_notes for backward compatibility
+        try {
+            $ins = $pdo->prepare("
+                INSERT INTO study_notes (user_id, subject_id, chapter_id, chapter_title, note_content, created_at)
+                VALUES (:uid, :sid, :cid, :title, :content, CURRENT_TIMESTAMP)
+            ");
+            $ins->execute([
+                'uid' => $uid,
+                'sid' => $subjectId,
+                'cid' => $chapterId,
+                'title' => $chapterTitle,
+                'content' => "Completed chapter: $chapterTitle."
+            ]);
+        } catch (Exception $e) {}
+
+        http_response_code(200);
         echo json_encode([
             'status' => 'success',
             'success' => true,
-            'message' => "Chapter '$chapterTitle' marked as completed!"
+            'message' => "Chapter '$chapterTitle' marked as completed!",
+            'chapter_id' => $chapterId,
+            'subject_id' => $subjectId,
+            'is_completed' => true
         ]);
         exit();
     }

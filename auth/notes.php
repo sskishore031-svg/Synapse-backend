@@ -56,6 +56,7 @@ try {
     // 1. SAVE / CREATE NOTE
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($action === 'save' || $action === 'create' || !empty($input['note_content']) || !empty($input['content']) || !empty($_POST['note_content']) || !empty($_POST['content']))) {
         $subjectId = trim($input['subject_id'] ?? $_POST['subject_id'] ?? 'general');
+        $chapterId = (int)($input['chapter_id'] ?? $_GET['chapter_id'] ?? $_POST['chapter_id'] ?? 0);
         $title = trim($input['chapter_title'] ?? $input['title'] ?? $_POST['chapter_title'] ?? $_POST['title'] ?? 'Study Note');
         $content = trim($input['note_content'] ?? $input['content'] ?? $_POST['note_content'] ?? $_POST['content'] ?? '');
 
@@ -66,19 +67,20 @@ try {
         }
 
         $ins = $pdo->prepare("
-            INSERT INTO study_notes (user_id, subject_id, chapter_title, note_content, created_at) 
-            VALUES (:uid, :sid, :title, :content, CURRENT_TIMESTAMP)
+            INSERT INTO study_notes (user_id, subject_id, chapter_id, chapter_title, note_content, created_at) 
+            VALUES (:uid, :sid, :cid, :title, :content, CURRENT_TIMESTAMP)
         ");
         $ins->execute([
             'uid' => $uid,
             'sid' => $subjectId,
+            'cid' => $chapterId > 0 ? $chapterId : null,
             'title' => $title,
             'content' => $content
         ]);
 
         $noteId = (int)$pdo->lastInsertId();
 
-        http_response_code(201);
+        http_response_code(200);
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -87,9 +89,18 @@ try {
                 'id' => $noteId,
                 'user_id' => $uid,
                 'subject_id' => $subjectId,
+                'chapter_id' => $chapterId,
                 'chapter_title' => $title,
                 'note_content' => $content,
                 'created_at' => date('Y-m-d H:i:s')
+            ],
+            'data' => [
+                'id' => $noteId,
+                'user_id' => $uid,
+                'subject_id' => $subjectId,
+                'chapter_id' => $chapterId,
+                'title' => $title,
+                'content' => $content
             ]
         ]);
         exit();
@@ -121,6 +132,7 @@ try {
             'id' => (int)$n['id'],
             'user_id' => (int)$n['user_id'],
             'subject_id' => $n['subject_id'],
+            'chapter_id' => !empty($n['chapter_id']) ? (int)$n['chapter_id'] : 1,
             'title' => $n['chapter_title'],
             'chapter_title' => $n['chapter_title'],
             'content' => $n['note_content'],

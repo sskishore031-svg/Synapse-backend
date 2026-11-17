@@ -51,13 +51,15 @@ function formatUserResponse($user, $pdo) {
         'id' => (int)$user['id'],
         'name' => $user['name'],
         'email' => $user['email'],
-        'phone' => !empty($user['phone']) ? $user['phone'] : '',
-        'bio' => 'Passionate student exploring AI, Computer Science & Mathematics.',
-        'course' => 'B.Tech Computer Science · Year 3',
+        'phone' => !empty($user['phone']) ? $user['phone'] : (!empty($user['phone_number']) ? $user['phone_number'] : ''),
+        'phone_number' => !empty($user['phone_number']) ? $user['phone_number'] : (!empty($user['phone']) ? $user['phone'] : ''),
+        'bio' => !empty($user['bio']) ? $user['bio'] : 'Passionate student exploring AI, Computer Science & Mathematics.',
+        'course' => !empty($user['course']) ? $user['course'] : 'B.Tech Computer Science · Year 3',
+        'year' => !empty($user['course']) ? $user['course'] : 'Year 3',
         'preferred_language' => 'English',
         'interests' => $interests,
         'selected_interests' => $interests,
-        'study_goal' => '25 min / day',
+        'study_goal' => !empty($user['study_goal']) ? $user['study_goal'] : '25 min / day',
         'notifications_enabled' => true,
         'avatar_url' => $avatarUrl,
         'profile_photo' => $rawPath ?: $avatarUrl,
@@ -99,7 +101,8 @@ if ($method === 'GET') {
         } catch (Exception $e) {}
 
         $sql = "
-            SELECT u.id, u.name, u.email $phoneCol, u.created_at, p.selected_interests, p.avatar_url
+            SELECT u.id, u.name, u.email $phoneCol, u.created_at, 
+                   p.selected_interests, p.avatar_url, p.course, p.study_goal, p.bio
             FROM users u
             LEFT JOIN user_profiles p ON u.id = p.user_id
         ";
@@ -179,12 +182,39 @@ if ($method === 'POST' || $method === 'PUT') {
             $uStmt->execute(['name' => $name, 'uid' => $uid]);
         }
 
-        $phone = trim($input['phone'] ?? $_POST['phone'] ?? '');
+        $phone = trim($input['phone'] ?? $input['phone_number'] ?? $_POST['phone'] ?? $_POST['phone_number'] ?? '');
         if (!empty($phone)) {
             try {
-                $pStmt = $pdo->prepare("UPDATE users SET phone = :phone WHERE id = :uid");
-                $pStmt->execute(['phone' => $phone, 'uid' => $uid]);
-            } catch (Exception $e) {}
+                $pStmt = $pdo->prepare("UPDATE users SET phone = :phone, phone_number = :phone_num WHERE id = :uid");
+                $pStmt->execute(['phone' => $phone, 'phone_num' => $phone, 'uid' => $uid]);
+            } catch (Exception $e) {
+                try {
+                    $pStmt = $pdo->prepare("UPDATE users SET phone = :phone WHERE id = :uid");
+                    $pStmt->execute(['phone' => $phone, 'uid' => $uid]);
+                } catch (Exception $e2) {}
+            }
+        }
+
+        // Update profile course, study_goal, bio
+        $course = trim($input['course'] ?? $input['year'] ?? $_POST['course'] ?? $_POST['year'] ?? '');
+        $studyGoal = trim($input['study_goal'] ?? $_POST['study_goal'] ?? '');
+        $bio = trim($input['bio'] ?? $_POST['bio'] ?? '');
+
+        if (!empty($course) || !empty($studyGoal) || !empty($bio)) {
+            $pStmt = $pdo->prepare("
+                INSERT INTO user_profiles (user_id, course, study_goal, bio)
+                VALUES (:uid, :course, :goal, :bio)
+                ON DUPLICATE KEY UPDATE 
+                    course = IF(VALUES(course) != '', VALUES(course), course),
+                    study_goal = IF(VALUES(study_goal) != '', VALUES(study_goal), study_goal),
+                    bio = IF(VALUES(bio) != '', VALUES(bio), bio)
+            ");
+            $pStmt->execute([
+                'uid' => $uid,
+                'course' => !empty($course) ? $course : 'B.Tech Computer Science · Year 3',
+                'goal' => !empty($studyGoal) ? $studyGoal : '25 min / day',
+                'bio' => !empty($bio) ? $bio : 'Passionate student exploring AI, Computer Science & Mathematics.'
+            ]);
         }
 
         // Format interests JSON
@@ -228,7 +258,8 @@ if ($method === 'POST' || $method === 'PUT') {
         } catch (Exception $e) {}
 
         $stmt = $pdo->prepare("
-            SELECT u.id, u.name, u.email $phoneCol, u.created_at, p.selected_interests, p.avatar_url
+            SELECT u.id, u.name, u.email $phoneCol, u.created_at, 
+                   p.selected_interests, p.avatar_url, p.course, p.study_goal, p.bio
             FROM users u
             LEFT JOIN user_profiles p ON u.id = p.user_id
             WHERE u.id = :uid

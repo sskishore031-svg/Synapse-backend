@@ -53,18 +53,20 @@ try {
     $uid = (int)$user['id'];
 
     // 1. SUBMIT / RECORD QUIZ
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' || $action === 'submit' || $action === 'record') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' || $action === 'submit' || $action === 'submit_quiz' || $action === 'record') {
         $subjectId = trim($input['subject_id'] ?? $_POST['subject_id'] ?? 'mathematics');
+        $chapterId = (int)($input['chapter_id'] ?? $_GET['chapter_id'] ?? $_POST['chapter_id'] ?? 0);
         $score = (int)($input['score'] ?? $input['correct_answers'] ?? $_POST['score'] ?? 0);
-        $totalQuestions = max(1, (int)($input['total_questions'] ?? $_POST['total_questions'] ?? 10));
+        $totalQuestions = max(1, (int)($input['total_questions'] ?? $_POST['total_questions'] ?? 8));
 
         $stmt = $pdo->prepare("
-            INSERT INTO quiz_records (user_id, subject_id, score, total_questions, completed_at) 
-            VALUES (:uid, :sid, :score, :total, CURRENT_TIMESTAMP)
+            INSERT INTO quiz_records (user_id, subject_id, chapter_id, score, total_questions, completed_at) 
+            VALUES (:uid, :sid, :cid, :score, :total, CURRENT_TIMESTAMP)
         ");
         $stmt->execute([
             'uid' => $uid,
             'sid' => $subjectId,
+            'cid' => $chapterId > 0 ? $chapterId : null,
             'score' => $score,
             'total' => $totalQuestions
         ]);
@@ -72,7 +74,7 @@ try {
         $recordId = (int)$pdo->lastInsertId();
         $percentage = (int)round(($score * 100.0) / $totalQuestions);
 
-        http_response_code(201);
+        http_response_code(200);
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -81,10 +83,20 @@ try {
                 'id' => $recordId,
                 'user_id' => $uid,
                 'subject_id' => $subjectId,
+                'chapter_id' => $chapterId,
                 'score' => $score,
                 'total_questions' => $totalQuestions,
                 'score_percentage' => $percentage,
                 'completed_at' => date('Y-m-d H:i:s')
+            ],
+            'data' => [
+                'id' => $recordId,
+                'user_id' => $uid,
+                'subject_id' => $subjectId,
+                'chapter_id' => $chapterId,
+                'score' => $score,
+                'total_questions' => $totalQuestions,
+                'percentage' => $percentage
             ]
         ]);
         exit();
