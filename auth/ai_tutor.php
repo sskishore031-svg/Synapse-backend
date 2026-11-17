@@ -73,11 +73,12 @@ try {
         'who are you', 'what is your name', 'whats your name', 'tell me your name',
         'nee yaru', 'neenga yaru', 'un peru enna', 'unga peru enna', 'un per enna', 'unga per enna',
         'nee yar', 'neenga yar', 'yaaru nee', 'yaar nee', 'yaaru neenga', 'yaar neenga',
-        'what can you do', 'how does this app work', 'how many subjects', 'how to use this app'
+        'what can you do', 'how does this app work', 'how many subjects', 'how to use this app',
+        'how can you help', 'how can you help me', 'what are your features', 'what do you do'
     ];
     foreach ($identityPhrases as $ip) {
         if ($normQuery === $ip || strpos($normQuery, $ip) !== false) {
-            $idText = "I am SYNAPSE AI, your on-device intelligent college study companion. I help you master 50+ university subjects across Engineering, Science, and Humanities with offline RAG reasoning, interactive quizzes, smart revision notes, and two-way voice chat. Ask me any study doubt, or tell me to launch a quiz or save notes!";
+            $idText = "I'm your study friend here to make learning easy! I can give you clear study notes, test you with interactive quizzes, explain any subject concept step-by-step, and clear your exam doubts whenever you need.";
             echo json_encode([
                 'status' => 'success',
                 'success' => true,
@@ -88,7 +89,51 @@ try {
                     'answer' => $idText,
                     'matched_subject' => 'SYNAPSE AI',
                     'matched_chapter' => 'Identity & Persona',
-                    'matched_topic' => 'On-Device Study Companion',
+                    'matched_topic' => 'Study Companion',
+                    'confidence_score' => 100.0,
+                    'tutor_name' => 'SYNAPSE AI',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]
+            ]);
+            exit();
+        }
+    }
+
+    // Small Talk Handlers
+    $smallTalk = [
+        'how are you' => "I'm doing great and feeling energized! How's your study session going today?",
+        'hows it going' => "I'm doing great! What subject shall we tackle today?",
+        'good morning' => "Good morning! Ready to learn something exciting today? What subject are we tackling?",
+        'good afternoon' => "Good afternoon! Hope you're having a productive day. What subject shall we explore?",
+        'good evening' => "Good evening! Let's do some focused study tonight. What can I help you understand?",
+        'thank you' => "You're very welcome! Always happy to help. Let me know if you have any other doubts!",
+        'thanks' => "You're very welcome! Keep up the great effort!",
+        'you are awesome' => "Thank you so much! You're awesome for putting in the effort to study. Let's keep it going!",
+        'you are great' => "Thank you! I'm here anytime you need a study boost.",
+        'i am bored' => "How about a quick 3-minute quiz or learning a fascinating fact in science or tech? Pick a subject and let's make it fun!",
+        'im bored' => "How about a quick 3-minute quiz or learning a fascinating fact in science or tech? Pick a subject and let's make it fun!",
+        'i am stressed about exams' => "Take a deep breath! You've got this. Let's break your revision down into bite-sized 10-minute topics so you feel confident and in control.",
+        'stressed about exams' => "Take a deep breath! You've got this. Let's tackle one small topic at a time.",
+        'motivate me' => "Every expert was once a beginner who refused to quit. Focus on mastering just one concept right now—progress adds up fast!",
+        'who made you' => "I was built by the SYNAPSE AI team to be your personal university study companion and learning buddy!",
+        'are you smart' => "I know 50+ college subjects inside and out, but my favorite thing is helping you become the smartest person in the room!",
+        'hello friend' => "Hey friend! Great to see you. What subject shall we dive into today?",
+        'hi friend' => "Hey friend! Ready for a great study session? What are we working on?"
+    ];
+
+    foreach ($smallTalk as $key => $reply) {
+        if ($normQuery === $key || strpos($normQuery, $key) !== false) {
+            echo json_encode([
+                'status' => 'success',
+                'success' => true,
+                'data' => [
+                    'question' => $question,
+                    'paragraph1' => $reply,
+                    'paragraph2' => '',
+                    'answer' => $reply,
+                    'matched_subject' => 'SYNAPSE AI',
+                    'matched_chapter' => 'Conversational',
+                    'matched_topic' => 'Small Talk',
                     'confidence_score' => 100.0,
                     'tutor_name' => 'SYNAPSE AI',
                     'created_at' => date('Y-m-d H:i:s')
@@ -101,9 +146,10 @@ try {
     // 2. Out-of-Scope Pre-Check (Fast Guardrail)
     $outOfScopePhrases = [
         'can you eat', 'do you eat', 'what do you eat', 'who is rajini', 'who is rajinikanth',
-        'rajini', 'rajinikanth', 'kamal', 'actor', 'actress', 'movie', 'movies', 'cinema',
+        'rajini', 'rajinikanth', 'kamal', 'vijay', 'thalapathy', 'ajith', 'thala', 'suriya',
+        'dhanush', 'simbu', 'sivakarthikeyan', 'actor', 'actress', 'movie', 'movies', 'cinema',
         'box office', 'song', 'songs', 'cricket', 'recipe', 'food', 'cook', 'cooking',
-        'girlfriend', 'boyfriend', 'marry me', 'do you love me', 'joke', 'jokes'
+        'girlfriend', 'boyfriend', 'marry me', 'do you love me', 'joke', 'jokes', 'politics'
     ];
     $isDirectOutOfScope = false;
     foreach ($outOfScopePhrases as $op) {
@@ -116,7 +162,7 @@ try {
         }
     }
     if ($isDirectOutOfScope) {
-        $boundary = "That falls outside my academic and app scope. I'm SYNAPSE AI—built specifically to help you master your college subjects, solve study doubts, take quizzes, and organize revision notes!";
+        $boundary = "Sorry, that's not relatable to our studies or app! Ask me any subject concept, quiz, or study note instead.";
         echo json_encode([
             'status' => 'success',
             'success' => true,
