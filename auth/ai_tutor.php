@@ -12,7 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/db.php';
 
-$input = json_decode(file_get_contents("php://input"), true) ?? [];
+$rawInput = file_get_contents("php://input");
+if (empty($rawInput) && php_sapi_name() === 'cli') {
+    $rawInput = file_get_contents("php://stdin");
+}
+$input = json_decode($rawInput, true) ?? [];
 $userId = $_GET['user_id'] ?? $_GET['id'] ?? $input['user_id'] ?? $input['id'] ?? $_POST['user_id'] ?? $_SERVER['HTTP_X_USER_ID'] ?? null;
 $email = trim($_GET['email'] ?? $input['email'] ?? $_POST['email'] ?? $_SERVER['HTTP_X_USER_EMAIL'] ?? '');
 $action = $_GET['action'] ?? $input['action'] ?? $_POST['action'] ?? '';
@@ -58,6 +62,77 @@ try {
             'success' => true,
             'message' => 'SYNAPSE Hybrid SLM + Semantic RAG Engine Active.',
             'data' => null
+        ]);
+        exit();
+    }
+
+    $normQuery = strtolower(trim(preg_replace('/[^a-zA-Z0-9\s]/', ' ', $question)));
+
+    // 1. Identity & Tanglish Pre-Retrieval Routing
+    $identityPhrases = [
+        'who are you', 'what is your name', 'whats your name', 'tell me your name',
+        'nee yaru', 'neenga yaru', 'un peru enna', 'unga peru enna', 'un per enna', 'unga per enna',
+        'nee yar', 'neenga yar', 'yaaru nee', 'yaar nee', 'yaaru neenga', 'yaar neenga',
+        'what can you do', 'how does this app work', 'how many subjects', 'how to use this app'
+    ];
+    foreach ($identityPhrases as $ip) {
+        if ($normQuery === $ip || strpos($normQuery, $ip) !== false) {
+            $idText = "I am SYNAPSE AI, your on-device intelligent college study companion. I help you master 50+ university subjects across Engineering, Science, and Humanities with offline RAG reasoning, interactive quizzes, smart revision notes, and two-way voice chat. Ask me any study doubt, or tell me to launch a quiz or save notes!";
+            echo json_encode([
+                'status' => 'success',
+                'success' => true,
+                'data' => [
+                    'question' => $question,
+                    'paragraph1' => $idText,
+                    'paragraph2' => '',
+                    'answer' => $idText,
+                    'matched_subject' => 'SYNAPSE AI',
+                    'matched_chapter' => 'Identity & Persona',
+                    'matched_topic' => 'On-Device Study Companion',
+                    'confidence_score' => 100.0,
+                    'tutor_name' => 'SYNAPSE AI',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]
+            ]);
+            exit();
+        }
+    }
+
+    // 2. Out-of-Scope Pre-Check (Fast Guardrail)
+    $outOfScopePhrases = [
+        'can you eat', 'do you eat', 'what do you eat', 'who is rajini', 'who is rajinikanth',
+        'rajini', 'rajinikanth', 'kamal', 'actor', 'actress', 'movie', 'movies', 'cinema',
+        'box office', 'song', 'songs', 'cricket', 'recipe', 'food', 'cook', 'cooking',
+        'girlfriend', 'boyfriend', 'marry me', 'do you love me', 'joke', 'jokes'
+    ];
+    $isDirectOutOfScope = false;
+    foreach ($outOfScopePhrases as $op) {
+        if ($normQuery === $op || strpos($normQuery, $op) !== false) {
+            if ($op === 'food' && (strpos($normQuery, 'food chain') !== false || strpos($normQuery, 'nutrition') !== false)) {
+                continue;
+            }
+            $isDirectOutOfScope = true;
+            break;
+        }
+    }
+    if ($isDirectOutOfScope) {
+        $boundary = "That falls outside my academic and app scope. I'm SYNAPSE AI—built specifically to help you master your college subjects, solve study doubts, take quizzes, and organize revision notes!";
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'data' => [
+                'question' => $question,
+                'paragraph1' => $boundary,
+                'paragraph2' => '',
+                'answer' => $boundary,
+                'matched_subject' => null,
+                'matched_chapter' => null,
+                'matched_topic' => null,
+                'confidence_score' => 100.0,
+                'is_out_of_scope' => true,
+                'tutor_name' => 'SYNAPSE AI',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
         ]);
         exit();
     }
@@ -282,17 +357,29 @@ try {
         }
     }
 
-    if ($bestChunk !== null && $bestScore >= 5.0) {
+    $tokenCount = max(count($conceptTokens), 1);
+    $normalizedScore = min(1.0, $bestScore / ($tokenCount * 25.0));
+    $isElaborated = (strpos($normQuery, 'elaborate') !== false || strpos($normQuery, 'in detail') !== false || strpos($normQuery, 'deep dive') !== false);
+
+    if ($bestChunk !== null && $bestScore >= 12.0 && $normalizedScore >= 0.25) {
         $subject = $bestChunk['subject'] ?? 'University Curriculum';
         $chapter = $bestChunk['chapter'] ?? $bestChunk['topic'] ?? '';
         $topic = $bestChunk['topic'] ?? $chapter;
-        $def = $bestChunk['definition'] ?? '';
-        $formula = $bestChunk['formula'] ?? $bestChunk['formulaOrCoreRule'] ?? '';
-        $example = $bestChunk['worked_example'] ?? $bestChunk['workedExample'] ?? '';
+        $def = trim($bestChunk['definition'] ?? '');
+        $formula = trim($bestChunk['formula'] ?? $bestChunk['formulaOrCoreRule'] ?? '');
+        $example = trim($bestChunk['worked_example'] ?? $bestChunk['workedExample'] ?? '');
+        $content = trim($bestChunk['content'] ?? '');
 
-        $p1 = "📘 **Concept & Definition** ($subject · $chapter)\n\n$def";
-        $p2 = "⚡ **Formula / Core Principle**\n\n$formula\n\n💡 **Key Example & Practical Takeaway**\n\n$example\n\n💡 *Topic: $topic*";
-        $fullAnswer = $p1 . "\n\n" . $p2;
+        if ($isElaborated) {
+            $p1 = "🔍 **In-Depth Breakdown: $topic** ($subject · $chapter)\n\n**1. Theoretical Foundations & Mechanism:**\n$content\n\n**2. Mathematical Formulations & Derivations:**\n$formula";
+            $p2 = "**3. Comprehensive Practical Application:**\n$example\n\n**4. High-Yield Exam Takeaway:**\nMastering $topic requires remembering key governing assumptions, units, and boundary conditions.";
+            $fullAnswer = $p1 . "\n\n" . $p2;
+        } else {
+            // Concise-by-default (3-5 lines max: 1-sentence definition + key formula/rule + 1 quick example)
+            $p1 = "📘 **$topic** ($subject)\n$def\n• **Rule/Formula:** $formula\n• **Example:** $example";
+            $p2 = "";
+            $fullAnswer = $p1;
+        }
 
         echo json_encode([
             'status' => 'success',
@@ -313,23 +400,55 @@ try {
         exit();
     }
 
-    // Default Academic Guidance response for open-ended queries
-    $cleanTopic = ucwords(preg_replace('/(?i)^(what is|explain|tell me about|how does|what are|define)\s+/', '', $question));
-    $p1 = "🎓 **SYNAPSE AI University Study Companion**\n\n$cleanTopic is an important academic topic in higher education curricula. Mastering this concept equips students with rigorous conceptual grounding, mathematical logic, and analytical problem-solving methodologies.";
-    $p2 = "⚡ **Core Study Framework & Key Principles:**\n\n• **Theoretical Foundations:** Review primary definitions, governing laws, and underlying assumptions for $cleanTopic.\n• **Analytical Derivations:** Break down complex multi-step problems, verify boundary conditions, and analyze tradeoffs.\n• **Real-World Application:** Relate theoretical equations to modern scientific and engineering implementations.\n\nWhich specific subject or chapter are you studying? Let me know your question and we'll break it down together!";
+    // Check if legitimate academic guidance question
+    $academicWords = ['syllabus', 'curriculum', 'study', 'exam', 'college', 'university', 'engineering', 'degree', 'course', 'major'];
+    $isAcademic = false;
+    foreach ($academicWords as $aw) {
+        if (strpos($normQuery, $aw) !== false) {
+            $isAcademic = true;
+            break;
+        }
+    }
 
+    if ($isAcademic) {
+        $cleanTopic = ucwords(preg_replace('/(?i)^(what is|explain|tell me about|how does|what are|define)\s+/', '', $question));
+        $p1 = "🎓 **SYNAPSE AI University Study Companion**\n\n$cleanTopic is an important academic topic in higher education curricula. Mastering this concept equips students with rigorous conceptual grounding, mathematical logic, and analytical problem-solving methodologies.";
+        $p2 = "⚡ **Core Study Framework & Key Principles:**\n\n• **Theoretical Foundations:** Review primary definitions, governing laws, and underlying assumptions for $cleanTopic.\n• **Analytical Derivations:** Break down complex multi-step problems, verify boundary conditions, and analyze tradeoffs.\n• **Real-World Application:** Relate theoretical equations to modern scientific and engineering implementations.\n\nWhich specific subject or chapter are you studying? Let me know your question and we'll break it down together!";
+
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'data' => [
+                'question' => $question,
+                'paragraph1' => $p1,
+                'paragraph2' => $p2,
+                'answer' => $p1 . "\n\n" . $p2,
+                'matched_subject' => 'University Curriculum',
+                'matched_chapter' => $cleanTopic,
+                'matched_topic' => $cleanTopic,
+                'confidence_score' => 70.0,
+                'tutor_name' => 'SYNAPSE AI',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ]);
+        exit();
+    }
+
+    // Strict Out-of-Scope Guardrail Response (zero random hallucinations)
+    $boundary = "That falls outside my academic and app scope. I'm SYNAPSE AI—built specifically to help you master your college subjects, solve study doubts, take quizzes, and organize revision notes!";
     echo json_encode([
         'status' => 'success',
         'success' => true,
         'data' => [
             'question' => $question,
-            'paragraph1' => $p1,
-            'paragraph2' => $p2,
-            'answer' => $p1 . "\n\n" . $p2,
-            'matched_subject' => 'University Curriculum',
-            'matched_chapter' => $cleanTopic,
-            'matched_topic' => $cleanTopic,
-            'confidence_score' => 70.0,
+            'paragraph1' => $boundary,
+            'paragraph2' => '',
+            'answer' => $boundary,
+            'matched_subject' => null,
+            'matched_chapter' => null,
+            'matched_topic' => null,
+            'confidence_score' => 100.0,
+            'is_out_of_scope' => true,
             'tutor_name' => 'SYNAPSE AI',
             'created_at' => date('Y-m-d H:i:s')
         ]
