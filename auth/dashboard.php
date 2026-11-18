@@ -85,14 +85,16 @@ try {
     $notesCount = (int)$notesStmt->fetchColumn();
 
     // Distinct topics done
-    $topicsDone = max($completedChaptersCount, $notesCount) + min($totalQuizzes, 10);
-    if ($topicsDone < 1 && ($totalQuizzes > 0 || $notesCount > 0 || $completedChaptersCount > 0)) {
+    $hasActivity = ($totalQuizzes > 0 || $notesCount > 0 || $completedChaptersCount > 0);
+    $topicsDone = $hasActivity ? (max($completedChaptersCount, $notesCount) + min($totalQuizzes, 10)) : 0;
+    if ($hasActivity && $topicsDone < 1) {
         $topicsDone = 1;
     }
 
     $totalCurriculumTopics = 30;
-    $overallProgress = min(100, (int)round(($topicsDone * 100.0) / $totalCurriculumTopics));
-    $mindPower = max(25, $overallProgress);
+    $overallProgress = $hasActivity ? min(100, (int)round(($topicsDone * 100.0) / $totalCurriculumTopics)) : 0;
+    $mindPower = $overallProgress;
+    $studyStreak = $hasActivity ? 1 : 0;
 
     // 5. Fetch Learning Plan Tasks
     $tasksStmt = $pdo->prepare("SELECT id, title, category, duration, is_completed, created_at FROM learning_plan_tasks WHERE user_id = :uid ORDER BY id ASC");
@@ -136,13 +138,13 @@ try {
         'quizScore' => $avgQuizScore,
         'quizzes_attempted' => $totalQuizzes,
         'quizzesAttempted' => $totalQuizzes,
-        'study_streak' => 1,
-        'studyStreakDays' => 1,
+        'study_streak' => $studyStreak,
+        'studyStreakDays' => $studyStreak,
         'overall_progress' => $overallProgress,
         'overallProgress' => $overallProgress,
         'mind_power' => $mindPower,
         'mindPower' => $mindPower,
-        'progress_message' => 'Active Learning Mode',
+        'progress_message' => $hasActivity ? 'Active Learning Mode' : 'Welcome! Start learning to track your progress.',
         'learning_plan_tasks' => $tasks
     ];
 
@@ -153,7 +155,7 @@ try {
         'data' => $dashboardData,
         'topics_done' => $topicsDone,
         'avg_quiz_score' => $avgQuizScore,
-        'study_streak' => 1,
+        'study_streak' => $studyStreak,
         'overall_progress' => $overallProgress,
         'learning_plan_tasks' => $tasks
     ]);

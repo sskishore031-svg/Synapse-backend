@@ -502,6 +502,224 @@ try {
     }
 
     // =========================================================================
+    // STAGE 4B: Subject Overview Intent ("what about biology", "uses of math", etc.)
+    // =========================================================================
+    $overviewRegex = '/^(?:what\s+about|what\s+abou|about|tell\s+me\s+about|uses\s+of|use\s+of|advantages\s+of|advantage\s+of|benefits\s+of|overview\s+of|explain\s+about|scope\s+of|details\s+of)\s+([a-zA-Z\s]+)$/i';
+    $candidateSub = null;
+    if (preg_match($overviewRegex, trim($question), $ovMatch)) {
+        $candidateSub = strtolower(trim($ovMatch[1]));
+    } else {
+        $standaloneSubjects = [
+            'math', 'maths', 'mathematics', 'computer science', 'cs', 'data science', 'ds',
+            'artificial intelligence', 'ai', 'machine learning', 'ml', 'deep learning',
+            'physics', 'chemistry', 'biology', 'bio', 'history', 'world history',
+            'economics', 'finance', 'environmental science', 'ecology', 'computer networks',
+            'networking', 'cyber security', 'cybersecurity', 'security', 'psychology',
+            'business', 'business management', 'electrical engineering', 'astronomy',
+            'astrophysics', 'statistics', 'software engineering', 'cloud computing',
+            'operating systems', 'dbms', 'database', 'web development', 'mobile development',
+            'blockchain', 'robotics', 'mechanical engineering', 'civil engineering',
+            'biotechnology', 'genetics', 'neuroscience', 'organic chemistry', 'quantum physics',
+            'calculus', 'linear algebra', 'discrete mathematics', 'philosophy', 'sociology',
+            'political science', 'literature', 'accounting', 'marketing', 'cryptography',
+            'information technology', 'architecture', 'aerospace engineering',
+            'chemical engineering', 'biomedical engineering', 'nanotechnology',
+            'supply chain', 'supply chain management', 'law'
+        ];
+        if (in_array($normQuery, $standaloneSubjects, true)) {
+            $candidateSub = $normQuery;
+        }
+    }
+
+    if (!empty($candidateSub)) {
+        $candWords = preg_split('/\s+/', $candidateSub);
+        if (array_intersect($candWords, ['it', 'its', 'this', 'that', 'these', 'those', 'roots', 'solve', 'formula'])) {
+            $candidateSub = null;
+        }
+    }
+
+    if (!empty($candidateSub)) {
+        $subOverviews = [
+            'mathematics' => [
+                'name' => 'Mathematics',
+                'what' => 'Mathematics is the foundational science of structure, quantity, space, and change, studying patterns through rigorous logical deduction and formal proofs.',
+                'uses' => 'Used across machine learning algorithms, quantitative finance, structural and aerospace engineering, cryptography, data science, and physics simulations.',
+                'adv' => 'Builds unparalleled analytical rigor, sharp abstract problem-solving, and universally transferable reasoning applied across all STEM fields.',
+                'chal' => 'High abstraction levels, complex prerequisite chains, and unforgiving precision requirements where minor computational errors alter entire proofs.'
+            ],
+            'computer science' => [
+                'name' => 'Computer Science',
+                'what' => 'Computer Science is the systematic study of computation, algorithmic problem-solving, data structures, software architecture, and the interaction between hardware and software.',
+                'uses' => 'Powering modern software engineering, operating systems, cloud infrastructures, distributed web systems, cybersecurity, and artificial intelligence platforms.',
+                'adv' => 'Massive industry demand, high scalability of digital solutions, rapid feedback cycles, and endless creative engineering possibilities.',
+                'chal' => 'Fast-evolving technological landscape requiring constant continuous learning, intricate software debugging, and complex system concurrency issues.'
+            ],
+            'data science' => [
+                'name' => 'Data Science',
+                'what' => 'Data Science is an interdisciplinary field combining statistics, machine learning, and domain knowledge to extract actionable insights and predictive intelligence from structured and unstructured data.',
+                'uses' => 'Business intelligence, algorithmic trading, customer behavioral modeling, recommendation engines (Netflix/Spotify), healthcare diagnostics, and supply chain forecasting.',
+                'adv' => 'Data-driven decision making, high industry valuation, and powerful synergy across business strategy and machine intelligence.',
+                'chal' => 'Noisy and messy real-world data, risks of statistical bias and over-fitting, and complex data pipeline maintenance.'
+            ],
+            'artificial intelligence' => [
+                'name' => 'Artificial Intelligence',
+                'what' => 'Artificial Intelligence is the branch of computer science dedicated to engineering intelligent agents that simulate cognitive capabilities like learning, pattern recognition, decision-making, and natural language understanding.',
+                'uses' => 'Large language models, autonomous self-driving vehicles, medical imaging diagnosis, automated robotics, real-time speech translation, and intelligent game theory.',
+                'adv' => 'Automates complex cognitive workflows, enables superhuman processing of massive data, and drives groundbreaking innovations across every scientific domain.',
+                'chal' => 'High computational and GPU power costs, "black-box" explainability challenges, hallucination risks, and complex ethical and alignment considerations.'
+            ],
+            'physics' => [
+                'name' => 'Physics',
+                'what' => 'Physics is the fundamental natural science that investigates matter, energy, space, time, and the core physical laws that govern the universe from subatomic particles to cosmic scales.',
+                'uses' => 'Semiconductor hardware design, aerospace and satellite navigation, quantum computing, renewable energy systems, laser optics, and medical radiation technology.',
+                'adv' => 'Provides the deepest mechanistic understanding of physical reality, first-principles thinking, and universal mathematical modeling skills.',
+                'chal' => 'Demanding mathematical machinery (multivariable calculus, tensor algebra, differential equations) and unintuitive counter-intuitive quantum concepts.'
+            ],
+            'chemistry' => [
+                'name' => 'Chemistry',
+                'what' => 'Chemistry is the central science studying the composition, molecular structure, properties, and reactive transformations of matter at the atomic scale.',
+                'uses' => 'Pharmaceutical drug discovery, battery technology and energy storage, materials engineering, polymers, petrochemicals, and agricultural fertilizers.',
+                'adv' => 'Direct tangible impact on medicine and green energy, bridging physics and biology, and high industrial manufacturing relevance.',
+                'chal' => 'Extensive memorization of reaction pathways, complex spatial 3D stereochemistry, and hazardous laboratory handling protocols.'
+            ],
+            'biology' => [
+                'name' => 'Biology',
+                'what' => 'Biology is the natural science dedicated to investigating living organisms, covering cellular processes, physiological systems, genetic inheritance, evolutionary history, and ecological interactions.',
+                'uses' => 'Biomedical research, genomic medicine and CRISPR gene editing, vaccine engineering, ecological conservation, agricultural crop improvement, and forensic pathology.',
+                'adv' => 'Directly advances human health and disease prevention, explains the living natural world, and drives multi-billion dollar biotechnology innovations.',
+                'chal' => 'High conceptual complexity with endless biological exceptions, massive terminology memorization, and long experimental wet-lab incubation periods.'
+            ],
+            'history' => [
+                'name' => 'World History',
+                'what' => 'History is the academic study of past human societies, civilizations, cultural revolutions, governance systems, and geopolitical transformations across time.',
+                'uses' => 'Foreign policy and diplomatic strategy, legal jurisprudence, historical document archiving, geopolitical risk assessment, journalism, and public governance.',
+                'adv' => 'Contextualizes modern global politics, refines critical source evaluation, and teaches pattern recognition across human socio-economic cycles.',
+                'chal' => 'Subjective source interpretations, historiographical biases, and reliance on qualitative archival evidence rather than repeatable experiments.'
+            ],
+            'economics' => [
+                'name' => 'Economics & Finance',
+                'what' => 'Economics and Finance analyze the production, distribution, and consumption of scarce resources, examining individual decision-making, market mechanisms, and monetary policy.',
+                'uses' => 'Central banking, corporate financial strategy, investment portfolio management, public policy design, market pricing models, and international trade treaties.',
+                'adv' => 'High-earning career paths in investment banking and consulting, quantitative financial literacy, and deep understanding of global market dynamics.',
+                'chal' => 'Economic models depend heavily on simplifying behavioral assumptions, market volatility, and unpredictable geopolitical shocks.'
+            ],
+            'environmental science' => [
+                'name' => 'Environmental Science',
+                'what' => 'Environmental Science is an integrative discipline examining ecological systems, climate dynamics, human environmental impact, and sustainable natural resource management.',
+                'uses' => 'Carbon emissions auditing, renewable energy transition, wildlife conservation planning, environmental impact assessments (EIA), and climate policy advocacy.',
+                'adv' => 'Addresses the world\'s most critical sustainability challenges, clean energy innovations, and growing environmental regulatory compliance demand.',
+                'chal' => 'Complex multi-variable climate feedback loops, political polarization surrounding climate policy, and high friction in global treaty enforcement.'
+            ],
+            'computer networks' => [
+                'name' => 'Computer Networks',
+                'what' => 'Computer Networks explores the physical and logical communication architectures that interconnect computing devices, transmitting data packets through structured protocol layers.',
+                'uses' => 'Internet routing, cloud data center architectures, 5G wireless telecommunications, Content Delivery Networks (CDNs), and enterprise VPNs.',
+                'adv' => 'Essential foundation for all connected devices and web systems, stable enterprise infrastructure roles, and vital knowledge for cloud scale.',
+                'chal' => 'Complex packet loss and latency troubleshooting, distributed failure modes, and constant threat of network-level security attacks.'
+            ],
+            'cyber security' => [
+                'name' => 'Cyber Security',
+                'what' => 'Cyber Security is the practice of safeguarding digital architectures, servers, endpoints, networks, and confidential data from malicious intrusions, ransomware, and vulnerabilities.',
+                'uses' => 'Penetration testing and ethical hacking, security operations centers (SOC), secure cryptographic protocols, vulnerability patching, and compliance auditing.',
+                'adv' => 'Massive global talent shortage, high compensation, mission-critical organizational impact, and engaging adversarial problem solving.',
+                'chal' => 'Asymmetric battlefield (defenders must block all attacks, attackers need one gap), high burnout stress during active breaches, and relentless evolving threats.'
+            ],
+            'psychology' => [
+                'name' => 'Psychology',
+                'what' => 'Psychology is the scientific study of the mind and human behavior, examining cognitive perception, emotional regulation, neurobiology, and interpersonal social dynamics.',
+                'uses' => 'Clinical psychotherapy and mental health, User Experience (UX) product design, behavioral economics, organizational leadership, and marketing psychology.',
+                'adv' => 'Improves human understanding and emotional intelligence, enhances user-centered software design, and vital for mental health therapy.',
+                'chal' => 'High individual behavioral variance, replication crises in experimental psychological studies, and emotional fatigue in clinical therapy roles.'
+            ],
+            'business' => [
+                'name' => 'Business Management',
+                'what' => 'Business Management focuses on coordinating organizational resources, strategic planning, human capital, and operational execution to achieve sustainable commercial success.',
+                'uses' => 'Corporate strategy, startup scaling and venture capital, operational supply chains, product management, human resources, and marketing execution.',
+                'adv' => 'Broad executive career mobility, foundational leadership skills, and universal applicability across private enterprises and non-profits.',
+                'chal' => 'High dependency on market competition, interpersonal corporate friction, and high organizational accountability during revenue downturns.'
+            ],
+            'electrical engineering' => [
+                'name' => 'Electrical Engineering',
+                'what' => 'Electrical Engineering investigates the physics and practical engineering of electricity, electromagnetism, analog/digital electronics, power systems, and signal processing.',
+                'uses' => 'Microchip (VLSI) design, electric vehicle powertrains, power grid transmission, wireless telecommunications, and IoT embedded microcontrollers.',
+                'adv' => 'Powers the hardware backbone of modern civilization, strong cross-discipline hardware-software synergy, and protected engineering licensing.',
+                'chal' => 'Steep physical mathematics and electromagnetic field equations, expensive hardware prototyping cycles, and physical electrical hazards.'
+            ],
+            'astronomy' => [
+                'name' => 'Astronomy & Astrophysics',
+                'what' => 'Astronomy and Astrophysics explore celestial bodies, stellar life cycles, black holes, galactic structures, dark energy, and the cosmological origins of the universe.',
+                'uses' => 'Deep-space satellite exploration, cosmic radiation monitoring, orbital trajectory planning for space agencies, and advanced spectroscopy imaging.',
+                'adv' => 'Expands human knowledge of cosmic origins, pushes the limits of optical and radio sensors, and inspires visionary scientific exploration.',
+                'chal' => 'Inability to conduct hands-on laboratory experiments on celestial targets, scarce academic research positions, and reliance on massive space telescopes.'
+            ]
+        ];
+
+        $subAliases = [
+            'math' => 'mathematics', 'maths' => 'mathematics', 'algebra' => 'mathematics', 'calculus' => 'mathematics',
+            'cs' => 'computer science', 'programming' => 'computer science', 'coding' => 'computer science',
+            'ds' => 'data science', 'data analytics' => 'data science',
+            'ai' => 'artificial intelligence', 'ml' => 'artificial intelligence', 'machine learning' => 'artificial intelligence', 'deep learning' => 'artificial intelligence',
+            'phy' => 'physics', 'waves' => 'physics',
+            'chem' => 'chemistry', 'bonding' => 'chemistry', 'chemical bonding' => 'chemistry',
+            'bio' => 'biology', 'life science' => 'biology', 'biological sciences' => 'biology',
+            'world history' => 'history', 'ancient history' => 'history',
+            'finance' => 'economics', 'econ' => 'economics', 'macroeconomics' => 'economics', 'microeconomics' => 'economics',
+            'ecology' => 'environmental science', 'environment' => 'environmental science', 'environmental' => 'environmental science',
+            'networks' => 'computer networks', 'networking' => 'computer networks', 'net' => 'computer networks',
+            'security' => 'cyber security', 'cybersecurity' => 'cyber security', 'infosec' => 'cyber security', 'sec' => 'cyber security',
+            'psych' => 'psychology',
+            'management' => 'business', 'business management' => 'business', 'mba' => 'business', 'biz' => 'business',
+            'electronics' => 'electrical engineering', 'circuits' => 'electrical engineering', 'ee' => 'electrical engineering',
+            'astrophysics' => 'astronomy', 'astro' => 'astronomy'
+        ];
+
+        $resolvedSubKey = $subAliases[$candidateSub] ?? $candidateSub;
+        $matchedInfo = $subOverviews[$resolvedSubKey] ?? null;
+        if (!$matchedInfo && count(explode(' ', trim($candidateSub))) === 1) {
+            foreach ($subOverviews as $k => $v) {
+                if ($candidateSub === $k || strpos($k, $candidateSub) !== false) {
+                    $matchedInfo = $v;
+                    break;
+                }
+            }
+        }
+
+        if (!$matchedInfo) {
+            $formattedName = ucwords($candidateSub);
+            $matchedInfo = [
+                'name' => $formattedName,
+                'what' => "$formattedName is an academic discipline focused on exploring the foundational principles, analytical methodologies, and structured theories that govern its field of study.",
+                'uses' => "Practitioners and scholars apply $formattedName across modern research, industrial problem-solving, high-level analysis, technology integration, and empirical investigation.",
+                'adv' => "Develops rigorous critical reasoning, analytical problem-solving skills, and deep subject-matter expertise with diverse professional applications.",
+                'chal' => "Requires substantial dedication, mastery of prerequisite theory, and sustained problem-solving practice to navigate complex abstract concepts."
+            ];
+        }
+
+        $reply = "* **What it is:**\n" . $matchedInfo['what'] . "\n\n" .
+                 "* **Key Uses & Real-World Work:**\n" . $matchedInfo['uses'] . "\n\n" .
+                 "* **Advantages:**\n" . $matchedInfo['adv'] . "\n\n" .
+                 "* **Disadvantages / Challenges:**\n" . $matchedInfo['chal'];
+
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'data' => [
+                'question' => $question,
+                'paragraph1' => $reply,
+                'paragraph2' => '',
+                'answer' => $reply,
+                'matched_subject' => $matchedInfo['name'],
+                'matched_chapter' => 'Overview',
+                'matched_topic' => $matchedInfo['name'] . ' Overview',
+                'confidence_score' => 98.0,
+                'tutor_name' => 'SYNAPSE AI',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ]);
+        exit();
+    }
+
+    // =========================================================================
     // STAGE 5: Weighted Academic RAG Search
     // =========================================================================
     $stopWords = [
