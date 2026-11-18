@@ -67,13 +67,10 @@ try {
     }
 
     // Dynamic preferences and user name resolution
-    $preferredName = trim($input['preferred_name'] ?? $_GET['preferred_name'] ?? '');
-    if (empty($preferredName) && !empty($user['name'])) {
-        $preferredName = trim($user['name']);
-    }
-    if (empty($preferredName)) {
-        $preferredName = 'friend';
-    }
+    // Dynamic preferences and user name resolution
+    // CRITICAL: NEVER auto-use account username from MySQL or Session.
+    // Strictly opt-in: only use if explicitly passed by client via chatPreferredName.
+    $preferredName = trim($input['chat_preferred_name'] ?? $input['preferred_name'] ?? $_GET['chat_preferred_name'] ?? $_GET['preferred_name'] ?? '');
 
     $includeFormulas = isset($input['include_formulas']) ? filter_var($input['include_formulas'], FILTER_VALIDATE_BOOLEAN) : (isset($_GET['include_formulas']) ? filter_var($_GET['include_formulas'], FILTER_VALIDATE_BOOLEAN) : true);
     $includeExamples = isset($input['include_examples']) ? filter_var($input['include_examples'], FILTER_VALIDATE_BOOLEAN) : (isset($_GET['include_examples']) ? filter_var($_GET['include_examples'], FILTER_VALIDATE_BOOLEAN) : true);
@@ -86,9 +83,61 @@ try {
     // =========================================================================
     // STAGE 1: Dynamic Custom User Name / Nickname Memory
     // =========================================================================
-    if (preg_match('/^(?:call\s+me|my\s+name\s+is|name\s+is)\s+([a-zA-Z]+)/i', $question, $m)) {
-        $preferredName = ucfirst(strtolower($m[1]));
-        $reply = "Got it, $preferredName! From now on I will call you $preferredName.";
+    // If waiting for name from previous "call me by my name" prompt
+    if (!empty($input['is_waiting_for_name']) || !empty($_GET['is_waiting_for_name'])) {
+        $candidate = trim(preg_replace('/[^a-zA-Z]/', '', $question));
+        if (strlen($candidate) >= 2) {
+            $preferredName = ucfirst(strtolower($candidate));
+            $reply = "Got it, $preferredName! From now on, I will call you $preferredName.";
+            echo json_encode([
+                'status' => 'success',
+                'success' => true,
+                'data' => [
+                    'question' => $question,
+                    'paragraph1' => $reply,
+                    'paragraph2' => '',
+                    'answer' => $reply,
+                    'is_name_capture' => true,
+                    'captured_name' => $preferredName,
+                    'preferred_name' => $preferredName,
+                    'tutor_name' => 'SYNAPSE AI',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]
+            ]);
+            exit();
+        }
+    }
+
+    if (preg_match('/^(?:from\s+now\s+on\s+)?(?:call\s+me\s+(?:by\s+my\s+name\s+|by\s+name\s+|with\s+my\s+name\s+)?|my\s+name\s+is\s+|name\s+is\s+|i\s+am\s+|i[\'’]m\s+)([a-zA-Z]+)/i', $question, $m)) {
+        $candidate = ucfirst(strtolower($m[1]));
+        if (!in_array(strtolower($candidate), ['by', 'my', 'name', 'a', 'an', 'the'], true) && strlen($candidate) >= 2) {
+            $preferredName = $candidate;
+            $reply = "Got it, $preferredName! From now on, I will call you $preferredName.";
+            echo json_encode([
+                'status' => 'success',
+                'success' => true,
+                'data' => [
+                    'question' => $question,
+                    'paragraph1' => $reply,
+                    'paragraph2' => '',
+                    'answer' => $reply,
+                    'is_name_capture' => true,
+                    'captured_name' => $preferredName,
+                    'preferred_name' => $preferredName,
+                    'tutor_name' => 'SYNAPSE AI',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]
+            ]);
+            exit();
+        }
+    }
+
+    $askNameRequests = [
+        'call me by my name', 'call me by name', 'call me with my name', 'call me my name', 'call me',
+        'enoda name solu kupdu', 'enoda name solli kupdu', 'ennoda name solu kupdu', 'ennoda name solli kupdu'
+    ];
+    if (in_array($normQuery, $askNameRequests, true) || $normQuery === 'call me') {
+        $reply = "Sure! What name would you like me to call you?";
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -97,7 +146,8 @@ try {
                 'paragraph1' => $reply,
                 'paragraph2' => '',
                 'answer' => $reply,
-                'preferred_name' => $preferredName,
+                'awaiting_preferred_name' => true,
+                'is_waiting_for_name' => true,
                 'tutor_name' => 'SYNAPSE AI',
                 'created_at' => date('Y-m-d H:i:s')
             ]
@@ -107,7 +157,7 @@ try {
 
     if (preg_match('/^(?:enoda|ennoda|en)\s+(?:name|per|peyar)(?:\s+is)?\s+([a-zA-Z]+)/i', $question, $m)) {
         $preferredName = ucfirst(strtolower($m[1]));
-        $reply = "Got it, $preferredName! From now on I will call you $preferredName.";
+        $reply = "Got it, $preferredName! From now on, I will call you $preferredName.";
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -116,6 +166,8 @@ try {
                 'paragraph1' => $reply,
                 'paragraph2' => '',
                 'answer' => $reply,
+                'is_name_capture' => true,
+                'captured_name' => $preferredName,
                 'preferred_name' => $preferredName,
                 'tutor_name' => 'SYNAPSE AI',
                 'created_at' => date('Y-m-d H:i:s')
@@ -128,7 +180,7 @@ try {
         $candidate = ucfirst(strtolower($m[1]));
         if (!in_array(strtolower($candidate), ['enna', 'enakku', 'inimel', 'name'], true)) {
             $preferredName = $candidate;
-            $reply = "Got it, $preferredName! From now on I will call you $preferredName.";
+            $reply = "Got it, $preferredName! From now on, I will call you $preferredName.";
             echo json_encode([
                 'status' => 'success',
                 'success' => true,
@@ -137,30 +189,9 @@ try {
                     'paragraph1' => $reply,
                     'paragraph2' => '',
                     'answer' => $reply,
+                    'is_name_capture' => true,
+                    'captured_name' => $preferredName,
                     'preferred_name' => $preferredName,
-                    'tutor_name' => 'SYNAPSE AI',
-                    'created_at' => date('Y-m-d H:i:s')
-                ]
-            ]);
-            exit();
-        }
-    }
-
-    $askNameRequests = [
-        'enoda name solu kupdu', 'enoda name solli kupdu', 'ennoda name solu kupdu', 'ennoda name solli kupdu',
-        'call me by my name', 'call me my name', 'call me'
-    ];
-    foreach ($askNameRequests as $anr) {
-        if ($normQuery === $anr || strpos($normQuery, $anr) !== false) {
-            $reply = "Sure! What name would you like me to call you?";
-            echo json_encode([
-                'status' => 'success',
-                'success' => true,
-                'data' => [
-                    'question' => $question,
-                    'paragraph1' => $reply,
-                    'paragraph2' => '',
-                    'answer' => $reply,
                     'tutor_name' => 'SYNAPSE AI',
                     'created_at' => date('Y-m-d H:i:s')
                 ]
@@ -172,11 +203,13 @@ try {
     // =========================================================================
     // STAGE 2: Formatting & Style Preferences (no formula, no example, no emoji)
     // =========================================================================
+    $gotIt = ($preferredName !== '') ? "Got it, $preferredName!" : "Got it!";
+
     $disableEmojiPhrases = ['dont use emoji', 'dont use emojis', 'do not use emoji', 'do not use emojis', 'no emoji', 'no emojis', 'stop emoji', 'without emoji', 'without emojis'];
     foreach ($disableEmojiPhrases as $dep) {
         if (strpos($normQuery, $dep) !== false) {
             $useEmojis = false;
-            $reply = "Got it, $preferredName! I'll keep all responses clean with * bullet points and no emojis.";
+            $reply = "$gotIt I'll keep all responses clean with * bullet points and no emojis.";
             echo json_encode([
                 'status' => 'success',
                 'success' => true,
@@ -202,7 +235,7 @@ try {
         if (strpos($normQuery, $sbp) !== false || (strpos($normQuery, 'no formula') !== false && strpos($normQuery, 'no example') !== false)) {
             $includeFormulas = false;
             $includeExamples = false;
-            $reply = "Got it, $preferredName! I'll provide only pure concepts and definitions without formulas or examples for upcoming topics. What shall we learn?";
+            $reply = "$gotIt I'll provide only pure concepts and definitions without formulas or examples for upcoming topics. What shall we learn?";
             echo json_encode([
                 'status' => 'success',
                 'success' => true,
@@ -225,7 +258,7 @@ try {
     foreach ($suppressFormulaPhrases as $sfp) {
         if (strpos($normQuery, $sfp) !== false) {
             $includeFormulas = false;
-            $reply = "Got it, $preferredName! I'll omit formulas and focus on concepts and practical examples.";
+            $reply = "$gotIt I'll omit formulas and focus on concepts and practical examples.";
             echo json_encode([
                 'status' => 'success',
                 'success' => true,
@@ -247,7 +280,7 @@ try {
     foreach ($suppressExamplePhrases as $sep) {
         if (strpos($normQuery, $sep) !== false) {
             $includeExamples = false;
-            $reply = "Got it, $preferredName! I'll omit examples and focus on core definitions and formulas.";
+            $reply = "$gotIt I'll omit examples and focus on core definitions and formulas.";
             echo json_encode([
                 'status' => 'success',
                 'success' => true,
@@ -277,7 +310,9 @@ try {
         }
     }
     if ($isFarewell) {
-        $reply = "Okay bye, $preferredName! We'll continue our studies tomorrow. Take care!";
+        $reply = ($preferredName !== '')
+            ? "Okay, bye, $preferredName! We'll continue our studies tomorrow. Take care!"
+            : "Okay, bye! We'll continue our studies tomorrow. Take care!";
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -324,29 +359,45 @@ try {
     }
 
     // Small Talk Handlers
+    $greetingReply = ($preferredName !== '')
+        ? "Hello, $preferredName! I'm doing great and ready to help you study. What topic shall we explore today?"
+        : "Hello! I'm doing great and ready to help you study. What topic shall we explore today?";
+    $gmReply = ($preferredName !== '')
+        ? "Good morning, $preferredName! Ready to learn something exciting today? What subject are we tackling?"
+        : "Good morning! Ready to learn something exciting today? What subject are we tackling?";
+    $gaReply = ($preferredName !== '')
+        ? "Good afternoon, $preferredName! Hope you're having a productive day. What subject shall we explore?"
+        : "Good afternoon! Hope you're having a productive day. What subject shall we explore?";
+    $geReply = ($preferredName !== '')
+        ? "Good evening, $preferredName! Let's do some focused study tonight. What can I help you understand?"
+        : "Good evening! Let's do some focused study tonight. What can I help you understand?";
+    $gnReply = ($preferredName !== '')
+        ? "Good night, $preferredName! Rest well and keep learning tomorrow."
+        : "Good night! Rest well and keep learning tomorrow.";
+
     $smallTalk = [
-        'how are you' => "I'm doing great and feeling energized, $preferredName! How's your study session going today?",
-        'hows it going' => "I'm doing great, $preferredName! What subject shall we tackle today?",
-        'good morning' => "Good morning, $preferredName! Ready to learn something exciting today? What subject are we tackling?",
-        'good afternoon' => "Good afternoon, $preferredName! Hope you're having a productive day. What subject shall we explore?",
-        'good evening' => "Good evening, $preferredName! Let's do some focused study tonight. What can I help you understand?",
-        'good night' => "Good night, $preferredName! Rest well and keep learning tomorrow.",
-        'gn' => "Good night, $preferredName! Rest well and keep learning tomorrow.",
-        'thank you' => "You're very welcome, $preferredName! Always happy to help. Let me know if you have any other doubts!",
-        'thanks' => "You're very welcome, $preferredName! Keep up the great effort!",
-        'you are awesome' => "Thank you so much, $preferredName! You're awesome for putting in the effort to study. Let's keep it going!",
-        'you are great' => "Thank you, $preferredName! I'm here anytime you need a study boost.",
+        'how are you' => $greetingReply,
+        'hows it going' => $greetingReply,
+        'good morning' => $gmReply,
+        'good afternoon' => $gaReply,
+        'good evening' => $geReply,
+        'good night' => $gnReply,
+        'gn' => $gnReply,
+        'thank you' => ($preferredName !== '') ? "You're very welcome, $preferredName! Always happy to help. Let me know if you have any other doubts!" : "You're very welcome! Always happy to help. Let me know if you have any other doubts!",
+        'thanks' => ($preferredName !== '') ? "You're very welcome, $preferredName! Keep up the great effort!" : "You're very welcome! Keep up the great effort!",
+        'you are awesome' => ($preferredName !== '') ? "Thank you so much, $preferredName! You're awesome for putting in the effort to study. Let's keep it going!" : "Thank you so much! You're awesome for putting in the effort to study. Let's keep it going!",
+        'you are great' => ($preferredName !== '') ? "Thank you, $preferredName! I'm here anytime you need a study boost." : "Thank you! I'm here anytime you need a study boost.",
         'i am bored' => "How about a quick 3-minute quiz or learning a fascinating fact in science or tech? Pick a subject and let's make it fun!",
         'motivate me' => "Every expert was once a beginner who refused to quit. Focus on mastering just one concept right now—progress adds up fast!",
         'who made you' => "I was built by the SYNAPSE AI team to be your personal university study companion and learning buddy!",
         'are you smart' => "I know 50+ college subjects inside and out, but my favorite thing is helping you become the smartest person in the room!",
-        'hello friend' => "Hey $preferredName! Great to see you. What subject shall we dive into today?",
-        'hi friend' => "Hey $preferredName! Ready for a great study session? What are we working on?",
-        'hi' => "Hello, $preferredName! I'm SYNAPSE AI, your study friend. Ask me any concept, formula, or quiz topic to get started!",
-        'hello' => "Hello, $preferredName! What subject or concept shall we study today?",
-        'hey' => "Hey, $preferredName! What shall we learn today?",
-        'vanakkam' => "Vanakkam, $preferredName! How can I help you with your studies today?",
-        'namaste' => "Namaste, $preferredName! How can I assist you with your learning today?"
+        'hello friend' => ($preferredName !== '') ? "Hey, $preferredName! Ready to help you study. What topic shall we explore today?" : "Hey! Ready to help you study. What topic shall we explore today?",
+        'hi friend' => ($preferredName !== '') ? "Hey, $preferredName! Ready to help you study. What topic shall we explore today?" : "Hey! Ready to help you study. What topic shall we explore today?",
+        'hi' => $greetingReply,
+        'hello' => $greetingReply,
+        'hey' => $greetingReply,
+        'vanakkam' => $greetingReply,
+        'namaste' => $greetingReply
     ];
 
     foreach ($smallTalk as $key => $reply) {
@@ -392,7 +443,7 @@ try {
         }
     }
     if ($isDirectOutOfScope) {
-        $boundary = "That falls outside my academic and app scope, $preferredName. I'm SYNAPSE AI—built specifically to help you master your college subjects, solve study doubts, take quizzes, and organize revision notes!";
+        $boundary = "Sorry, I don't know about that—it's outside my study scope. Ask me any subject concept, quiz, or revision note instead.";
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -425,9 +476,15 @@ try {
         }
     }
     if ($isSlang) {
-        $unclearReply = ($consecutiveUnclear >= 1)
-            ? "Enakku theriyadhu, $preferredName. Please ask something related to your subjects, notes, or quizzes."
-            : "Enakku puriyala, $preferredName. Konjam clear-aa enna subject or topic venum nu sollunga!";
+        if ($consecutiveUnclear >= 1) {
+            $unclearReply = ($preferredName !== '')
+                ? "I don't know about that, $preferredName. Please ask something related to your subjects, study notes, or quizzes."
+                : "I don't know about that. Please ask something related to your subjects, study notes, or quizzes.";
+        } else {
+            $unclearReply = ($preferredName !== '')
+                ? "I didn't understand that, $preferredName. Could you please explain clearly which subject or topic you need help with?"
+                : "I didn't understand that. Could you please explain clearly which subject or topic you need help with?";
+        }
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -702,9 +759,15 @@ try {
     }
 
     // Unclear query fallback (zero hardcoded topic fallback!)
-    $unclearReply = ($consecutiveUnclear >= 1)
-        ? "Enakku theriyadhu, $preferredName. Please ask something related to your subjects, notes, or quizzes."
-        : "Enakku puriyala, $preferredName. Konjam clear-aa enna subject or topic venum nu sollunga!";
+    if ($consecutiveUnclear >= 1) {
+        $unclearReply = ($preferredName !== '')
+            ? "I don't know about that, $preferredName. Please ask something related to your subjects, study notes, or quizzes."
+            : "I don't know about that. Please ask something related to your subjects, study notes, or quizzes.";
+    } else {
+        $unclearReply = ($preferredName !== '')
+            ? "I didn't understand that, $preferredName. Could you please explain clearly which subject or topic you need help with?"
+            : "I didn't understand that. Could you please explain clearly which subject or topic you need help with?";
+    }
 
     echo json_encode([
         'status' => 'success',
