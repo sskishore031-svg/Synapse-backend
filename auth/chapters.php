@@ -98,123 +98,60 @@ try {
     $rawSubject = trim($_GET['subject_id'] ?? $_GET['subject_slug'] ?? $input['subject_id'] ?? $input['subject_slug'] ?? 'mathematics');
     $subjectSlug = strtolower($rawSubject);
 
-    $subjectMap = [
-        '1' => ['id' => 1, 'name' => 'Mathematics', 'slug' => 'mathematics', 'chapters' => [
-            ['id' => 1, 'title' => 'Quadratic Equations & Roots', 'chapter_order' => 1, 'estimated_minutes' => 15],
-            ['id' => 2, 'title' => 'Calculus & Derivatives', 'chapter_order' => 2, 'estimated_minutes' => 20],
-            ['id' => 3, 'title' => 'Linear Algebra & Matrices', 'chapter_order' => 3, 'estimated_minutes' => 18],
-            ['id' => 4, 'title' => 'Probability & Statistics', 'chapter_order' => 4, 'estimated_minutes' => 15]
-        ]],
-        '2' => ['id' => 2, 'name' => 'Computer Science', 'slug' => 'computer-science', 'chapters' => [
-            ['id' => 201, 'title' => 'Data Structures & Algorithms', 'chapter_order' => 1, 'estimated_minutes' => 20],
-            ['id' => 202, 'title' => 'Object-Oriented Programming', 'chapter_order' => 2, 'estimated_minutes' => 18],
-            ['id' => 203, 'title' => 'Database Management Systems', 'chapter_order' => 3, 'estimated_minutes' => 22],
-            ['id' => 204, 'title' => 'Operating Systems & Concurrency', 'chapter_order' => 4, 'estimated_minutes' => 25]
-        ]],
-        '3' => ['id' => 3, 'name' => 'Data Science', 'slug' => 'data-science', 'chapters' => [
-            ['id' => 301, 'title' => 'Exploratory Data Analysis', 'chapter_order' => 1, 'estimated_minutes' => 18],
-            ['id' => 302, 'title' => 'Data Visualization & Wrangling', 'chapter_order' => 2, 'estimated_minutes' => 15],
-            ['id' => 303, 'title' => 'Statistical Inference & Modeling', 'chapter_order' => 3, 'estimated_minutes' => 20],
-            ['id' => 304, 'title' => 'Feature Engineering & Pipelines', 'chapter_order' => 4, 'estimated_minutes' => 22]
-        ]],
-        '4' => ['id' => 4, 'name' => 'Artificial Intelligence', 'slug' => 'artificial-intelligence', 'chapters' => [
-            ['id' => 401, 'title' => 'Machine Learning Foundations', 'chapter_order' => 1, 'estimated_minutes' => 20],
-            ['id' => 402, 'title' => 'Neural Networks & Deep Learning', 'chapter_order' => 2, 'estimated_minutes' => 25],
-            ['id' => 403, 'title' => 'Natural Language Processing', 'chapter_order' => 3, 'estimated_minutes' => 22],
-            ['id' => 404, 'title' => 'Computer Vision & CNNs', 'chapter_order' => 4, 'estimated_minutes' => 24]
-        ]],
-        '5' => ['id' => 5, 'name' => 'Physics', 'slug' => 'physics', 'chapters' => [
-            ['id' => 501, 'title' => "Newton's Laws of Motion", 'chapter_order' => 1, 'estimated_minutes' => 18],
-            ['id' => 502, 'title' => 'Waves & Oscillations', 'chapter_order' => 2, 'estimated_minutes' => 20],
-            ['id' => 503, 'title' => 'Electromagnetism & Circuits', 'chapter_order' => 3, 'estimated_minutes' => 22],
-            ['id' => 504, 'title' => 'Thermodynamics & Kinetic Theory', 'chapter_order' => 4, 'estimated_minutes' => 20]
-        ]],
-        '6' => ['id' => 6, 'name' => 'Chemistry', 'slug' => 'chemistry', 'chapters' => [
-            ['id' => 601, 'title' => 'Chemical Bonding & Molecular Structure', 'chapter_order' => 1, 'estimated_minutes' => 18],
-            ['id' => 602, 'title' => 'Organic Reaction Mechanisms', 'chapter_order' => 2, 'estimated_minutes' => 22],
-            ['id' => 603, 'title' => 'Thermodynamics & Equilibrium', 'chapter_order' => 3, 'estimated_minutes' => 20],
-            ['id' => 604, 'title' => 'Electrochemistry & Kinetics', 'chapter_order' => 4, 'estimated_minutes' => 20]
-        ]],
-        '101' => ['id' => 101, 'name' => 'Biology', 'slug' => 'biology', 'chapters' => [
-            ['id' => 10101, 'title' => 'Cell Structure & Organelles', 'chapter_order' => 1, 'estimated_minutes' => 18],
-            ['id' => 10102, 'title' => 'Cell Division & Mitosis', 'chapter_order' => 2, 'estimated_minutes' => 16],
-            ['id' => 10103, 'title' => 'DNA Replication & Genetics', 'chapter_order' => 3, 'estimated_minutes' => 22],
-            ['id' => 10104, 'title' => 'Photosynthesis & Energy', 'chapter_order' => 4, 'estimated_minutes' => 20]
-        ]],
-        '102' => ['id' => 102, 'name' => 'World History', 'slug' => 'history', 'chapters' => [
-            ['id' => 10201, 'title' => 'Ancient Civilizations & River Valleys', 'chapter_order' => 1, 'estimated_minutes' => 15],
-            ['id' => 10202, 'title' => 'The Classical Era & Empires', 'chapter_order' => 2, 'estimated_minutes' => 18],
-            ['id' => 10203, 'title' => 'The Industrial Revolution', 'chapter_order' => 3, 'estimated_minutes' => 20],
-            ['id' => 10204, 'title' => 'Modern Global Conflicts & Treaties', 'chapter_order' => 4, 'estimated_minutes' => 22]
-        ]],
-        '103' => ['id' => 103, 'name' => 'Economics & Finance', 'slug' => 'economics', 'chapters' => [
-            ['id' => 10301, 'title' => 'Supply, Demand & Market Equilibrium', 'chapter_order' => 1, 'estimated_minutes' => 18],
-            ['id' => 10302, 'title' => 'Elasticity & Consumer Choice', 'chapter_order' => 2, 'estimated_minutes' => 16],
-            ['id' => 10303, 'title' => 'Macroeconomics & GDP', 'chapter_order' => 3, 'estimated_minutes' => 20],
-            ['id' => 10304, 'title' => 'Monetary Policy & Inflation', 'chapter_order' => 4, 'estimated_minutes' => 22]
-        ]],
-        '104' => ['id' => 104, 'name' => 'Environmental Science', 'slug' => 'environmental-science', 'chapters' => [
-            ['id' => 10401, 'title' => 'Ecosystem Dynamics & Energy Flow', 'chapter_order' => 1, 'estimated_minutes' => 16],
-            ['id' => 10402, 'title' => 'Biodiversity & Conservation', 'chapter_order' => 2, 'estimated_minutes' => 18],
-            ['id' => 10403, 'title' => 'Climate Systems & Greenhouse Effect', 'chapter_order' => 3, 'estimated_minutes' => 20],
-            ['id' => 10404, 'title' => 'Renewable Energy & Sustainability', 'chapter_order' => 4, 'estimated_minutes' => 20]
-        ]],
-        '105' => ['id' => 105, 'name' => 'Computer Networks', 'slug' => 'computer-networks', 'chapters' => [
-            ['id' => 10501, 'title' => 'OSI & TCP/IP Model Architectures', 'chapter_order' => 1, 'estimated_minutes' => 20],
-            ['id' => 10502, 'title' => 'IP Addressing & Subnetting', 'chapter_order' => 2, 'estimated_minutes' => 22],
-            ['id' => 10503, 'title' => 'Routing Protocols & Algorithms', 'chapter_order' => 3, 'estimated_minutes' => 24],
-            ['id' => 10504, 'title' => 'Application Protocols (HTTP, DNS)', 'chapter_order' => 4, 'estimated_minutes' => 18]
-        ]],
-        '106' => ['id' => 106, 'name' => 'Cyber Security', 'slug' => 'cyber-security', 'chapters' => [
-            ['id' => 10601, 'title' => 'Cryptography & Encryption Fundamentals', 'chapter_order' => 1, 'estimated_minutes' => 20],
-            ['id' => 10602, 'title' => 'Network Vulnerabilities & Firewalls', 'chapter_order' => 2, 'estimated_minutes' => 22],
-            ['id' => 10603, 'title' => 'Authentication & Access Control', 'chapter_order' => 3, 'estimated_minutes' => 18],
-            ['id' => 10604, 'title' => 'Threat Modeling & Incident Response', 'chapter_order' => 4, 'estimated_minutes' => 24]
-        ]],
-        '107' => ['id' => 107, 'name' => 'Psychology', 'slug' => 'psychology', 'chapters' => [
-            ['id' => 10701, 'title' => 'Foundations of Psychological Science', 'chapter_order' => 1, 'estimated_minutes' => 16],
-            ['id' => 10702, 'title' => 'Cognitive Processes & Memory', 'chapter_order' => 2, 'estimated_minutes' => 20],
-            ['id' => 10703, 'title' => 'Developmental Stages & Learning', 'chapter_order' => 3, 'estimated_minutes' => 18],
-            ['id' => 10704, 'title' => 'Behavioral Neuroscience & Emotions', 'chapter_order' => 4, 'estimated_minutes' => 22]
-        ]],
-        '108' => ['id' => 108, 'name' => 'Business Management', 'slug' => 'business', 'chapters' => [
-            ['id' => 10801, 'title' => 'Principles of Management & Leadership', 'chapter_order' => 1, 'estimated_minutes' => 18],
-            ['id' => 10802, 'title' => 'Strategic Planning & SWOT Analysis', 'chapter_order' => 2, 'estimated_minutes' => 20],
-            ['id' => 10803, 'title' => 'Operations & Supply Chain Basics', 'chapter_order' => 3, 'estimated_minutes' => 22],
-            ['id' => 10804, 'title' => 'Organizational Behavior & Culture', 'chapter_order' => 4, 'estimated_minutes' => 18]
-        ]],
-        '109' => ['id' => 109, 'name' => 'Electrical Engineering', 'slug' => 'electrical-engineering', 'chapters' => [
-            ['id' => 10901, 'title' => 'Circuit Analysis & Ohm/Kirchhoff Laws', 'chapter_order' => 1, 'estimated_minutes' => 22],
-            ['id' => 10902, 'title' => 'AC Circuits, Impedance & Phasors', 'chapter_order' => 2, 'estimated_minutes' => 24],
-            ['id' => 10903, 'title' => 'Semiconductor Diodes & Transistors', 'chapter_order' => 3, 'estimated_minutes' => 22],
-            ['id' => 10904, 'title' => 'Digital Logic & Microcontrollers', 'chapter_order' => 4, 'estimated_minutes' => 25]
-        ]],
-        '110' => ['id' => 110, 'name' => 'Astronomy & Astrophysics', 'slug' => 'astronomy', 'chapters' => [
-            ['id' => 11001, 'title' => 'Solar System & Planetary Dynamics', 'chapter_order' => 1, 'estimated_minutes' => 18],
-            ['id' => 11002, 'title' => 'Stellar Evolution & Nucleosynthesis', 'chapter_order' => 2, 'estimated_minutes' => 22],
-            ['id' => 11003, 'title' => 'Galaxies, Dark Matter & Cosmology', 'chapter_order' => 3, 'estimated_minutes' => 25],
-            ['id' => 11004, 'title' => 'Observational Techniques & Telescopes', 'chapter_order' => 4, 'estimated_minutes' => 20]
-        ]]
-    ];
+    // Dynamic Tamil Nadu State Board (Samacheer Kalvi) chapters catalog
+    $rawSubject = trim($_GET['subject_id'] ?? $_GET['subject_slug'] ?? $input['subject_id'] ?? $input['subject_slug'] ?? '1001');
+    $subjectSlug = strtolower($rawSubject);
 
-    // Slug aliases
+    $subjectMap = [];
+    $catalogFile = file_exists(__DIR__ . '/extended_curriculum_catalog.json')
+        ? __DIR__ . '/extended_curriculum_catalog.json'
+        : 'C:/Users/SCAD LAB/AndroidStudioProjects/SYNAPSE/app/src/main/assets/extended_curriculum_catalog.json';
+
+    if (file_exists($catalogFile)) {
+        $catalogData = json_decode(file_get_contents($catalogFile), true);
+        if (!empty($catalogData['subjects'])) {
+            foreach ($catalogData['subjects'] as $subj) {
+                $sid = (string)($subj['subject_id'] ?? $subj['id']);
+                $sChapters = [];
+                if (!empty($subj['chapters'])) {
+                    foreach ($subj['chapters'] as $ch) {
+                        $sChapters[] = [
+                            'id' => (int)($ch['chapter_id'] ?? $ch['id']),
+                            'title' => $ch['title'],
+                            'chapter_order' => (int)($ch['chapter_order'] ?? 1),
+                            'estimated_minutes' => (int)($ch['estimated_minutes'] ?? 20)
+                        ];
+                    }
+                }
+                $subjectMap[$sid] = [
+                    'id' => (int)$sid,
+                    'name' => $subj['name'],
+                    'slug' => $subj['slug'] ?? strtolower(str_replace(' ', '-', $subj['name'])),
+                    'chapters' => $sChapters
+                ];
+            }
+        }
+    }
+
+    // Comprehensive slug aliases for Tamil Nadu State Board 10th, 11th & 12th subjects
     $slugAliases = [
-        'mathematics' => '1', 'math' => '1', 'maths' => '1',
-        'computer-science' => '2', 'cs' => '2', 'algorithms' => '2',
-        'data-science' => '3', 'ds' => '3',
-        'artificial-intelligence' => '4', 'ai' => '4', 'ml' => '4',
-        'physics' => '5', 'waves' => '5',
-        'chemistry' => '6', 'chemical-bonding' => '6',
-        'biology' => '101', 'bio' => '101',
-        'history' => '102', 'world-history' => '102',
-        'economics' => '103', 'econ' => '103', 'finance' => '103',
-        'environmental-science' => '104', 'env' => '104', 'ecology' => '104',
-        'computer-networks' => '105', 'net' => '105', 'networks' => '105',
-        'cyber-security' => '106', 'security' => '106', 'sec' => '106',
-        'psychology' => '107', 'psych' => '107',
-        'business' => '108', 'management' => '108', 'biz' => '108',
-        'electrical-engineering' => '109', 'ee' => '109', 'circuits' => '109',
-        'astronomy' => '110', 'astrophysics' => '110', 'astro' => '110'
+        '1001' => '1001', '10th-mathematics' => '1001', '10th-math' => '1001', 'math' => '1001', 'maths' => '1001', 'mathematics' => '1001',
+        '1002' => '1002', '10th-science' => '1002', 'science' => '1002', '10th-sci' => '1002',
+        '1003' => '1003', '10th-social-science' => '1003', 'social-science' => '1003', 'social' => '1003', 'history' => '1003',
+        '1101' => '1101', '11th-mathematics' => '1101', '11th-math' => '1101',
+        '1102' => '1102', '11th-physics' => '1102', 'physics' => '1102',
+        '1103' => '1103', '11th-chemistry' => '1103', 'chemistry' => '1103',
+        '1104' => '1104', '11th-biology' => '1104', 'biology' => '1104', 'bio' => '1104', 'botany' => '1104', 'zoology' => '1104',
+        '1105' => '1105', '11th-computer-science' => '1105', 'cs' => '1105', 'computer-science' => '1105',
+        '1106' => '1106', '11th-commerce' => '1106', 'commerce' => '1106', 'accountancy' => '1106',
+        '1107' => '1107', '11th-economics' => '1107', 'economics' => '1107', 'econ' => '1107',
+        '1201' => '1201', '12th-mathematics' => '1201', '12th-math' => '1201',
+        '1202' => '1202', '12th-physics' => '1202',
+        '1203' => '1203', '12th-chemistry' => '1203',
+        '1204' => '1204', '12th-biology' => '1204',
+        '1205' => '1205', '12th-computer-science' => '1205',
+        '1206' => '1206', '12th-commerce' => '1206',
+        '1207' => '1207', '12th-economics' => '1207'
     ];
 
     $matchedKey = $subjectMap[$rawSubject] ?? null;
@@ -229,8 +166,8 @@ try {
             }
         }
     }
-    if (!$matchedKey) {
-        $matchedKey = $subjectMap['1']; // fallback
+    if (!$matchedKey && !empty($subjectMap)) {
+        $matchedKey = reset($subjectMap); // default first subject (10th Mathematics)
     }
 
     // Get user completions from DB

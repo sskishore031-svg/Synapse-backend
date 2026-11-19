@@ -311,8 +311,8 @@ try {
     }
     if ($isFarewell) {
         $reply = ($preferredName !== '')
-            ? "Okay, bye, $preferredName! We'll continue our studies tomorrow. Take care!"
-            : "Okay, bye! We'll continue our studies tomorrow. Take care!";
+            ? "Okay bye, $preferredName! We'll continue tomorrow."
+            : "Okay bye! We'll continue tomorrow.";
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -443,7 +443,7 @@ try {
         }
     }
     if ($isDirectOutOfScope) {
-        $boundary = "Sorry, I don't know about that—it's outside my study scope. Ask me any subject concept, quiz, or revision note instead.";
+        $boundary = "Sorry, that's not relatable to our 10th, 11th & 12th studies! Ask me any subject concept, quiz, or notes.";
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -765,7 +765,9 @@ try {
 
     // Load Knowledge Base Chunks
     $chunks = [];
-    $assetPath = 'C:/Users/SCAD LAB/AndroidStudioProjects/SYNAPSE/app/src/main/assets/educational_knowledge_base.json';
+    $assetPath = file_exists(__DIR__ . '/educational_knowledge_base.json')
+        ? __DIR__ . '/educational_knowledge_base.json'
+        : 'C:/Users/SCAD LAB/AndroidStudioProjects/SYNAPSE/app/src/main/assets/educational_knowledge_base.json';
     if (file_exists($assetPath)) {
         $kbJson = file_get_contents($assetPath);
         $kbData = json_decode($kbJson, true);
@@ -780,6 +782,34 @@ try {
                 }
             }
         }
+    }
+
+    // Dynamic length control: Shorten queries ("give me short", "short ha sollu", "chinadha thaa")
+    $shortPhrases = [
+        'give me short', 'short ha sollu', 'short-aa sollu', 'chinadha thaa', 'make it short',
+        'in short', 'short summary', 'short note', 'short please', 'give short', 'solu short', 'short'
+    ];
+    $isStandaloneShort = in_array($normQuery, $shortPhrases, true);
+    if ($isStandaloneShort) {
+        $p1 = "* **Quick Revision Summary:**\n* **Core Definition:** Review governing definitions and fundamental laws from your chapter.";
+        $p2 = "* **Key Formula / Principle:** Focus on board exam standard units, formulas, and diagrams.\n* **Exam Tip:** Prepare 2-mark definitions and 5-mark derivations systematically for your Tamil Nadu State Board exams.";
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'data' => [
+                'question' => $question,
+                'paragraph1' => $p1,
+                'paragraph2' => $p2,
+                'answer' => $p1 . "\n" . $p2,
+                'matched_subject' => 'Tamil Nadu State Board',
+                'matched_chapter' => 'Quick Revision',
+                'matched_topic' => 'Summary',
+                'confidence_score' => 100.0,
+                'tutor_name' => 'SYNAPSE AI',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ]);
+        exit();
     }
 
     $tokens = synapse_tokenize($normQuery, $stopWords);
@@ -884,10 +914,18 @@ try {
 
     $tokenCount = max(count($conceptTokens), 1);
     $normalizedScore = min(1.0, $bestScore / ($tokenCount * 25.0));
-    $isElaborated = (strpos($normQuery, 'elaborate') !== false || strpos($normQuery, 'in detail') !== false || strpos($normQuery, 'deep dive') !== false);
+    $isElaborated = (strpos($normQuery, 'elaborate') !== false || strpos($normQuery, 'in detail') !== false || strpos($normQuery, 'deep dive') !== false || strpos($normQuery, 'detailed') !== false);
+    $isShort = (
+        strpos($normQuery, 'short') !== false ||
+        strpos($normQuery, 'chinadha') !== false ||
+        strpos($normQuery, 'brief') !== false ||
+        strpos($normQuery, 'quick') !== false ||
+        strpos($normQuery, 'concise') !== false ||
+        strpos($normQuery, 'summarize') !== false
+    );
 
     if ($bestChunk !== null && $bestScore >= 12.0 && $normalizedScore >= 0.25) {
-        $subject = $bestChunk['subject'] ?? 'University Curriculum';
+        $subject = $bestChunk['subject'] ?? 'Tamil Nadu State Board';
         $chapter = $bestChunk['chapter'] ?? $bestChunk['topic'] ?? '';
         $topic = $bestChunk['topic'] ?? $chapter;
         $def = trim($bestChunk['definition'] ?? '');
@@ -899,7 +937,19 @@ try {
         $fPrefix = $useEmojis ? "⚡ " : "* ";
         $ePrefix = $useEmojis ? "💡 " : "* ";
 
-        if ($isElaborated) {
+        if ($isShort) {
+            $p1 = "* **Quick Summary: $topic** ($subject · $chapter)\n* **Concept:** $def";
+            $p2Parts = [];
+            if ($includeFormulas && !empty($formula)) {
+                $p2Parts[] = "* **Formula / Core Principle:** $formula";
+            }
+            if ($includeExamples && !empty($example)) {
+                $p2Parts[] = "* **Key Example / Application:** $example";
+            }
+            $p2Parts[] = "* **Exam Takeaway:** High-yield board exam topic—review key steps and definitions.";
+            $p2 = implode("\n", $p2Parts);
+            $fullAnswer = trim($p1 . "\n" . $p2);
+        } elseif ($isElaborated) {
             $p1 = "{$bPrefix}**In-Depth Breakdown: $topic** ($subject · $chapter)\n\n**1. Theoretical Foundations & Mechanism:**\n$content" .
                   ($includeFormulas && !empty($formula) ? "\n\n**2. Mathematical Formulations & Derivations:**\n$formula" : "");
             $p2Parts = [];
@@ -943,7 +993,7 @@ try {
     }
 
     // Check if legitimate academic guidance question
-    $academicWords = ['syllabus', 'curriculum', 'study', 'exam', 'college', 'university', 'engineering', 'degree', 'course', 'major'];
+    $academicWords = ['syllabus', 'curriculum', 'study', 'exam', 'board', '10th', '11th', '12th', 'samacheer', 'standard', 'subject', 'notes', 'quiz'];
     $isAcademic = false;
     foreach ($academicWords as $aw) {
         if (strpos($normQuery, $aw) !== false) {
@@ -954,8 +1004,8 @@ try {
 
     if ($isAcademic) {
         $cleanTopic = ucwords(preg_replace('/(?i)^(what is|explain|tell me about|how does|what are|define)\s+/', '', $question));
-        $p1 = "* **SYNAPSE AI University Study Companion**\n\n$cleanTopic is an important academic topic in higher education curricula. Mastering this concept equips students with rigorous conceptual grounding, mathematical logic, and analytical problem-solving methodologies.";
-        $p2 = "* **Core Study Framework & Key Principles:**\n\n• **Theoretical Foundations:** Review primary definitions, governing laws, and underlying assumptions for $cleanTopic.\n• **Analytical Derivations:** Break down complex multi-step problems, verify boundary conditions, and analyze tradeoffs.\n• **Real-World Application:** Relate theoretical equations to modern scientific and engineering implementations.\n\nWhich specific subject or chapter are you studying? Let me know your question and we'll break it down together!";
+        $p1 = "* **SYNAPSE AI Tamil Nadu State Board (Samacheer Kalvi) Study Companion**\n\n$cleanTopic is an important academic topic in 10th, 11th & 12th Standard core subjects. Mastering this concept equips students with rigorous conceptual grounding and problem-solving methodologies for board exams.";
+        $p2 = "* **Core Study Framework & Key Principles:**\n\n• **Theoretical Foundations:** Review primary definitions, governing laws, and underlying assumptions for $cleanTopic.\n• **Analytical Derivations:** Break down complex multi-step problems and verify boundary conditions.\n• **Board Exam Application:** Focus on 2-mark definitions, 5-mark derivations, and 1-mark objective questions.\n\nWhich specific subject or chapter are you studying? Let me know your question and we'll break it down together!";
 
         echo json_encode([
             'status' => 'success',
@@ -965,7 +1015,7 @@ try {
                 'paragraph1' => $p1,
                 'paragraph2' => $p2,
                 'answer' => $p1 . "\n\n" . $p2,
-                'matched_subject' => 'University Curriculum',
+                'matched_subject' => 'Tamil Nadu State Board',
                 'matched_chapter' => $cleanTopic,
                 'matched_topic' => $cleanTopic,
                 'confidence_score' => 70.0,
@@ -976,11 +1026,9 @@ try {
         exit();
     }
 
-    // Unclear query fallback (zero hardcoded topic fallback!)
-    if ($consecutiveUnclear >= 1) {
-        $unclearReply = ($preferredName !== '')
-            ? "I don't know about that, $preferredName. Please ask something related to your subjects, study notes, or quizzes."
-            : "I don't know about that. Please ask something related to your subjects, study notes, or quizzes.";
+    // Unclear query or out-of-scope fallback
+    if ($consecutiveUnclear >= 1 || $normalizedScore < 0.25) {
+        $unclearReply = "Sorry, that's not relatable to our 10th, 11th & 12th studies! Ask me any subject concept, quiz, or notes.";
     } else {
         $unclearReply = ($preferredName !== '')
             ? "I didn't understand that, $preferredName. Could you please explain clearly which subject or topic you need help with?"
