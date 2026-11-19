@@ -133,25 +133,12 @@ try {
         }
     }
 
-    // Comprehensive slug aliases for Tamil Nadu State Board 10th, 11th & 12th subjects
+    // Comprehensive slug aliases for 4 Placement & Micro-Learning Tracks
     $slugAliases = [
-        '1001' => '1001', '10th-mathematics' => '1001', '10th-math' => '1001', 'math' => '1001', 'maths' => '1001', 'mathematics' => '1001',
-        '1002' => '1002', '10th-science' => '1002', 'science' => '1002', '10th-sci' => '1002',
-        '1003' => '1003', '10th-social-science' => '1003', 'social-science' => '1003', 'social' => '1003', 'history' => '1003',
-        '1101' => '1101', '11th-mathematics' => '1101', '11th-math' => '1101',
-        '1102' => '1102', '11th-physics' => '1102', 'physics' => '1102',
-        '1103' => '1103', '11th-chemistry' => '1103', 'chemistry' => '1103',
-        '1104' => '1104', '11th-biology' => '1104', 'biology' => '1104', 'bio' => '1104', 'botany' => '1104', 'zoology' => '1104',
-        '1105' => '1105', '11th-computer-science' => '1105', 'cs' => '1105', 'computer-science' => '1105',
-        '1106' => '1106', '11th-commerce' => '1106', 'commerce' => '1106', 'accountancy' => '1106',
-        '1107' => '1107', '11th-economics' => '1107', 'economics' => '1107', 'econ' => '1107',
-        '1201' => '1201', '12th-mathematics' => '1201', '12th-math' => '1201',
-        '1202' => '1202', '12th-physics' => '1202',
-        '1203' => '1203', '12th-chemistry' => '1203',
-        '1204' => '1204', '12th-biology' => '1204',
-        '1205' => '1205', '12th-computer-science' => '1205',
-        '1206' => '1206', '12th-commerce' => '1206',
-        '1207' => '1207', '12th-economics' => '1207'
+        '101' => '101', 'python' => '101', 'py' => '101', 'coding' => '101', 'python-coding-logic' => '101', 'sub_python' => '101',
+        '102' => '102', 'sql' => '102', 'db' => '102', 'database' => '102', 'sql-database-management' => '102', 'rdbms' => '102', 'sub_sql' => '102',
+        '103' => '103', 'ai' => '103', 'tech' => '103', 'ai_tech' => '103', 'ai-modern-tech-concepts' => '103', 'genai' => '103', 'llm' => '103', 'sub_ai' => '103',
+        '104' => '104', 'aptitude' => '104', 'prep' => '104', 'interview' => '104', 'aptitude-interview-prep' => '104', 'quant' => '104', 'sub_aptitude' => '104'
     ];
 
     $matchedKey = $subjectMap[$rawSubject] ?? null;

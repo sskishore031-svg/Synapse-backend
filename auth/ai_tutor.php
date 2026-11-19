@@ -510,21 +510,10 @@ try {
         $candidateSub = strtolower(trim($ovMatch[1]));
     } else {
         $standaloneSubjects = [
-            'math', 'maths', 'mathematics', 'computer science', 'cs', 'data science', 'ds',
-            'artificial intelligence', 'ai', 'machine learning', 'ml', 'deep learning',
-            'physics', 'chemistry', 'biology', 'bio', 'history', 'world history',
-            'economics', 'finance', 'environmental science', 'ecology', 'computer networks',
-            'networking', 'cyber security', 'cybersecurity', 'security', 'psychology',
-            'business', 'business management', 'electrical engineering', 'astronomy',
-            'astrophysics', 'statistics', 'software engineering', 'cloud computing',
-            'operating systems', 'dbms', 'database', 'web development', 'mobile development',
-            'blockchain', 'robotics', 'mechanical engineering', 'civil engineering',
-            'biotechnology', 'genetics', 'neuroscience', 'organic chemistry', 'quantum physics',
-            'calculus', 'linear algebra', 'discrete mathematics', 'philosophy', 'sociology',
-            'political science', 'literature', 'accounting', 'marketing', 'cryptography',
-            'information technology', 'architecture', 'aerospace engineering',
-            'chemical engineering', 'biomedical engineering', 'nanotechnology',
-            'supply chain', 'supply chain management', 'law'
+            'python', 'coding', 'programming', 'python & coding logic', 'python-coding-logic',
+            'sql', 'database', 'dbms', 'rdbms', 'sql & database management', 'sql-database-management',
+            'ai', 'artificial intelligence', 'modern tech', 'tech', 'llm', 'rag', 'cloud', 'cybersecurity', 'ai & modern tech concepts', 'ai-modern-tech-concepts',
+            'aptitude', 'interview', 'interview prep', 'quant', 'puzzles', 'aptitude & interview prep', 'aptitude-interview-prep'
         ];
         if (in_array($normQuery, $standaloneSubjects, true)) {
             $candidateSub = $normQuery;
@@ -993,7 +982,7 @@ try {
     }
 
     // Check if legitimate academic guidance question
-    $academicWords = ['syllabus', 'curriculum', 'study', 'exam', 'board', '10th', '11th', '12th', 'samacheer', 'standard', 'subject', 'notes', 'quiz'];
+    $academicWords = ['python', 'coding', 'sql', 'database', 'rdbms', 'ai', 'tech', 'llm', 'rag', 'aptitude', 'placement', 'interview', 'study', 'quiz', 'notes'];
     $isAcademic = false;
     foreach ($academicWords as $aw) {
         if (strpos($normQuery, $aw) !== false) {
@@ -1004,8 +993,8 @@ try {
 
     if ($isAcademic) {
         $cleanTopic = ucwords(preg_replace('/(?i)^(what is|explain|tell me about|how does|what are|define)\s+/', '', $question));
-        $p1 = "* **SYNAPSE AI Tamil Nadu State Board (Samacheer Kalvi) Study Companion**\n\n$cleanTopic is an important academic topic in 10th, 11th & 12th Standard core subjects. Mastering this concept equips students with rigorous conceptual grounding and problem-solving methodologies for board exams.";
-        $p2 = "* **Core Study Framework & Key Principles:**\n\n• **Theoretical Foundations:** Review primary definitions, governing laws, and underlying assumptions for $cleanTopic.\n• **Analytical Derivations:** Break down complex multi-step problems and verify boundary conditions.\n• **Board Exam Application:** Focus on 2-mark definitions, 5-mark derivations, and 1-mark objective questions.\n\nWhich specific subject or chapter are you studying? Let me know your question and we'll break it down together!";
+        $p1 = "* **SYNAPSE AI Placement & Micro-Learning Companion**\n\n$cleanTopic is an essential technical concept for placements and coding rounds. Mastering this topic equips you with practical problem-solving logic and interview-ready competence.";
+        $p2 = "* **Key Principles & Placement Preparation:**\n\n• **Core Rules & Syntax:** Understand foundational mechanics, algorithmic time complexity, and data structures for $cleanTopic.\n• **Interview Focus:** Practice high-yield MCQs and behavioral/technical interview questions.\n• **Practical Application:** Review code examples and real-world system designs.\n\nWhich track or concept would you like to explore further? Let me know!";
 
         echo json_encode([
             'status' => 'success',
@@ -1015,7 +1004,7 @@ try {
                 'paragraph1' => $p1,
                 'paragraph2' => $p2,
                 'answer' => $p1 . "\n\n" . $p2,
-                'matched_subject' => 'Tamil Nadu State Board',
+                'matched_subject' => 'Placement Prep',
                 'matched_chapter' => $cleanTopic,
                 'matched_topic' => $cleanTopic,
                 'confidence_score' => 70.0,
@@ -1028,7 +1017,7 @@ try {
 
     // Unclear query or out-of-scope fallback
     if ($consecutiveUnclear >= 1 || $normalizedScore < 0.25) {
-        $unclearReply = "Sorry, that's not relatable to our 10th, 11th & 12th studies! Ask me any subject concept, quiz, or notes.";
+        $unclearReply = "That falls outside my placement and technical scope. I'm SYNAPSE AI—built specifically to help you master Python, SQL, Modern AI concepts, and Placement Aptitude!";
     } else {
         $unclearReply = ($preferredName !== '')
             ? "I didn't understand that, $preferredName. Could you please explain clearly which subject or topic you need help with?"
@@ -1059,4 +1048,49 @@ try {
         'success' => false,
         'message' => 'AI Tutor error: ' . $e->getMessage()
     ]);
-}
+}         = [
+            'python & coding logic' => [
+                'name' => 'Python & Coding Logic',
+                'what' => 'Python & Coding Logic covers fundamental programming syntax, memory object models, dynamic typing, control flow, object-oriented programming (OOP), and file I/O essential for technical coding rounds.',
+                'uses' => 'Software development, automated backend services, technical coding interviews, scripting, and rapid algorithmic prototyping.',
+                'adv' => 'Extremely clean and readable syntax, massive standard library, strong dynamic object model, and industry-standard adoption.',
+                'chal' => 'Understanding mutable default argument traps, reference identity vs value equality, and runtime type checking complexities.'
+            ],
+            'sql & database management' => [
+                'name' => 'SQL & Database Management',
+                'what' => 'SQL & Database Management focuses on relational schema design, primary and foreign keys, complex multi-table JOINs, database normalization (1NF-BCNF), and ACID-compliant transaction management.',
+                'uses' => 'Backend enterprise systems, data warehousing, business reporting, microservices persistence, and relational query optimization.',
+                'adv' => 'Universal declarative query standard, rigorous mathematical relational model, atomic transaction guarantees, and universal industry demand.',
+                'chal' => 'Designing optimized indexes for large tables, resolving locking and deadlocks, and mastering complex analytical window functions.'
+            ],
+            'ai & modern tech concepts' => [
+                'name' => 'AI & Modern Tech Concepts',
+                'what' => 'AI & Modern Tech Concepts explores Large Language Models (LLMs), prompt engineering, Retrieval-Augmented Generation (RAG), vector embeddings, REST APIs, cloud computing architectures, and foundational cybersecurity.',
+                'uses' => 'Intelligent AI copilot development, enterprise cloud architectures, secure API microservices, semantic knowledge search, and defense-in-depth security.',
+                'adv' => 'Fast-growing high-yield domain, enables intelligent automation, and bridges modern software development with machine intelligence.',
+                'chal' => 'Managing token costs and context limits, mitigating LLM hallucinations, and maintaining zero-trust cloud security standards.'
+            ],
+            'aptitude & interview prep' => [
+                'name' => 'Aptitude & Interview Prep',
+                'what' => 'Aptitude & Interview Prep provides quantitative calculation shortcuts, logical reasoning frameworks, seating puzzles, algorithmic Big-O complexity analysis, and behavioral interview methods like the STAR framework.',
+                'uses' => 'Campus placement screening assessments, corporate competitive exams, technical interview rounds, and HR behavioral evaluations.',
+                'adv' => 'Dramatically improves analytical speed, builds structured problem-solving under time pressure, and maximizes placement offer conversion.',
+                'chal' => 'High speed-accuracy tradeoff under strict examination timers, and complex multi-constraint logical deduction puzzles.'
+            ]
+        ];
+
+         = [
+            'python' => 'python & coding logic', 'coding' => 'python & coding logic', 'programming' => 'python & coding logic',
+            'python-coding-logic' => 'python & coding logic', 'python logic' => 'python & coding logic',
+            'sql' => 'sql & database management', 'database' => 'sql & database management', 'databases' => 'sql & database management',
+            'dbms' => 'sql & database management', 'rdbms' => 'sql & database management', 'sql-database-management' => 'sql & database management',
+            'ai' => 'ai & modern tech concepts', 'artificial intelligence' => 'ai & modern tech concepts',
+            'modern tech' => 'ai & modern tech concepts', 'tech' => 'ai & modern tech concepts',
+            'cloud' => 'ai & modern tech concepts', 'cybersecurity' => 'ai & modern tech concepts',
+            'llm' => 'ai & modern tech concepts', 'rag' => 'ai & modern tech concepts', 'ai-modern-tech-concepts' => 'ai & modern tech concepts',
+            'aptitude' => 'aptitude & interview prep', 'quant' => 'aptitude & interview prep', 'interview' => 'aptitude & interview prep',
+            'interview prep' => 'aptitude & interview prep', 'puzzles' => 'aptitude & interview prep',
+            'aptitude-interview-prep' => 'aptitude & interview prep', 'placement' => 'aptitude & interview prep'
+        ];
+
+

@@ -111,15 +111,15 @@ try {
         'name' => $user['name'],
         'email' => $user['email'],
         'phone' => $userPhone,
-        'course' => 'B.Tech Computer Science · Year 3',
+        'course' => !empty($profileData['course']) ? $profileData['course'] : 'Placement & Micro-Learning Prep',
         'preferred_language' => 'English',
         'interests' => $interests,
         'selected_interests' => $interests,
-        'study_goal' => '25 min / day',
+        'study_goal' => !empty($profileData['study_goal']) ? $profileData['study_goal'] : '15 min / day',
         'profile_photo' => $rawAvatar ?: $avatarUrl,
         'photo_url' => $avatarUrl,
         'avatar_url' => $avatarUrl,
-        'user_streak' => '1 Day Streak 🔥'
+        'user_streak' => '0 Day Streak 🔥'
     ];
 
     // 3. Quiz & Performance Statistics (Core Table 5: quiz_records)
@@ -179,87 +179,90 @@ try {
         ];
     }
 
-    if (empty($recentSessions)) {
-        // Fallback friendly session
-        $recentSessions[] = [
-            'id' => 1,
-            'chapterId' => 1,
-            'title' => 'Quadratic Equations & Roots',
-            'category' => 'Mathematics',
-            'subjectSlug' => 'mathematics',
-            'timeAgo' => '2h ago',
-            'progress' => 0.75
-        ];
-    }
-
-    // 6. Dynamic Subjects aligned with Curriculum & Selected Interests
+    // 6. Dynamic 4 Placement & Tech Tracks aligned with Curriculum
     $curriculumCatalog = [
-        ['name' => 'Mathematics', 'slug' => 'mathematics', 'icon' => '📐', 'color' => '#3B82F6'],
-        ['name' => 'Computer Science', 'slug' => 'computer_science', 'icon' => '💻', 'color' => '#06B6D4'],
-        ['name' => 'Data Science', 'slug' => 'data_science', 'icon' => '📊', 'color' => '#10B981'],
-        ['name' => 'Artificial Intelligence', 'slug' => 'artificial_intelligence', 'icon' => '🤖', 'color' => '#8B5CF6'],
-        ['name' => 'Physics', 'slug' => 'physics', 'icon' => '⚡', 'color' => '#F59E0B'],
-        ['name' => 'Chemistry', 'slug' => 'chemistry', 'icon' => '🧪', 'color' => '#EC4899']
+        ['id' => 101, 'name' => 'Python & Coding Logic', 'slug' => 'python-coding-logic', 'icon' => '🐍', 'color' => '#38BDF8', 'total' => 5],
+        ['id' => 102, 'name' => 'SQL & Database Management', 'slug' => 'sql-database-management', 'icon' => '🗄️', 'color' => '#818CF8', 'total' => 5],
+        ['id' => 103, 'name' => 'AI & Modern Tech Concepts', 'slug' => 'ai-modern-tech-concepts', 'icon' => '⚡', 'color' => '#A855F7', 'total' => 5],
+        ['id' => 104, 'name' => 'Aptitude & Interview Prep', 'slug' => 'aptitude-interview-prep', 'icon' => '🎯', 'color' => '#F59E0B', 'total' => 5]
     ];
 
-    // Mark subjects that match user's selected interests
-    $subjectsOutput = [];
-    $subjId = 1;
-    foreach ($curriculumCatalog as $c) {
-        $isInterested = false;
-        foreach ($interests as $userInt) {
-            if (stripos($c['name'], $userInt) !== false || stripos($userInt, $c['name']) !== false) {
-                $isInterested = true;
-                break;
-            }
+    // Query actual completed chapters per subject
+    $compMap = [];
+    try {
+        $cStmt = $pdo->prepare("SELECT subject_id, COUNT(DISTINCT chapter_id) as cnt FROM user_chapter_completions WHERE user_id = :uid GROUP BY subject_id");
+        $cStmt->execute(['uid' => $uid]);
+        while ($r = $cStmt->fetch()) {
+            $compMap[(string)$r['subject_id']] = (int)$r['cnt'];
         }
+    } catch (Exception $e) {}
+
+    $subjectsOutput = [];
+    $totalCompletedChapters = 0;
+    foreach ($curriculumCatalog as $c) {
+        $sid = (string)$c['id'];
+        $sslug = $c['slug'];
+        $completed = $compMap[$sid] ?? $compMap[$sslug] ?? 0;
+        $totalCompletedChapters += $completed;
+        $pct = (int)round(($completed / $c['total']) * 100);
 
         $subjectsOutput[] = [
-            'id' => $subjId++,
+            'id' => $c['id'],
             'name' => $c['name'],
             'slug' => $c['slug'],
             'iconSymbol' => $c['icon'],
             'colorHex' => $c['color'],
-            'totalChapters' => 5,
-            'completedChapters' => $isInterested ? 2 : 1,
-            'progressPercent' => $isInterested ? 45 : 20,
-            'isInterested' => $isInterested
+            'totalChapters' => $c['total'],
+            'completedChapters' => $completed,
+            'progressPercent' => min(100, $pct),
+            'isInterested' => true
         ];
     }
-
-    // Sort subjects so interested ones appear first
-    usort($subjectsOutput, function($a, $b) {
-        return ($b['isInterested'] ? 1 : 0) - ($a['isInterested'] ? 1 : 0);
-    });
-
-    $overallProgress = max(25, min(95, ($totalQuizzesAttempted * 10) + ($notesCount * 5)));
 
     $brainMapNodes = [];
     foreach ($curriculumCatalog as $c) {
+        $sid = (string)$c['id'];
+        $sslug = $c['slug'];
+        $completed = $compMap[$sid] ?? $compMap[$sslug] ?? 0;
+        $pct = (int)round(($completed / $c['total']) * 100);
         $brainMapNodes[] = [
             'id' => (string)$c['slug'],
             'title' => $c['name'],
-            'percentage' => 75,
+            'percentage' => $pct,
             'colorHex' => $c['color'],
             'iconSymbol' => $c['icon'],
-            'chaptersCompleted' => 2,
-            'totalChapters' => 5
+            'chaptersCompleted' => $completed,
+            'totalChapters' => $c['total']
         ];
     }
 
+    $calculatedTopicsDone = $totalCompletedChapters + $totalQuizzesAttempted;
+    $overallProgress = (int)round((min(20, $calculatedTopicsDone) / 20.0) * 100);
+    $studyStreakDays = ($calculatedTopicsDone > 0 || $totalQuizzesAttempted > 0) ? 1 : 0;
+    $student['user_streak'] = $studyStreakDays . ' Day Streak 🔥';
+
     $brainMap = [
         'overallKnowledgePercentage' => $overallProgress,
-        'strongestSubject' => 'Artificial Intelligence',
-        'strongestScore' => 92,
-        'weakestSubject' => 'Chemistry',
-        'weakestScore' => 65,
-        'recommendationTitle' => 'Strengthen your next connection',
-        'recommendationSubtitle' => 'Explore more AI and Mathematics concepts',
+        'strongestSubject' => 'Python & Coding Logic',
+        'strongestScore' => 0,
+        'weakestSubject' => 'Aptitude & Interview Prep',
+        'weakestScore' => 0,
+        'recommendationTitle' => 'Micro-Learning Placement Path',
+        'recommendationSubtitle' => 'Start your 2-minute daily concept lessons',
         'nodes' => $brainMapNodes
     ];
 
-    $calculatedTopicsDone = $notesCount + $totalQuizzesAttempted;
-    $overallProgress = min(100, (int)round(($calculatedTopicsDone / 30.0) * 100));
+    $continueLearning = null;
+    if ($totalCompletedChapters > 0) {
+        $continueLearning = [
+            'chapter_id' => 10101,
+            'chapterId' => 10101,
+            'chapter_title' => 'Variables, Data Types & Dynamic Typing',
+            'chapterTitle' => 'Variables, Data Types & Dynamic Typing',
+            'subject_slug' => 'python-coding-logic',
+            'subjectSlug' => 'python-coding-logic'
+        ];
+    }
 
     $dashboardData = [
         'student' => $student,
@@ -268,19 +271,12 @@ try {
         'overallProgress' => $overallProgress,
         'progressMessage' => 'Active Learning Mode',
         'topicsDone' => $calculatedTopicsDone,
-        'totalTopics' => 30,
+        'totalTopics' => 20,
         'quizScore' => $averageQuizScore,
         'quizzesAttempted' => $totalQuizzesAttempted,
         'latestQuizScore' => $latestQuizScore,
-        'studyStreakDays' => 1,
-        'continueLearning' => [
-            'chapter_id' => 1,
-            'chapterId' => 1,
-            'chapter_title' => 'Quadratic Equations & Roots',
-            'chapterTitle' => 'Quadratic Equations & Roots',
-            'subject_slug' => 'mathematics',
-            'subjectSlug' => 'mathematics'
-        ],
+        'studyStreakDays' => $studyStreakDays,
+        'continueLearning' => $continueLearning,
         'recentSessions' => $recentSessions,
         'subjects' => $subjectsOutput,
         'brainMap' => $brainMap

@@ -236,8 +236,26 @@ if ($method === 'POST' || $method === 'PUT') {
             ]);
         }
 
+        // Handle base64 avatar upload if provided
+        $base64Image = $input['profile_image_base64'] ?? $input['avatar_base64'] ?? $_POST['profile_image_base64'] ?? null;
+        if (!empty($base64Image)) {
+            $uploadsDir = __DIR__ . '/uploads/';
+            if (!is_dir($uploadsDir)) {
+                mkdir($uploadsDir, 0777, true);
+            }
+            if (strpos($base64Image, 'base64,') !== false) {
+                $base64Image = explode('base64,', $base64Image)[1];
+            }
+            $decodedData = base64_decode($base64Image);
+            if ($decodedData !== false) {
+                $avatarFile = "avatar_" . $uid . ".jpg";
+                file_put_contents($uploadsDir . $avatarFile, $decodedData);
+                $avatarUrl = "uploads/" . $avatarFile;
+            }
+        }
+
         // Update avatar if provided
-        if (!empty($avatarUrl)) {
+        if ($avatarUrl !== null) {
             $aStmt = $pdo->prepare("
                 INSERT INTO user_profiles (user_id, avatar_url) 
                 VALUES (:uid, :avatar)
