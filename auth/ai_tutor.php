@@ -423,6 +423,107 @@ try {
     }
 
     // =========================================================================
+    // STAGE 3B: Smart Code & Query Helper
+    // =========================================================================
+    $isQuestion = preg_match('/^(?:what is|explain|tell me about|define|how does|why is|difference between)/i', $question);
+    if (!$isQuestion) {
+        // Detect SQL Query
+        if (preg_match('/(?i)\b(SELECT\s+[\s\S]*?\s+FROM|INSERT\s+INTO|UPDATE\s+[a-zA-Z0-9_]+\s+SET|DELETE\s+FROM|CREATE\s+TABLE)\b/', $question)) {
+            $hasJoin = stripos($question, 'join') !== false;
+            $hasGroupBy = stripos($question, 'group by') !== false;
+            $hasHaving = stripos($question, 'having') !== false;
+            $hasOrderBy = stripos($question, 'order by') !== false;
+            $hasWhere = stripos($question, 'where') !== false;
+
+            $bd = ["1. **Operation & Target Table:** Executes structured relational operation against database tables."];
+            if ($hasJoin) $bd[] = "2. **Join Strategy:** Combines records across multiple tables using foreign key/relational predicates.";
+            if ($hasWhere) $bd[] = "3. **Row Filtering (WHERE):** Filters rows before aggregation or projection.";
+            if ($hasGroupBy) $bd[] = "4. **Aggregation (GROUP BY):** Groups matched rows into summary buckets applying aggregate metrics.";
+            if ($hasHaving) $bd[] = "5. **Post-Aggregation Filter (HAVING):** Prunes aggregated groups based on summary thresholds.";
+            if ($hasOrderBy) $bd[] = "6. **Projection & Sorting (ORDER BY):** Emits final selected attributes ordered by designated columns.";
+
+            $timeComp = ($hasJoin && !$hasWhere)
+                ? "O(M * N) worst-case without indexes (Hash/Merge join); O(M + N) with indexed join keys."
+                : (($hasOrderBy && $hasGroupBy) ? "O(N log N) due to filesort / temporary table sorting." : ($hasWhere ? "O(log N) for B-Tree index range scans; O(N) for full table scans." : "O(N) sequential table scan."));
+            $spaceComp = ($hasGroupBy || $hasOrderBy || $hasJoin) ? "O(K) auxiliary buffer memory for hash aggregation tables and sorting buffers." : "O(1) streaming cursor memory.";
+            $edgeCases = "• **NULL Semantics:** In SQL, NULL = NULL evaluates to UNKNOWN, causing unexpected row omission in INNER JOINs.\n• **Cartesian Explosion:** Missing or non-unique JOIN conditions will trigger an accidental CROSS JOIN producing excessive rows.\n• **WHERE vs ON in OUTER JOINs:** Placing filters in the WHERE clause instead of ON turns a LEFT JOIN into an INNER JOIN.\n• **Aggregation on Empty Sets:** COUNT(*) returns 0, whereas SUM() and AVG() return NULL when 0 rows match.";
+
+            $p1 = "* **SQL Query Logic Breakdown:**\n" . implode("\n", $bd);
+            $p2 = "* **Time & Space Complexity:**\n• Time Complexity: $timeComp\n• Space Complexity: $spaceComp\n\n* **Placement Interview Edge Cases:**\n$edgeCases";
+
+            echo json_encode([
+                'status' => 'success',
+                'success' => true,
+                'data' => [
+                    'question' => $question,
+                    'paragraph1' => $p1,
+                    'paragraph2' => $p2,
+                    'answer' => $p1 . "\n\n" . $p2,
+                    'matched_subject' => 'SQL & Database Management',
+                    'matched_chapter' => 'Code & Query Helper',
+                    'matched_topic' => 'SQL Query Analysis',
+                    'confidence_score' => 99.0,
+                    'tutor_name' => 'SYNAPSE AI',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]
+            ]);
+            exit();
+        }
+
+        // Detect Python Code
+        $pythonMarkers = ['def ', 'class ', 'for ', 'while ', 'try:', 'except ', 'lambda ', 'with open', 'import ', 'return ', 'yield '];
+        $hasPython = false;
+        foreach ($pythonMarkers as $pm) {
+            if (stripos($question, $pm) !== false) {
+                $hasPython = true;
+                break;
+            }
+        }
+        if (!$hasPython && (strpos($question, ' = [') !== false || strpos($question, ' = {') !== false || (substr_count($question, "\n") >= 1 && strpos($question, ':') !== false))) {
+            $hasPython = true;
+        }
+
+        if ($hasPython && stripos($question, 'SELECT') === false) {
+            $hasNested = preg_match('/for\s+.*?:[\s\S]*?for\s+.*?:/i', $question) || preg_match('/while\s+.*?:[\s\S]*?while\s+.*?:/i', $question);
+            $hasSingle = stripos($question, 'for ') !== false || stripos($question, 'while ') !== false;
+            $hasSorting = stripos($question, '.sort(') !== false || stripos($question, 'sorted(') !== false;
+            $hasRecursion = preg_match('/def\s+(\w+)[\s\S]*?\1\s*\(/i', $question);
+            $hasDict = stripos($question, 'dict(') !== false || stripos($question, 'set(') !== false || strpos($question, '{') !== false;
+
+            $bd = ["1. **Declaration & Input Handling:** Prepares variables and validates function/block arguments."];
+            if ($hasSingle || $hasNested) $bd[] = "2. **Iterative Traversal:** Loops through sequence elements maintaining state counters or pointers.";
+            if ($hasDict) $bd[] = "3. **Hashing & Fast Lookup:** Utilizes hash table operations for O(1) average lookup/insert.";
+            if ($hasRecursion) $bd[] = "4. **Recursive Call Stack:** Breaks problem down into smaller self-similar subproblems with base cases.";
+            if (stripos($question, 'return ') !== false || stripos($question, 'yield ') !== false) $bd[] = "5. **Result Emission:** Returns calculated result or yields generator stream to caller.";
+
+            $timeComp = $hasNested ? "O(N²) quadratic time due to nested loop iteration over data." : ($hasSorting ? "O(N log N) using Python's Timsort algorithm." : ($hasRecursion ? "O(2ⁿ) if un-memoized tree recursion; O(N) with dynamic programming / memoization." : ($hasSingle ? "O(N) linear time passing through the collection once." : "O(1) constant time execution.")));
+            $spaceComp = $hasRecursion ? "O(D) call stack frame space, where D is maximum recursion depth." : ($hasDict ? "O(N) auxiliary space storing unique keys/elements." : "O(1) auxiliary space modifying or evaluating variables in-place.");
+            $edgeCases = "• **Empty / None Inputs:** Check for `if not data: return ...` before accessing index 0 to avoid IndexError.\n• **Default Mutable Argument Anti-Pattern:** Avoid `def func(lst=[])`; default lists persist mutations across calls.\n• **Integer Division & Rounding:** Python 3 `/` returns float; use `//` for integer truncation in placement math.\n• **Off-by-One in Ranges:** Remember range(start, end) is exclusive of end.";
+
+            $p1 = "* **Python Code Logic Breakdown:**\n" . implode("\n", $bd);
+            $p2 = "* **Time & Space Complexity:**\n• Time Complexity: $timeComp\n• Space Complexity: $spaceComp\n\n* **Placement Interview Edge Cases:**\n$edgeCases";
+
+            echo json_encode([
+                'status' => 'success',
+                'success' => true,
+                'data' => [
+                    'question' => $question,
+                    'paragraph1' => $p1,
+                    'paragraph2' => $p2,
+                    'answer' => $p1 . "\n\n" . $p2,
+                    'matched_subject' => 'Python & Coding Logic',
+                    'matched_chapter' => 'Code & Query Helper',
+                    'matched_topic' => 'Python Code Analysis',
+                    'confidence_score' => 99.0,
+                    'tutor_name' => 'SYNAPSE AI',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]
+            ]);
+            exit();
+        }
+    }
+
+    // =========================================================================
     // STAGE 4: Explicit Out-of-Scope & Casual Slang Guardrails
     // =========================================================================
     $outOfScopePhrases = [
@@ -443,7 +544,7 @@ try {
         }
     }
     if ($isDirectOutOfScope) {
-        $boundary = "Sorry, that's not relatable to our 10th, 11th & 12th studies! Ask me any subject concept, quiz, or notes.";
+        $boundary = "That falls outside my placement and technical scope. I'm SYNAPSE AI—built specifically to help you master Python, SQL, Modern AI concepts, and Placement Aptitude!";
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -634,7 +735,8 @@ try {
 
     $genericSubjectWords = [
         'physics', 'math', 'maths', 'mathematics', 'chemistry', 'computer', 'computers',
-        'science', 'sciences', 'biology', 'history', 'economics', 'engineering', 'ai', 'data'
+        'science', 'sciences', 'biology', 'history', 'economics', 'engineering', 'ai', 'data',
+        'python', 'sql', 'coding', 'programming', 'database', 'databases', 'dbms', 'rdbms', 'aptitude'
     ];
 
     function synapse_stem($word) {
@@ -692,10 +794,56 @@ try {
         'give me short', 'short ha sollu', 'short-aa sollu', 'chinadha thaa', 'make it short',
         'in short', 'short summary', 'short note', 'short please', 'give short', 'solu short', 'short'
     ];
+
+    $lastTopic = trim($input['last_topic'] ?? $_GET['last_topic'] ?? $input['lastTopic'] ?? $_GET['lastTopic'] ?? '');
+    $lastTrack = trim($input['last_track'] ?? $_GET['last_track'] ?? $input['lastTrack'] ?? $_GET['lastTrack'] ?? '');
+
+    $isExampleQuery = (strpos($normQuery, 'example') !== false && strpos($normQuery, 'no example') === false);
+    $isShortQuery = in_array($normQuery, $shortPhrases, true) || strpos($normQuery, 'short') !== false;
+    $isElaborateQuery = (strpos($normQuery, 'elaborate') !== false || strpos($normQuery, 'more details') !== false || strpos($normQuery, 'in detail') !== false);
+    $isInterviewQuery = (strpos($normQuery, 'interview question') !== false || strpos($normQuery, 'interview questions') !== false || strpos($normQuery, 'interview') !== false);
+    $isWhyQuery = ($normQuery === 'why' || strpos($normQuery, 'why ') === 0 || strpos($normQuery, 'why does') !== false || strpos($normQuery, 'reason') !== false);
+
+    if (!empty($lastTopic) && ($isExampleQuery || $isShortQuery || $isElaborateQuery || $isInterviewQuery || $isWhyQuery)) {
+        $trackName = !empty($lastTrack) ? $lastTrack : 'Placement Preparation';
+        if ($isInterviewQuery) {
+            $p1 = "* **Placement Interview Preparation ($trackName · $lastTopic)**\n\n• **Q1 (Core Mechanics):** How does $lastTopic operate under the hood in production environments?\n• **Q2 (Edge Cases & Failure Modes):** What are the most common concurrency bugs or performance traps with $lastTopic?\n• **Q3 (System Design & Tradeoffs):** When should you avoid using $lastTopic in favor of an alternative approach?";
+            $p2 = "* **Interviewer Evaluation Tip & Takeaway:**\nFocus on explaining time/space complexity and real-world failure modes rather than just syntax.";
+        } elseif ($isWhyQuery) {
+            $p1 = "* **Engineering Rationale & Design Philosophy ($trackName · $lastTopic)**\n\n• **Core Problem:** $lastTopic was engineered to enforce predictable performance, safety, and deterministic resource bounds.\n• **Architectural Trade-offs:** Balances runtime velocity against strict structural invariants.\n• **Production Impact:** Eliminates costly memory leaks and race conditions at scale.";
+            $p2 = "* **Core Principle & Takeaway:**\nUnderstanding the architectural reasoning behind $lastTopic differentiates junior coders from senior engineering talent.";
+        } elseif ($isShortQuery) {
+            $p1 = "* **Quick Summary: $lastTopic** ($trackName)\n* **Concept:** High-yield placement concept focusing on core mechanics and algorithmic efficiency.";
+            $p2 = "* **Core Principle & Formula:** Focus on standard invariants, time complexity, and memory bounds.\n* **Placement Exam Focus & Takeaway:** Frequently tested in technical placement rounds and coding interviews.";
+        } else {
+            $p1 = "* **In-Depth Breakdown & Example: $lastTopic** ($trackName)\n\nExpanding further on $lastTopic with real-world implementation logic and system constraints.";
+            $p2 = "* **Core Principle & Takeaway:** Mastering $lastTopic provides an immediate competitive advantage during technical coding interviews.";
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'data' => [
+                'question' => $question,
+                'paragraph1' => $p1,
+                'paragraph2' => $p2,
+                'answer' => $p1 . "\n\n" . $p2,
+                'matched_subject' => $trackName,
+                'matched_chapter' => 'Context Follow-up',
+                'matched_topic' => $lastTopic,
+                'confidence_score' => 95.0,
+                'is_follow_up' => true,
+                'tutor_name' => 'SYNAPSE AI',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ]);
+        exit();
+    }
+
     $isStandaloneShort = in_array($normQuery, $shortPhrases, true);
     if ($isStandaloneShort) {
-        $p1 = "* **Quick Revision Summary:**\n* **Core Definition:** Review governing definitions and fundamental laws from your chapter.";
-        $p2 = "* **Key Formula / Principle:** Focus on board exam standard units, formulas, and diagrams.\n* **Exam Tip:** Prepare 2-mark definitions and 5-mark derivations systematically for your Tamil Nadu State Board exams.";
+        $p1 = "* **Quick Revision Summary:**\n* **Core Definition:** Review governing definitions, algorithmic principles, and system invariants.";
+        $p2 = "* **Key Formula / Principle:** Focus on time/space complexity, data structures, and edge cases.\n* **Placement Interview Focus:** Prepare for coding rounds and technical interviews across Python, SQL, AI, and Aptitude.";
         echo json_encode([
             'status' => 'success',
             'success' => true,
@@ -704,10 +852,286 @@ try {
                 'paragraph1' => $p1,
                 'paragraph2' => $p2,
                 'answer' => $p1 . "\n" . $p2,
-                'matched_subject' => 'Tamil Nadu State Board',
+                'matched_subject' => 'Placement Prep',
                 'matched_chapter' => 'Quick Revision',
                 'matched_topic' => 'Summary',
                 'confidence_score' => 100.0,
+                'tutor_name' => 'SYNAPSE AI',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ]);
+        exit();
+    }
+
+    // Direct Question Intent & Clarifying Answers (Origin/Trivia, Comparisons, How-To/Code, Core Overviews)
+    $cleanQuery = trim(preg_replace('/[^a-zA-Z0-9+\-=><\s]/', ' ', $normQuery));
+    $directMatch = null;
+
+    // 1. Python Snake / Origin
+    if ((strpos($cleanQuery, 'python') !== false && (strpos($cleanQuery, 'snake') !== false || strpos($cleanQuery, 'reptile') !== false || strpos($cleanQuery, 'animal') !== false || strpos($cleanQuery, 'means snake') !== false)) ||
+        preg_match('/(?:is\s+)?python\s+(?:means?|named\s+after|a|the)?\s*snake/', $cleanQuery) ||
+        preg_match('/why\s+(?:is\s+it\s+called|named)\s+python/', $cleanQuery) ||
+        $cleanQuery === 'python means snake' || $cleanQuery === 'why python' || strpos($cleanQuery, 'python name origin') !== false) {
+        $directMatch = [
+            'p1' => "* **No, Python is not named after the snake!**\n\nIn computer science, **Python** is a popular high-level programming language—not the reptile. Guido van Rossum created it in 1991 and named it after the famous BBC comedy series **'Monty Python\'s Flying Circus'**, because he wanted a short, unique, and slightly mysterious name.",
+            'p2' => "* **Core Placement Concept:**\nPython is an interpreted, dynamically typed language emphasizing code readability and developer velocity.\n\n* **Key Placement Topics to Explore:**\n1. **Memory Model & Mutability** (`id()`, object references, mutable vs immutable)\n2. **List vs Tuple** (memory layout & performance)\n3. **Global Interpreter Lock (GIL)** (threading vs multiprocessing)\n4. **Generators & Iterators** (lazy evaluation with `yield`)",
+            'subject' => 'Python & Coding Logic',
+            'chapter' => 'Python Fundamentals',
+            'topic' => 'Python Language Origin & Overview'
+        ];
+    }
+    // 2. Creator of Python
+    elseif ((strpos($cleanQuery, 'who') !== false && (strpos($cleanQuery, 'created') !== false || strpos($cleanQuery, 'invented') !== false || strpos($cleanQuery, 'made') !== false || strpos($cleanQuery, 'developed') !== false || strpos($cleanQuery, 'father') !== false) && strpos($cleanQuery, 'python') !== false) ||
+        strpos($cleanQuery, 'father of python') !== false || $cleanQuery === 'who created python' || $cleanQuery === 'who invented python') {
+        $directMatch = [
+            'p1' => "* **Creator of Python:**\n**Guido van Rossum**, a Dutch computer programmer, created Python in 1989 and officially released it in **February 1991** at Centrum Wiskunde & Informatica (CWI) in the Netherlands. For decades he was recognized as Python's 'Benevolent Dictator For Life' (BDFL).",
+            'p2' => "* **Design Philosophy:**\nGuido designed Python around \"The Zen of Python\" (PEP 20): *\"Simple is better than complex. Readability counts.\"* It has become the dominant language for Data Science, AI/ML, and rapid backend service development.",
+            'subject' => 'Python & Coding Logic',
+            'chapter' => 'Python Fundamentals',
+            'topic' => 'Python History & Guido van Rossum'
+        ];
+    }
+    // 3. Creator of SQL
+    elseif ((strpos($cleanQuery, 'who') !== false && (strpos($cleanQuery, 'created') !== false || strpos($cleanQuery, 'invented') !== false || strpos($cleanQuery, 'made') !== false || strpos($cleanQuery, 'developed') !== false || strpos($cleanQuery, 'father') !== false) && strpos($cleanQuery, 'sql') !== false) ||
+        strpos($cleanQuery, 'father of sql') !== false || $cleanQuery === 'who created sql' || $cleanQuery === 'who invented sql') {
+        $directMatch = [
+            'p1' => "* **Creators of SQL:**\n**Donald D. Chamberlin** and **Raymond F. Boyce** developed SQL at IBM's San Jose Research Laboratory in the **early 1970s**. It was originally named **SEQUEL** (*Structured English QUEry Language*) designed to manipulate and retrieve data stored in IBM's original System R relational database.",
+            'p2' => "* **Placement Importance:**\nStandardized by ANSI in 1986 and ISO in 1987, SQL remains the universal standard declarative language across all major RDBMS engines (PostgreSQL, MySQL, Oracle, Microsoft SQL Server).",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'SQL Fundamentals',
+            'topic' => 'SQL History & IBM Origins'
+        ];
+    }
+    // 4. Full Form of SQL
+    elseif ((strpos($cleanQuery, 'sql') !== false && (strpos($cleanQuery, 'full form') !== false || strpos($cleanQuery, 'stand for') !== false || strpos($cleanQuery, 'meaning of sql') !== false || strpos($cleanQuery, 'abbreviation') !== false)) ||
+        $cleanQuery === 'sql full form' || $cleanQuery === 'full form of sql') {
+        $directMatch = [
+            'p1' => "* **Full Form of SQL:**\n**Structured Query Language** (pronounced either as individual letters *S-Q-L* or as *Sequel*).\n\nOriginally named **SEQUEL** (*Structured English QUEry Language*) at IBM, the name was shortened to **SQL** due to trademark issues.",
+            'p2' => "* **Core Command Subsets:**\n• **DDL** (Data Definition): `CREATE`, `ALTER`, `DROP`, `TRUNCATE`\n• **DML** (Data Manipulation): `SELECT`, `INSERT`, `UPDATE`, `DELETE`\n• **DCL** (Data Control): `GRANT`, `REVOKE`\n• **TCL** (Transaction Control): `COMMIT`, `ROLLBACK`, `SAVEPOINT`",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'SQL Fundamentals',
+            'topic' => 'SQL Full Form & Command Categories'
+        ];
+    }
+    // 5. Full Form of LLM
+    elseif ((strpos($cleanQuery, 'llm') !== false && (strpos($cleanQuery, 'full form') !== false || strpos($cleanQuery, 'stand for') !== false || strpos($cleanQuery, 'meaning of llm') !== false || strpos($cleanQuery, 'abbreviation') !== false)) ||
+        $cleanQuery === 'llm full form' || $cleanQuery === 'full form of llm' || $cleanQuery === 'what does llm stand for') {
+        $directMatch = [
+            'p1' => "* **Full Form of LLM:**\n**Large Language Model**.\n\nLLMs are foundational deep learning systems trained on hundreds of billions of text and code tokens using Transformer neural networks (multi-head self-attention mechanisms) to understand, generate, and reason across natural language.",
+            'p2' => "* **Core Production Workflow:**\n• **Pre-training:** Self-supervised next-token prediction across trillions of tokens.\n• **Fine-Tuning (SFT):** Instruction tuning on curated prompt-response datasets.\n• **Alignment (RLHF / DPO):** Optimizing model safety and adherence to human preferences.\n• **RAG (Retrieval-Augmented Generation):** Connecting LLMs to dynamic external vector databases.",
+            'subject' => 'AI & Modern Tech Concepts',
+            'chapter' => 'Generative AI & LLMs',
+            'topic' => 'LLM (Large Language Model) Overview'
+        ];
+    }
+    // 6. What is SQL
+    elseif (in_array($normQuery, ['what is sql', 'what is sql language', 'what is sql database', 'explain sql', 'what sql', 'tell me about sql', 'sql overview'], true)) {
+        $directMatch = [
+            'p1' => "* **What is SQL?**\n**Structured Query Language (SQL)** is the standard declarative programming language used to manage, query, and manipulate data in Relational Database Management Systems (RDBMS).\n\nUnlike procedural languages, SQL is **declarative**: you specify *what* records you require (`SELECT ... FROM ... WHERE ...`), and the database query engine optimizes the underlying physical retrieval execution plan.",
+            'p2' => "* **Key Placement Topics in SQL:**\n• **Joins:** `INNER JOIN`, `LEFT JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`\n• **Aggregation & Filtering:** `GROUP BY`, `HAVING`, `WHERE` execution order\n• **Indexing & Performance:** B-Tree indexes, clustered vs non-clustered, query cost\n• **ACID Transactions:** Atomicity, Consistency, Isolation, Durability\n• **Normalization:** 1NF, 2NF, 3NF, BCNF",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'SQL Fundamentals',
+            'topic' => 'SQL Architecture & Core Concepts'
+        ];
+    }
+    // 7. What is Python
+    elseif (in_array($normQuery, ['what is python', 'what is python language', 'what is python programming', 'explain python', 'what python', 'tell me about python', 'python overview'], true)) {
+        $directMatch = [
+            'p1' => "* **What is Python?**\n**Python** is a high-level, general-purpose, interpreted programming language designed with an emphasis on code readability and developer velocity.\n\nIt natively supports multiple programming paradigms including Object-Oriented, Functional, and Procedural styles. It powers modern industry workflows across Data Science, Machine Learning, Backend Web Services (FastAPI, Django), and Cloud Automation.",
+            'p2' => "* **Key Placement Topics in Python:**\n• **Memory Model & Mutability:** Immutable types (`int`, `str`, `tuple`) vs mutable types (`list`, `dict`, `set`)\n• **Concurrency & GIL:** Global Interpreter Lock implications on multithreading vs multiprocessing\n• **Advanced Idioms:** List/Dict comprehensions, generators (`yield`), decorators (`@`)\n• **Data Structures & Complexity:** Hash map lookup $O(1)$, Timsort algorithm $O(N \log N)$",
+            'subject' => 'Python & Coding Logic',
+            'chapter' => 'Python Fundamentals',
+            'topic' => 'Python Language Overview & Core Concepts'
+        ];
+    }
+    // 8. What is AI
+    elseif (in_array($normQuery, ['what is ai', 'what is artificial intelligence', 'explain ai', 'tell me about ai', 'define ai', 'what is ai in computer science'], true)) {
+        $directMatch = [
+            'p1' => "* **What is Artificial Intelligence (AI)?**\n**Artificial Intelligence** is the branch of computer science dedicated to building computational systems capable of performing tasks that historically required human intelligence—such as pattern recognition, visual perception, natural language understanding, and complex decision-making.",
+            'p2' => "* **The AI Hierarchy (Placement Framework):**\n• **Artificial Intelligence (AI):** The overarching field of intelligent machines and algorithms.\n• **Machine Learning (ML):** A subset of AI where systems learn statistical patterns from data.\n• **Deep Learning (DL):** A subset of ML utilizing multi-layered artificial neural networks.\n• **Generative AI & LLMs:** Modern deep models synthesizing new text, code, or images.",
+            'subject' => 'AI & Modern Tech Concepts',
+            'chapter' => 'Artificial Intelligence Fundamentals',
+            'topic' => 'AI Hierarchy & Overview'
+        ];
+    }
+    // 9. What is LLM
+    elseif (in_array($normQuery, ['what is llm', 'what is a large language model', 'what is large language model', 'explain llm', 'tell me about llm'], true)) {
+        $directMatch = [
+            'p1' => "* **What is a Large Language Model (LLM)?**\nA **Large Language Model** is an advanced artificial intelligence system built upon deep neural network architectures—specifically the **Transformer** self-attention mechanism—and trained on hundreds of billions of words.\n\nLLMs excel at natural language understanding, text synthesis, contextual reasoning, code generation, and conversational problem-solving.",
+            'p2' => "* **Key LLM Placement Concepts:**\n• **Self-Attention Mechanism:** Computes contextual relevance between every pair of tokens in a sequence ($Q, K, V$).\n• **Context Window:** The token buffer length the model can process simultaneously (e.g. 8k to 1M tokens).\n• **Hallucination Mitigation:** Using **RAG** (Retrieval-Augmented Generation) to ground generation with verified database records.",
+            'subject' => 'AI & Modern Tech Concepts',
+            'chapter' => 'Generative AI & LLMs',
+            'topic' => 'LLM (Large Language Model) Concepts'
+        ];
+    }
+    // 10. What is Database / DBMS / RDBMS
+    elseif (in_array($normQuery, ['what is database', 'what is dbms', 'what is rdbms', 'difference between dbms and rdbms', 'what is a database', 'what is a dbms', 'what is a rdbms'], true) ||
+        $cleanQuery === 'what is database' || $cleanQuery === 'what is dbms' || $cleanQuery === 'what is rdbms') {
+        $directMatch = [
+            'p1' => "* **Database, DBMS, and RDBMS Definitions:**\n\n• **Database:** An organized, persistent electronic collection of structured information or data.\n• **DBMS (Database Management System):** Software that interacts with end users, applications, and the database itself to capture, query, and manage data (e.g., file systems, XML databases).\n• **RDBMS (Relational DBMS):** An advanced DBMS based on Edgar Codd's relational model where data is structured into tables (relations) with rows (tuples) and columns (attributes), enforcing integrity constraints and ACID transactions (e.g., PostgreSQL, MySQL, Oracle).",
+            'p2' => "* **Core Placement Pillars of RDBMS:**\n• **Primary Key & Foreign Key:** Enforce entity and referential integrity across related tables.\n• **ACID Compliance:** Ensures enterprise transactions remain atomic, consistent, isolated, and durable.\n• **Indexing (B-Tree):** Reduces query search time from $O(N)$ full table scan to $O(\log N)$ index seek.",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'Database Concepts',
+            'topic' => 'Database & RDBMS Fundamentals'
+        ];
+    }
+    // 11. VS Comparisons
+    // 11a. List vs Tuple
+    elseif (strpos($cleanQuery, 'list') !== false && strpos($cleanQuery, 'tuple') !== false && (strpos($cleanQuery, 'vs') !== false || strpos($cleanQuery, 'versus') !== false || strpos($cleanQuery, 'difference') !== false || strpos($cleanQuery, 'compare') !== false || strpos($cleanQuery, 'and') !== false)) {
+        $directMatch = [
+            'p1' => "* **List vs. Tuple Comparison (Python):**\n\n• **Mutability:** Lists are **mutable** (elements can be added, removed, or modified in place); Tuples are **immutable** (once instantiated, elements cannot be modified).\n• **Syntax:** Lists use square brackets `[1, 2, 3]`; Tuples use parentheses `(1, 2, 3)`.\n• **Memory & Speed:** Tuples allocate a single fixed memory block and are faster to construct and iterate over; Lists allocate extra capacity to support dynamic amortized $O(1)$ append operations.\n• **Dictionary Keys:** Tuples can serve as dictionary keys or set elements (if all elements are hashable); Lists can **never** be dictionary keys because mutable types are unhashable.",
+            'p2' => "* **Placement Interview Tip:**\nUse a tuple for fixed records or heterogeneous data (e.g. `(latitude, longitude)` or database rows). Use a list for collections of homogeneous items that grow or shrink dynamically.",
+            'subject' => 'Python & Coding Logic',
+            'chapter' => 'Python Data Structures',
+            'topic' => 'List vs Tuple'
+        ];
+    }
+    // 11b. SQL vs NoSQL
+    elseif (strpos($cleanQuery, 'sql') !== false && strpos($cleanQuery, 'nosql') !== false) {
+        $directMatch = [
+            'p1' => "* **SQL vs. NoSQL Comparison:**\n\n• **Data Model:** SQL databases are **relational** (predefined schemas, tables, rows, columns); NoSQL databases are **non-relational** (Document, Key-Value, Wide-Column, or Graph stores with dynamic JSON-like schemas).\n• **Transactions:** SQL guarantees strict **ACID** properties; NoSQL embraces **BASE** properties (Basically Available, Soft-state, Eventual consistency).\n• **Scaling:** SQL scales primarily **vertically** (increasing CPU, RAM, SSD on a server); NoSQL scales **horizontally** (sharding and distributing data partitions across commodity nodes).\n• **Examples:** SQL: PostgreSQL, MySQL, Oracle; NoSQL: MongoDB, Redis, Apache Cassandra, DynamoDB.",
+            'p2' => "* **Placement System Design Tip:**\nChoose SQL for relational integrity, financial transactions, and complex analytical JOINs. Choose NoSQL for high-throughput write-heavy logs, caching, rapidly evolving schemas, or massive horizontal scale.",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'Database Architecture',
+            'topic' => 'SQL vs NoSQL'
+        ];
+    }
+    // 11c. DELETE vs TRUNCATE
+    elseif (strpos($cleanQuery, 'delete') !== false && strpos($cleanQuery, 'truncate') !== false) {
+        $directMatch = [
+            'p1' => "* **DELETE vs. TRUNCATE Comparison (SQL):**\n\n• **Command Type:** `DELETE` is a **DML** (Data Manipulation Language) command; `TRUNCATE` is a **DDL** (Data Definition Language) command.\n• **WHERE Clause:** `DELETE` supports a `WHERE` clause to filter specific rows; `TRUNCATE` removes **all rows** unconditionally.\n• **Transaction Logging & Speed:** `DELETE` scans and logs each deleted row individually in the transaction log (slow for large tables); `TRUNCATE` deallocates data pages directly and logs only page deallocations (extremely fast).\n• **Rollback:** `DELETE` operations can be rolled back in an active transaction; `TRUNCATE` commits immediately in some engines (though PostgreSQL and SQL Server support rolling back TRUNCATE within an uncommitted transaction).\n• **Identity Counter:** `TRUNCATE` resets auto-increment / identity seed values back to initial state; `DELETE` retains the current counter.",
+            'p2' => "* **Placement Interview Takeaway:**\nNever run `DELETE` without a `WHERE` clause in production. Use `TRUNCATE TABLE` when emptying staging or temporary tables.",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'SQL DDL & DML Commands',
+            'topic' => 'DELETE vs TRUNCATE'
+        ];
+    }
+    // 11d. Primary Key vs Foreign Key
+    elseif (strpos($cleanQuery, 'primary key') !== false && strpos($cleanQuery, 'foreign key') !== false) {
+        $directMatch = [
+            'p1' => "* **Primary Key vs. Foreign Key Comparison:**\n\n• **Purpose:** A **Primary Key (PK)** uniquely identifies each row within its own table; a **Foreign Key (FK)** references a Primary Key or Unique Key in another table to establish a relationship.\n• **Uniqueness & Nullability:** Primary Keys must be strictly **UNIQUE and NOT NULL**; Foreign Keys can contain duplicate values and can be `NULL` (unless defined `NOT NULL`).\n• **Quantity:** A table can have only **one** Primary Key (which may be composite); a table can have **multiple** Foreign Keys pointing to different tables.\n• **Clustered Index:** Primary Keys automatically create a clustered index by default; Foreign Keys do not create indexes automatically (they should be indexed manually for JOIN performance).",
+            'p2' => "* **Placement Interview Takeaway:**\nForeign Keys enforce **Referential Integrity**. Cascading rules like `ON DELETE CASCADE` or `ON DELETE SET NULL` prevent orphaned child rows when a parent record is deleted.",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'Database Constraints & Keys',
+            'topic' => 'Primary Key vs Foreign Key'
+        ];
+    }
+    // 11e. AI vs ML
+    elseif ((strpos($cleanQuery, 'ai') !== false && strpos($cleanQuery, 'ml') !== false && (strpos($cleanQuery, 'vs') !== false || strpos($cleanQuery, 'difference') !== false || strpos($cleanQuery, 'compare') !== false)) ||
+        (strpos($cleanQuery, 'artificial intelligence') !== false && strpos($cleanQuery, 'machine learning') !== false)) {
+        $directMatch = [
+            'p1' => "* **AI vs. Machine Learning (ML) Comparison:**\n\n• **Scope:** **Artificial Intelligence** is the overarching discipline of building intelligent systems capable of human-like decision making; **Machine Learning** is a specific branch/subset of AI.\n• **Methodology:** AI encompasses symbolic AI, expert rule systems, and search trees ($A^*$ algorithm); ML focuses on statistical algorithms that learn patterns directly from training data without being explicitly programmed.\n• **Goal:** AI seeks general intelligent behavior; ML seeks accurate predictive models on specific tasks through data optimization.",
+            'p2' => "* **Placement Takeaway:**\nAll Machine Learning is Artificial Intelligence, but not all Artificial Intelligence is Machine Learning (e.g. minimax chess algorithms are AI without ML).",
+            'subject' => 'AI & Modern Tech Concepts',
+            'chapter' => 'Artificial Intelligence Fundamentals',
+            'topic' => 'AI vs ML'
+        ];
+    }
+    // 11f. Deep Learning vs Machine Learning
+    elseif (strpos($cleanQuery, 'deep learning') !== false && strpos($cleanQuery, 'machine learning') !== false) {
+        $directMatch = [
+            'p1' => "* **Deep Learning (DL) vs. Traditional Machine Learning (ML):**\n\n• **Feature Engineering:** Traditional ML requires manual feature extraction (PCA, TF-IDF, domain feature engineering); DL automatically learns hierarchical representations directly from raw data (pixels, text tokens, audio signals).\n• **Architecture:** Traditional ML relies on models like Random Forest, SVM, and XGBoost; DL utilizes multi-layer artificial neural networks (CNNs, RNNs, Transformers).\n• **Hardware & Data Requirements:** Traditional ML works well on small-to-medium tabular datasets on standard CPUs; DL requires massive datasets and GPU/TPU matrix accelerators.",
+            'p2' => "* **Placement Takeaway:**\nFor structured enterprise tabular data, Gradient Boosted Decision Trees (XGBoost/LightGBM) frequently outperform Deep Learning with lower compute costs and higher explainability.",
+            'subject' => 'AI & Modern Tech Concepts',
+            'chapter' => 'Neural Networks & Deep Learning',
+            'topic' => 'Deep Learning vs Machine Learning'
+        ];
+    }
+    // 11g. INNER JOIN vs LEFT JOIN
+    elseif (strpos($cleanQuery, 'inner join') !== false && strpos($cleanQuery, 'left join') !== false) {
+        $directMatch = [
+            'p1' => "* **INNER JOIN vs. LEFT JOIN Comparison:**\n\n• **Row Matching:** `INNER JOIN` returns **only rows that have matching values in both tables**; `LEFT JOIN` (or `LEFT OUTER JOIN`) returns **all rows from the left table**, plus matching records from the right table.\n• **Unmatched Left Rows:** In `LEFT JOIN`, if a left row has no match in the right table, all columns from the right table are populated with `NULL`; `INNER JOIN` drops unmatched rows completely.\n• **Result Cardinality:** An `INNER JOIN` row count is $\le$ left table row count (assuming unique join keys); a `LEFT JOIN` row count is always $\ge$ left table row count.",
+            'p2' => "* **Placement Interview Trick:**\nTo find records in Table A that have no corresponding record in Table B, use a `LEFT JOIN` with a NULL filter:\n```sql\nSELECT a.*\nFROM table_a a\nLEFT JOIN table_b b ON a.id = b.a_id\nWHERE b.a_id IS NULL;\n```",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'SQL Joins & Relational Algebra',
+            'topic' => 'SQL Joins (INNER vs LEFT)'
+        ];
+    }
+    // 11h. WHERE vs HAVING
+    elseif (strpos($cleanQuery, 'where') !== false && strpos($cleanQuery, 'having') !== false && (strpos($cleanQuery, 'vs') !== false || strpos($cleanQuery, 'difference') !== false || strpos($cleanQuery, 'compare') !== false)) {
+        $directMatch = [
+            'p1' => "* **WHERE vs. HAVING Comparison (SQL):**\n\n• **Evaluation Stage:** `WHERE` filters individual rows **before** any aggregation or `GROUP BY` operation; `HAVING` filters aggregated groups **after** `GROUP BY` calculation.\n• **Aggregate Functions:** `WHERE` **cannot** evaluate aggregate functions (`WHERE AVG(salary) > 50000` is illegal); `HAVING` is specifically designed to filter on aggregate functions (`HAVING AVG(salary) > 50000`).\n• **Indexing:** `WHERE` clauses can utilize B-Tree indexes for fast row seeks; `HAVING` filters aggregated intermediate result partitions in memory.",
+            'p2' => "* **SQL Query Execution Pipeline (Crucial for Interviews):**\n1. `FROM` & `JOIN`\n2. `WHERE` (row filtering)\n3. `GROUP BY` (grouping)\n4. `HAVING` (group filtering)\n5. `SELECT` (projection)\n6. `DISTINCT`\n7. `ORDER BY` (sorting)\n8. `LIMIT` / `OFFSET`",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'SQL Filtering & Grouping',
+            'topic' => 'WHERE vs HAVING'
+        ];
+    }
+    // 11i. is vs ==
+    elseif ((strpos($normQuery, 'is') !== false && strpos($normQuery, '==') !== false) || $cleanQuery === 'is vs' || strpos($cleanQuery, 'is vs ==') !== false) {
+        $directMatch = [
+            'p1' => "* **`is` vs. `==` Comparison (Python):**\n\n• **Equality (`==`):** Tests for **value equality** — checks whether two objects have equivalent content by invoking the `__eq__()` method.\n• **Identity (`is`):** Compares **memory identity** — checks whether two variables reference the exact same object in heap memory (`id(a) == id(b)`).\n• **Example:**\n```python\na = [1, 2, 3]\nb = [1, 2, 3]\nprint(a == b)  # True (same values)\nprint(a is b)  # False (different memory addresses)\n```",
+            'p2' => "* **Placement Interview Trap (Integer Interning & None):**\n• Always compare singletons with `is`: `if x is None:`, never `if x == None:`.\n• Python pre-allocates and interns small integers between -5 and 256. Therefore `x = 250; y = 250; x is y` evaluates to `True`, but integers outside that range allocate separate heap objects.",
+            'subject' => 'Python & Coding Logic',
+            'chapter' => 'Python Memory & Internals',
+            'topic' => 'Object Identity vs Value Equality (`is` vs `==`)'
+        ];
+    }
+    // 12. How to / Code / Example
+    // 12a. Reverse a string
+    elseif (strpos($cleanQuery, 'reverse') !== false && (strpos($cleanQuery, 'string') !== false || strpos($cleanQuery, 'str') !== false)) {
+        $directMatch = [
+            'p1' => "* **How to Reverse a String in Python:**\n\n**Approach 1: Extended Slicing (Most Pythonic - $O(N)$ Time, $O(N)$ Space):**\n```python\ndef reverse_string(s: str) -> str:\n    return s[::-1]\n\nprint(reverse_string(\"placement\"))  # Output: tnemecalp\n```\n\n**Approach 2: Two-Pointer Technique (Mutable Character Array - $O(N)$ Time, $O(1)$ Auxiliary Space):**\n```python\ndef reverse_two_pointer(s: str) -> str:\n    chars = list(s)\n    left, right = 0, len(chars) - 1\n    while left < right:\n        chars[left], chars[right] = chars[right], chars[left]\n        left += 1\n        right -= 1\n    return \"\".join(chars)\n```",
+            'p2' => "* **Placement Interview Tip:**\nBecause Python strings are strictly immutable, slicing `s[::-1]` creates a new string object in memory. If an interviewer asks to reverse a string in-place with $O(1)$ extra memory, convert to a `list` and use two pointers.",
+            'subject' => 'Python & Coding Logic',
+            'chapter' => 'Python Strings & Algorithms',
+            'topic' => 'Reverse a String'
+        ];
+    }
+    // 12b. Second highest salary
+    elseif (strpos($cleanQuery, 'second highest salary') !== false || strpos($cleanQuery, '2nd highest salary') !== false || (strpos($cleanQuery, 'highest salary') !== false && strpos($cleanQuery, 'second') !== false)) {
+        $directMatch = [
+            'p1' => "* **Find Second Highest Salary in SQL:**\n\n**Approach 1: Correlated Subquery (Universal ANSI SQL):**\n```sql\nSELECT MAX(salary) AS second_highest_salary\nFROM employees\nWHERE salary < (\n    SELECT MAX(salary)\n    FROM employees\n);\n```\n\n**Approach 2: Window Function (`DENSE_RANK` - Handles ties correctly):**\n```sql\nWITH RankedSalaries AS (\n    SELECT salary,\n           DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk\n    FROM employees\n)\nSELECT salary AS second_highest_salary\nFROM RankedSalaries\nWHERE rnk = 2\nLIMIT 1;\n```",
+            'p2' => "* **Placement Interview Trap:**\nNever use `ORDER BY salary DESC LIMIT 1 OFFSET 1` without handling duplicates. If multiple employees share the top salary, `LIMIT 1 OFFSET 1` returns the highest salary again. Always use `DENSE_RANK()` or `MAX() < (SELECT MAX())`.",
+            'subject' => 'SQL & Database Management',
+            'chapter' => 'SQL Interview Queries',
+            'topic' => 'Second Highest Salary Query'
+        ];
+    }
+    // 12c. Palindrome
+    elseif (strpos($cleanQuery, 'palindrome') !== false) {
+        $directMatch = [
+            'p1' => "* **Check Palindrome (Python):**\n\n```python\ndef is_palindrome(s: str) -> bool:\n    # Filter alphanumeric characters and convert to lowercase\n    clean = [c.lower() for c in s if c.isalnum()]\n    \n    left, right = 0, len(clean) - 1\n    while left < right:\n        if clean[left] != clean[right]:\n            return False\n        left += 1\n        right -= 1\n    return True\n\nprint(is_palindrome(\"A man, a plan, a canal: Panama\"))  # True\nprint(is_palindrome(\"race a car\"))  # False\n```",
+            'p2' => "* **Complexity & Edge Cases:**\n• **Time Complexity:** $O(N)$ where $N$ is the length of the string.\n• **Space Complexity:** $O(1)$ auxiliary space if checking characters directly with index pointers and `s[left].isalnum()`.\n• **Edge Cases:** Empty strings and single-character strings are valid palindromes.",
+            'subject' => 'Python & Coding Logic',
+            'chapter' => 'Two-Pointer Algorithms',
+            'topic' => 'Palindrome Verification'
+        ];
+    }
+    // 12d. Fibonacci
+    elseif (strpos($cleanQuery, 'fibonacci') !== false) {
+        $directMatch = [
+            'p1' => "* **Fibonacci Series in Python ($O(N)$ Time, $O(1)$ Space):**\n\n```python\ndef fibonacci_sequence(n: int) -> list[int]:\n    if n <= 0:\n        return []\n    if n == 1:\n        return [0]\n    \n    seq = [0, 1]\n    for _ in range(2, n):\n        seq.append(seq[-1] + seq[-2])\n    return seq\n\nprint(fibonacci_sequence(8))  # [0, 1, 1, 2, 3, 5, 8, 13]\n```",
+            'p2' => "* **Placement Interview Note:**\nNaive recursion `fib(n-1) + fib(n-2)` takes exponential $O(2^N)$ time due to repeated subproblem calculations. Explain Dynamic Programming (Memoization / Tabulation) to achieve $O(N)$ time, or Matrix Exponentiation for $O(\log N)$ time.",
+            'subject' => 'Python & Coding Logic',
+            'chapter' => 'Algorithmic Problem Solving',
+            'topic' => 'Fibonacci Sequence'
+        ];
+    }
+    // 12e. Prime Number
+    elseif (strpos($cleanQuery, 'prime number') !== false || strpos($cleanQuery, 'check prime') !== false || (strpos($cleanQuery, 'prime') !== false && (strpos($cleanQuery, 'number') !== false || strpos($cleanQuery, 'is prime') !== false || strpos($cleanQuery, 'check') !== false))) {
+        $directMatch = [
+            'p1' => "* **Check Prime Number ($O(\sqrt{N})$ Time Complexity):**\n\n```python\ndef is_prime(n: int) -> bool:\n    if n <= 1:\n        return False\n    if n <= 3:\n        return True\n    if n % 2 == 0 or n % 3 == 0:\n        return False\n    \n    # Check factors of 6k +/- 1 up to sqrt(n)\n    i = 5\n    while i * i <= n:\n        if n % i == 0 or n % (i + 2) == 0:\n            return False\n        i += 6\n    return True\n\nprint(is_prime(29))  # True\nprint(is_prime(1))   # False\n```",
+            'p2' => "* **Mathematical Proof:**\nEvery composite integer $n$ has at least one prime divisor less than or equal to $\sqrt{n}$. If no divisor is found up to $\lfloor \sqrt{n} \rfloor$, $n$ is guaranteed to be prime.",
+            'subject' => 'Python & Coding Logic',
+            'chapter' => 'Mathematical Algorithms',
+            'topic' => 'Prime Number Verification'
+        ];
+    }
+
+    if ($directMatch !== null) {
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'data' => [
+                'question' => $question,
+                'paragraph1' => $directMatch['p1'],
+                'paragraph2' => $directMatch['p2'],
+                'answer' => $directMatch['p1'] . "\n\n" . $directMatch['p2'],
+                'matched_subject' => $directMatch['subject'],
+                'matched_chapter' => $directMatch['chapter'],
+                'matched_topic' => $directMatch['topic'],
+                'confidence_score' => 99.0,
                 'tutor_name' => 'SYNAPSE AI',
                 'created_at' => date('Y-m-d H:i:s')
             ]
@@ -828,13 +1252,36 @@ try {
     );
 
     if ($bestChunk !== null && $bestScore >= 12.0 && $normalizedScore >= 0.25) {
-        $subject = $bestChunk['subject'] ?? 'Tamil Nadu State Board';
+        $subject = $bestChunk['subject'] ?? 'Placement Prep';
         $chapter = $bestChunk['chapter'] ?? $bestChunk['topic'] ?? '';
         $topic = $bestChunk['topic'] ?? $chapter;
         $def = trim($bestChunk['definition'] ?? '');
         $formula = trim($bestChunk['formula'] ?? $bestChunk['formulaOrCoreRule'] ?? '');
         $example = trim($bestChunk['worked_example'] ?? $bestChunk['workedExample'] ?? '');
         $content = trim($bestChunk['content'] ?? '');
+
+        // Generate Real-Life Analogy
+        $normSub = strtolower($subject);
+        $normTop = strtolower($topic);
+        if (strpos($normSub, 'python') !== false) {
+            $analogy = (strpos($normTop, 'mutab') !== false)
+                ? "Think of an immutable object as an engraved metal plaque: its content cannot change without casting an entirely new plaque. A mutable object is like a whiteboard where you can erase and rewrite items in-place."
+                : "Think of $topic like a specialized tool in an engineer's toolkit, designed to simplify execution and prevent runtime bugs.";
+            $interviewTip = "Top tech rounds test edge cases such as mutating containers while iterating, and difference between O(1) hash map operations vs O(N) linear scans.";
+        } elseif (strpos($normSub, 'sql') !== false) {
+            $analogy = (strpos($normTop, 'join') !== false)
+                ? "Think of an INNER JOIN like two RSVP guest lists: only guests whose names appear on BOTH lists get admitted to the party. A LEFT JOIN admits everyone from the main list, adding details if available."
+                : "Think of $topic as an architectural foundation for relational data integrity and deterministic query plans.";
+            $interviewTip = "Interviewers evaluate query execution plans (EXPLAIN), sargable WHERE conditions, and index selectivity to avoid costly full-table scans.";
+        } elseif (strpos($normSub, 'ai') !== false) {
+            $analogy = (strpos($normTop, 'rag') !== false)
+                ? "Think of RAG like giving an intelligent student an open-book library during an exam so they retrieve verified facts rather than relying solely on memory."
+                : "Think of $topic like tuning soundboard equalizer knobs in real-time until audio distortion is minimized.";
+            $interviewTip = "Expect questions contrasting fine-tuning vs retrieval architectures, handling hallucination, and balancing latency vs model accuracy.";
+        } else {
+            $analogy = "Think of relative speed and rates like walking on an airport moving walkway: your speeds combine when walking with the direction and subtract when walking against it.";
+            $interviewTip = "Apply shortcut elimination: inspect unit digits, test divisibility rules, and eliminate mathematically absurd options first to solve under 45 seconds.";
+        }
 
         $bPrefix = $useEmojis ? "📘 " : "* ";
         $fPrefix = $useEmojis ? "⚡ " : "* ";
@@ -847,31 +1294,32 @@ try {
                 $p2Parts[] = "* **Formula / Core Principle:** $formula";
             }
             if ($includeExamples && !empty($example)) {
-                $p2Parts[] = "* **Key Example / Application:** $example";
+                $p2Parts[] = "* **Key Example / Code:** $example";
             }
-            $p2Parts[] = "* **Exam Takeaway:** High-yield board exam topic—review key steps and definitions.";
+            $p2Parts[] = "* **Placement Exam Focus & Takeaway:** High-yield technical interview topic—review key steps and definitions.";
             $p2 = implode("\n", $p2Parts);
             $fullAnswer = trim($p1 . "\n" . $p2);
         } elseif ($isElaborated) {
-            $p1 = "{$bPrefix}**In-Depth Breakdown: $topic** ($subject · $chapter)\n\n**1. Theoretical Foundations & Mechanism:**\n$content" .
-                  ($includeFormulas && !empty($formula) ? "\n\n**2. Mathematical Formulations & Derivations:**\n$formula" : "");
+            $p1 = "{$bPrefix}**In-Depth Breakdown: $topic** ($subject · $chapter)\n\n**1. Theoretical Foundations & Mechanism:**\n$content\n\n**2. Real-Life Analogy:**\n$analogy" .
+                  ($includeFormulas && !empty($formula) ? "\n\n**3. Mathematical Formulations & Derivations:**\n$formula" : "");
             $p2Parts = [];
             if ($includeExamples && !empty($example)) {
-                $p2Parts[] = "**3. Comprehensive Practical Application:**\n$example";
+                $p2Parts[] = "**4. Practical Implementation & Code Snippet:**\n$example";
             }
-            $p2Parts[] = "**4. High-Yield Exam Takeaway:**\nMastering $topic requires remembering key governing assumptions, units, and boundary conditions.";
+            $p2Parts[] = "**5. Placement Interview Tip & Key Takeaway:**\n$interviewTip";
             $p2 = implode("\n\n", $p2Parts);
             $fullAnswer = trim($p1 . "\n\n" . $p2);
         } else {
             // Clean * bullet points, zero emojis by default
-            $p1 = "{$bPrefix}**Concept & Definition** ($subject · $topic)\n$def";
+            $p1 = "{$bPrefix}**Concept & Definition** ($subject · $topic)\n$def\n\n{$bPrefix}**Real-Life Analogy:**\n$analogy";
             $p2Parts = [];
             if ($includeFormulas && !empty($formula)) {
                 $p2Parts[] = "{$fPrefix}**Formula / Core Principle:** $formula";
             }
             if ($includeExamples && !empty($example)) {
-                $p2Parts[] = "{$ePrefix}**Key Example & Practical Takeaway:** $example";
+                $p2Parts[] = "{$ePrefix}**Key Example & Code Snippet:** $example";
             }
+            $p2Parts[] = "* **Placement Interview Tip & Takeaway:** $interviewTip";
             $p2 = implode("\n", $p2Parts);
             $fullAnswer = trim($p1 . (empty($p2) ? "" : "\n" . $p2));
         }
