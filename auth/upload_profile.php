@@ -26,6 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 function buildPhotoUrl($photoPath) {
     if (empty($photoPath)) return null;
     if (preg_match('/^https?:\/\//i', $photoPath)) return $photoPath;
+    if (str_starts_with($photoPath, 'data:image')) return $photoPath;
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     return $protocol . $host . "/Synapse_backend/" . ltrim($photoPath, '/');
@@ -130,6 +131,21 @@ try {
             if (move_uploaded_file($file["tmp_name"], $destination)) {
                 $avatarUrl = "upload/profile/" . $filename;
             }
+        }
+    } elseif (!empty($_POST["profile_image_base64"]) || !empty($_POST["avatar_base64"]) || (isset($_POST["profile_photo"]) && str_starts_with($_POST["profile_photo"], "data:image"))) {
+        $base64Image = $_POST["profile_image_base64"] ?? $_POST["avatar_base64"] ?? $_POST["profile_photo"];
+        $uploadDir = __DIR__ . "/../upload/profile/";
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        if (strpos($base64Image, 'base64,') !== false) {
+            $base64Image = explode('base64,', $base64Image)[1];
+        }
+        $decodedData = base64_decode($base64Image);
+        if ($decodedData !== false) {
+            $filename = "avatar_" . $uid . "_" . time() . ".jpg";
+            file_put_contents($uploadDir . $filename, $decodedData);
+            $avatarUrl = "upload/profile/" . $filename;
         }
     }
 

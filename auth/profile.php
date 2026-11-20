@@ -16,7 +16,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 function buildPhotoUrl($photoPath) {
     if (empty($photoPath)) return null;
-    if (str_starts_with($photoPath, 'http')) return $photoPath;
+    if (str_starts_with($photoPath, 'http://') || str_starts_with($photoPath, 'https://')) return $photoPath;
+    if (str_starts_with($photoPath, 'data:image')) return $photoPath;
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     return $protocol . $host . "/Synapse_backend/" . ltrim($photoPath, '/');
@@ -239,7 +240,7 @@ if ($method === 'POST' || $method === 'PUT') {
         // Handle base64 avatar upload if provided
         $base64Image = $input['profile_image_base64'] ?? $input['avatar_base64'] ?? $_POST['profile_image_base64'] ?? null;
         if (!empty($base64Image)) {
-            $uploadsDir = __DIR__ . '/uploads/';
+            $uploadsDir = dirname(__DIR__) . '/upload/profile/';
             if (!is_dir($uploadsDir)) {
                 mkdir($uploadsDir, 0777, true);
             }
@@ -248,9 +249,9 @@ if ($method === 'POST' || $method === 'PUT') {
             }
             $decodedData = base64_decode($base64Image);
             if ($decodedData !== false) {
-                $avatarFile = "avatar_" . $uid . ".jpg";
+                $avatarFile = "avatar_" . $uid . "_" . time() . ".jpg";
                 file_put_contents($uploadsDir . $avatarFile, $decodedData);
-                $avatarUrl = "uploads/" . $avatarFile;
+                $avatarUrl = "upload/profile/" . $avatarFile;
             }
         }
 
