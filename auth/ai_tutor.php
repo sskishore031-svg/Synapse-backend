@@ -108,9 +108,9 @@ try {
         }
     }
 
-    if (preg_match('/^(?:from\s+now\s+on\s+)?(?:call\s+me\s+(?:by\s+my\s+name\s+|by\s+name\s+|with\s+my\s+name\s+)?|my\s+name\s+is\s+|name\s+is\s+|i\s+am\s+|i[\'’]m\s+)([a-zA-Z]+)/i', $question, $m)) {
-        $candidate = ucfirst(strtolower($m[1]));
-        if (!in_array(strtolower($candidate), ['by', 'my', 'name', 'a', 'an', 'the'], true) && strlen($candidate) >= 2) {
+    if (preg_match('/^(?:(?:hello|hi|hey)\s+)?(?:from\s+now\s+on\s+)?(?:call\s+me\s+(?:by\s+my\s+name\s+|by\s+name\s+|with\s+my\s+name\s+)?|my\s+name\s+(?:is\s+)?|name\s+is\s+|i\s+am\s+|i[\'’]m\s+|myself\s+|this\s+is\s+)([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/i', $question, $m)) {
+        $candidate = ucwords(strtolower(trim($m[1])));
+        if (!in_array(strtolower($candidate), ['by', 'my', 'name', 'a', 'an', 'the', 'what', 'who', 'say'], true) && strlen($candidate) >= 2) {
             $preferredName = $candidate;
             $reply = "Got it, $preferredName! From now on, I will call you $preferredName.";
             echo json_encode([
@@ -198,6 +198,61 @@ try {
             ]);
             exit();
         }
+    }
+
+    // =========================================================================
+    // STAGE 1.5: User Asking for Their Own Name ("say my name", "what is my name", "who am i")
+    // =========================================================================
+    $effectiveName = !empty($preferredName) ? $preferredName : (!empty($user['name']) ? trim($user['name']) : '');
+
+    $askOwnNamePhrases = [
+        'say my name', 'what is my name', 'whats my name', 'what s my name',
+        'tell my name', 'tell me my name', 'speak my name', 'call my name',
+        'who am i', 'who i am', 'do you know my name', 'do u know my name',
+        'can you say my name', 'can you tell my name', 'my name', 'my name please',
+        'what is my name please', 'say my name please', 'tell my name please',
+        'enoda name solu', 'enoda name sollu', 'ennoda name solu', 'ennoda name sollu',
+        'enoda name enna', 'ennoda name enna', 'en per enna', 'en peru enna', 'en peyar enna',
+        'en per solu', 'en peru solu', 'en peyar solu', 'enoda name theriyuma', 'my name enna',
+        'naan yaaru', 'naan yaar', 'nan yaru'
+    ];
+
+    $isAskingOwnName = in_array($normQuery, $askOwnNamePhrases, true);
+    if (!$isAskingOwnName) {
+        foreach ($askOwnNamePhrases as $aop) {
+            if (strpos($normQuery, $aop) !== false) {
+                $isAskingOwnName = true;
+                break;
+            }
+        }
+    }
+
+    if (!$isAskingOwnName && in_array('name', $cleanWords, true) && (in_array('my', $cleanWords, true) || in_array('me', $cleanWords, true))) {
+        if (in_array('say', $cleanWords, true) || in_array('tell', $cleanWords, true) || in_array('what', $cleanWords, true) || in_array('whats', $cleanWords, true) || in_array('know', $cleanWords, true) || in_array('speak', $cleanWords, true)) {
+            $isAskingOwnName = true;
+        }
+    }
+
+    if ($isAskingOwnName) {
+        if (!empty($effectiveName)) {
+            $reply = "Your name is **$effectiveName**! 😊 How can I help you with your placement preparation today, $effectiveName?";
+        } else {
+            $reply = "I don't know your name yet! What should I call you? You can tell me *'My name is Kishore'* or *'Call me Kishore'*.";
+        }
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'data' => [
+                'question' => $question,
+                'paragraph1' => $reply,
+                'paragraph2' => '',
+                'answer' => $reply,
+                'preferred_name' => $effectiveName,
+                'tutor_name' => 'SYNAPSE AI',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ]);
+        exit();
     }
 
     // =========================================================================
