@@ -166,7 +166,10 @@ if ($action === 'log_session' || ($_SERVER['REQUEST_METHOD'] === 'POST' && !isse
 // -----------------------------------------------------------------------------
 // Action: get_analytics
 // -----------------------------------------------------------------------------
-$timeFilter = strtolower(trim($_GET['time_filter'] ?? $input['time_filter'] ?? 'this_week'));
+$timeFilter = strtolower(trim($_GET['time_filter'] ?? $_GET['range'] ?? $input['time_filter'] ?? $input['range'] ?? 'this_week'));
+if ($timeFilter === 'this week') $timeFilter = 'this_week';
+if ($timeFilter === 'last week') $timeFilter = 'last_week';
+if ($timeFilter === 'this month') $timeFilter = 'this_month';
 if (!in_array($timeFilter, ['this_week', 'last_week', 'this_month'])) {
     $timeFilter = 'this_week';
 }
@@ -178,16 +181,22 @@ if (!preg_match('/^\d{4}-\d{2}$/', $reqMonth)) {
 
 // Determine filter date boundaries
 $today = date('Y-m-d');
+$dayOfWeek = (int)date('N'); // 1 (Mon) - 7 (Sun)
+$curMondayTime = strtotime('-' . ($dayOfWeek - 1) . ' days', strtotime($today));
+
 if ($timeFilter === 'last_week') {
-    $startDate = date('Y-m-d', strtotime('monday last week'));
-    $endDate = date('Y-m-d', strtotime('sunday last week'));
+    $refMonday = strtotime('-7 days', $curMondayTime);
+    $startDate = date('Y-m-d', $refMonday);
+    $endDate = date('Y-m-d', strtotime('+6 days', $refMonday));
 } elseif ($timeFilter === 'this_month') {
+    $refMonday = $curMondayTime;
     $startDate = date('Y-m-01');
     $endDate = date('Y-m-t');
 } else {
     // this_week (Monday to Sunday)
-    $startDate = date('Y-m-d', strtotime('monday this week'));
-    $endDate = date('Y-m-d', strtotime('sunday this week'));
+    $refMonday = $curMondayTime;
+    $startDate = date('Y-m-d', $curMondayTime);
+    $endDate = date('Y-m-d', strtotime('+6 days', $curMondayTime));
 }
 
 // 1. Gather all active study dates across study_sessions, quiz_records, and study_notes
@@ -299,10 +308,7 @@ $trackDailyMap = [ // track => [0..6 => minutes]
     'Aptitude & Interview Prep' => [0, 0, 0, 0, 0, 0, 0]
 ];
 
-// Reference Monday for day index 0..6
-$refMonday = ($timeFilter === 'last_week')
-    ? strtotime('monday last week')
-    : strtotime('monday this week');
+// Reference Monday for day index 0..6 (already computed accurately above)
 
 foreach ($sessionsInWindow as $s) {
     $mins = (int)$s['duration_minutes'];

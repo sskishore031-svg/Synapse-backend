@@ -1067,6 +1067,66 @@ try {
             'topic' => 'Object Identity vs Value Equality (`is` vs `==`)'
         ];
     }
+    // 11j. Process vs Thread
+    elseif (strpos($cleanQuery, 'process') !== false && strpos($cleanQuery, 'thread') !== false && (strpos($cleanQuery, 'vs') !== false || strpos($cleanQuery, 'difference') !== false || strpos($cleanQuery, 'compare') !== false)) {
+        $directMatch = [
+            'p1' => "* **Process vs. Thread Comparison:**\n\n• **Address Space:** A **Process** possesses an independent, isolated virtual memory space; **Threads** within the same process share the same code, data, and heap segments.\n• **Creation & Switching:** Creating and context switching processes involves heavy OS overhead (page table and TLB cache invalidation); Threads are lightweight and switch significantly faster.\n• **Communication:** Processes require Inter-Process Communication (IPC like sockets, pipes, shared memory); Threads communicate directly via shared memory (requiring synchronization primitives like mutexes to prevent race conditions).\n• **Crash Impact:** If one process crashes, other processes remain unaffected; if one thread encounters a fatal exception (like a segmentation fault), the entire parent process can crash.",
+            'p2' => "* **Placement Takeaway:**\nUse multi-threading for I/O-bound or shared-memory tasks. Use multi-processing for CPU-bound tasks in languages with a Global Interpreter Lock (GIL) or where memory isolation is paramount.",
+            'subject' => 'OS & Computer Networks',
+            'chapter' => 'Processes vs Threads, Concurrency & Deadlocks',
+            'topic' => 'Process vs Thread Comparison'
+        ];
+    }
+    // 11k. TCP vs UDP
+    elseif (strpos($cleanQuery, 'tcp') !== false && strpos($cleanQuery, 'udp') !== false && (strpos($cleanQuery, 'vs') !== false || strpos($cleanQuery, 'difference') !== false || strpos($cleanQuery, 'compare') !== false)) {
+        $directMatch = [
+            'p1' => "* **TCP vs. UDP Comparison:**\n\n• **Connection & Reliability:** **TCP** is connection-oriented and guarantees reliable, ordered byte-stream delivery via sequence numbers and ACKs; **UDP** is connectionless, unordered, and provides best-effort datagram delivery with zero delivery guarantees.\n• **Handshake:** TCP establishes connections using a 3-way handshake (SYN, SYN-ACK, ACK); UDP sends datagrams immediately without any connection setup.\n• **Header Overhead:** TCP has a minimum 20-byte header; UDP has a lightweight 8-byte header.\n• **Flow & Congestion Control:** TCP implements sliding window flow control and congestion avoidance (Slow Start, Fast Retransmit); UDP has zero congestion or flow control.",
+            'p2' => "* **Placement Use Cases:**\n• **TCP:** Web browsing (HTTP/HTTPS), file transfer (FTP), secure shell (SSH), email (SMTP).\n• **UDP:** Real-time video/audio streaming, online multiplayer gaming, DNS queries, VoIP.",
+            'subject' => 'OS & Computer Networks',
+            'chapter' => 'TCP vs UDP, Three-Way Handshake & Flow Control',
+            'topic' => 'TCP vs UDP Comparison'
+        ];
+    }
+    // 11l. Stack vs Queue
+    elseif (strpos($cleanQuery, 'stack') !== false && strpos($cleanQuery, 'queue') !== false && (strpos($cleanQuery, 'vs') !== false || strpos($cleanQuery, 'difference') !== false || strpos($cleanQuery, 'compare') !== false)) {
+        $directMatch = [
+            'p1' => "* **Stack vs. Queue Comparison:**\n\n• **Principle:** **Stack** operates on **LIFO** (Last In, First Out) — the newest element inserted is removed first; **Queue** operates on **FIFO** (First In, First Out) — the oldest element inserted is removed first.\n• **Primary Operations:** Stack uses `push()`, `pop()`, and `peek()`; Queue uses `enqueue()`, `dequeue()`, and `peek()`.\n• **Applications:** Stack is used in function call stacks, recursion, backtracking, undo/redo, and syntax parsing; Queue is used in BFS graph traversal, printer spooling, OS task scheduling, and message brokers.",
+            'p2' => "* **Complexity Note:**\nBoth Stacks and Queues achieve O(1) constant time complexity for insertions and deletions when backed by dynamic arrays or doubly linked lists.",
+            'subject' => 'Data Structures & Algorithms',
+            'chapter' => 'Stacks, Queues & Monotonic Stack',
+            'topic' => 'Stack vs Queue Comparison'
+        ];
+    }
+    // 11m. Array vs Linked List
+    elseif ((strpos($cleanQuery, 'array') !== false || strpos($cleanQuery, 'arrays') !== false) && strpos($cleanQuery, 'linked list') !== false && (strpos($cleanQuery, 'vs') !== false || strpos($cleanQuery, 'difference') !== false || strpos($cleanQuery, 'compare') !== false)) {
+        $directMatch = [
+            'p1' => "* **Array vs. Linked List Comparison:**\n\n• **Memory Layout:** Arrays store elements in **contiguous** memory blocks; Linked Lists store elements in non-contiguous nodes linked together via memory pointers.\n• **Random Access:** Arrays provide O(1) constant time random access via index `arr[i]`; Linked Lists require O(N) sequential pointer traversal.\n• **Insertion & Deletion:** Inserting or deleting at the beginning of an array is O(N) due to shifting elements; Linked Lists insert or delete at head in O(1) pointer update.\n• **Cache Locality:** Arrays exhibit superior CPU cache locality and spatial prefetching; Linked Lists suffer from cache misses and pointer memory overhead.",
+            'p2' => "* **Placement Takeaway:**\nChoose arrays for read-heavy or indexed operations. Choose linked lists when dynamic size allocation and frequent head/tail insertion without memory reallocation are required.",
+            'subject' => 'Data Structures & Algorithms',
+            'chapter' => 'Arrays, Two Pointers & Sliding Window',
+            'topic' => 'Array vs Linked List Comparison'
+        ];
+    }
+    // 11n. Overloading vs Overriding
+    elseif (strpos($cleanQuery, 'overloading') !== false && strpos($cleanQuery, 'overriding') !== false && (strpos($cleanQuery, 'vs') !== false || strpos($cleanQuery, 'difference') !== false || strpos($cleanQuery, 'compare') !== false)) {
+        $directMatch = [
+            'p1' => "* **Method Overloading vs. Method Overriding (Java/OOP):**\n\n• **Binding Time:** **Overloading** is resolved at **compile-time** (Static Binding); **Overriding** is resolved at **runtime** (Dynamic Method Dispatch).\n• **Class Context:** Overloading occurs within the same class; Overriding requires an inheritance relationship between parent and child classes.\n• **Method Signature:** Overloading requires different parameter types or parameter counts (return type alone cannot differentiate); Overriding requires identical method names and identical parameter signatures (return type can be covariant).\n• **Private & Static Methods:** Private and static methods can be overloaded, but **cannot** be overridden (static methods undergo method hiding).",
+            'p2' => "* **Placement Takeaway:**\nOverriding enforces runtime polymorphism. In Java, always decorate overridden methods with `@Override` so the compiler catches accidental signature discrepancies.",
+            'subject' => 'Java & OOPs Mastery',
+            'chapter' => 'OOPs 4 Pillars: Encapsulation, Inheritance, Polymorphism, Abstraction',
+            'topic' => 'Method Overloading vs Method Overriding'
+        ];
+    }
+    // 11o. StateFlow vs SharedFlow
+    elseif (strpos($cleanQuery, 'stateflow') !== false && strpos($cleanQuery, 'sharedflow') !== false && (strpos($cleanQuery, 'vs') !== false || strpos($cleanQuery, 'difference') !== false || strpos($cleanQuery, 'compare') !== false)) {
+        $directMatch = [
+            'p1' => "* **StateFlow vs. SharedFlow Comparison (Kotlin Coroutines):**\n\n• **State vs. Event:** **StateFlow** is a state-holder observable designed to represent persistent UI state (e.g. `UiState.Loading`); **SharedFlow** is an event bus designed for one-shot transient events (e.g. navigation, show snackbar).\n• **Initial Value:** StateFlow requires an initial value upon instantiation; SharedFlow does not require an initial value.\n• **Replay Cache:** StateFlow has a fixed replay cache of 1 (new subscribers immediately receive the latest value); SharedFlow has a configurable replay buffer (defaults to 0).\n• **Conflation:** StateFlow conflates consecutive identical values (will not re-emit if state has not changed); SharedFlow emits every single event regardless of value equality.",
+            'p2' => "* **Placement Android Architecture Tip:**\nExpose `StateFlow<UiState>` from ViewModels for UI screens, and expose `SharedFlow<UiEvent>` for one-off actions that should not re-trigger when the user rotates their screen.",
+            'subject' => 'Android & App Architecture',
+            'chapter' => 'Kotlin Coroutines & StateFlow / SharedFlow for Async Work',
+            'topic' => 'StateFlow vs SharedFlow Comparison'
+        ];
+    }
     // 12. How to / Code / Example
     // 12a. Reverse a string
     elseif (strpos($cleanQuery, 'reverse') !== false && (strpos($cleanQuery, 'string') !== false || strpos($cleanQuery, 'str') !== false)) {

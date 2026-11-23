@@ -2611,6 +2611,2579 @@
           ]
         }
       ]
+    },
+    {
+      "id": "DSA",
+      "subject_id": 105,
+      "name": "Data Structures & Algorithms",
+      "slug": "data-structures-algorithms",
+      "icon_symbol": "⚡",
+      "color_hex": "#F59E0B",
+      "category": "Placement Prep",
+      "description": "Master algorithmic time/space analysis, arrays, two pointers, sliding windows, linked lists, stacks, queues, and tree traversals for placement interviews.",
+      "is_added": false,
+      "chapters": [
+        {
+          "chapter_id": 10501,
+          "chapter_order": 1,
+          "title": "Time & Space Complexity (Big-O Analysis)",
+          "estimated_minutes": 15,
+          "summary": "Master asymptotic notation, worst/average/best case bounds, nested loop analysis, and recursion tree space complexity.",
+          "syllabus": [
+            "Big-O, Big-Omega, Big-Theta Definitions",
+            "Nested Loops & Polynomial vs Logarithmic Time",
+            "Recursive Call Stack Space Complexity",
+            "Auxiliary Space vs Overall Input/Output Space"
+          ],
+          "core_formulas": [
+            "O(1) < O(log N) < O(N) < O(N log N) < O(N^2) < O(2^N) < O(N!)",
+            "Binary Search: T(N) = T(N/2) + O(1) => O(log N)",
+            "Space Complexity = Max Call Stack Depth + Auxiliary Heap Allocations"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nBig-O is like planning a road trip: it is not about the exact seconds your car engine takes, but how fuel and travel time scale when the trip expands from 10 km to 1,000 km.\n\n### ⚡ Core Rule & Syntax\nAlways drop lower-order terms and multiplicative constants:\n`f(N) = 3N^2 + 50N + 1000 => O(N^2)`.\n\n```python\n# O(1) Constant\ndef get_first(arr): return arr[0] if arr else None\n\n# O(log N) Binary Search\ndef binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = low + (high - low) // 2\n        if arr[mid] == target: return mid\n        elif arr[mid] < target: low = mid + 1\n        else: high = mid - 1\n    return -1\n```\n\n### 🎯 Placement Interview Tip\nInterviewers love testing recursive stack space: A recursive Fibonacci `fib(N)` uses $O(N)$ stack depth despite $O(2^N)$ time complexity. Always state auxiliary space separately from input memory.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Common Complexities:**\n  - Array indexing / Hash map lookup: `O(1)`\n  - Binary Search: `O(log N)`\n  - Single loop through array: `O(N)`\n  - MergeSort / QuickSort (avg): `O(N log N)`\n  - Nested loops: `O(N^2)`\n  - Subsets generation: `O(2^N)`\n  - Permutations: `O(N!)`\n* **Recursion Stack:** Call stack memory equals maximum tree depth.",
+          "exam_tip": "Placement Tip: When evaluating algorithms, if input size N <= 10^5, aim for O(N) or O(N log N). If N <= 10^3, O(N^2) is acceptable. If N <= 20, O(2^N) backtracking will pass.",
+          "mcqs": [
+            {
+              "id": 105011,
+              "question_number": 1,
+              "question": "What is the time complexity of searching for an element in an unsorted array of size N?",
+              "options": {
+                "A": "O(1)",
+                "B": "O(log N)",
+                "C": "O(N)",
+                "D": "O(N log N)"
+              },
+              "correct_option": "C",
+              "explanation": "In an unsorted array, we may need to examine every element in the worst case, resulting in O(N) linear time."
+            },
+            {
+              "id": 105012,
+              "question_number": 2,
+              "question": "What is the worst-case auxiliary space complexity of standard recursive Depth First Search (DFS) on a binary tree of N nodes?",
+              "options": {
+                "A": "O(1)",
+                "B": "O(log N)",
+                "C": "O(N)",
+                "D": "O(N^2)"
+              },
+              "correct_option": "C",
+              "explanation": "In a skewed (degenerate) tree, the recursion stack depth reaches N calls, giving O(N) auxiliary space."
+            },
+            {
+              "id": 105013,
+              "question_number": 3,
+              "question": "Which of the following complexity classes grows the FASTEST as N increases?",
+              "options": {
+                "A": "O(N^3)",
+                "B": "O(2^N)",
+                "C": "O(N log N)",
+                "D": "O(N!)"
+              },
+              "correct_option": "D",
+              "explanation": "O(N!) factorial growth surpasses exponential O(2^N) and polynomial O(N^3) for large N."
+            },
+            {
+              "id": 105014,
+              "question_number": 4,
+              "question": "If an algorithm performs 5*N^2 + 100*N + 45 operations, what is its asymptotic Big-O time complexity?",
+              "options": {
+                "A": "O(N^2)",
+                "B": "O(5N^2)",
+                "C": "O(N)",
+                "D": "O(100N)"
+              },
+              "correct_option": "A",
+              "explanation": "Asymptotic analysis discards constant coefficients and lower-order terms, simplifying to O(N^2)."
+            },
+            {
+              "id": 105015,
+              "question_number": 5,
+              "question": "What is the time complexity of inserting an element at the end of a dynamic array (like Python list or Java ArrayList) when capacity is not exceeded?",
+              "options": {
+                "A": "O(1) amortized",
+                "B": "O(N)",
+                "C": "O(log N)",
+                "D": "O(N^2)"
+              },
+              "correct_option": "A",
+              "explanation": "Appending to the end of a dynamic array takes O(1) amortized time."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "DSA_10501_01",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Time & Space Complexity (Big-O Analysis)",
+              "topic": "Asymptotic Notation & Order of Growth",
+              "keywords": [
+                "big-o",
+                "time complexity",
+                "space complexity",
+                "asymptotic",
+                "growth order"
+              ],
+              "definition": "Big-O notation describes the upper bound of an algorithm's execution time or memory requirement as input size scales towards infinity.",
+              "formula_or_core_rule": "O(1) < O(log N) < O(N) < O(N log N) < O(N^2) < O(2^N) < O(N!). Drop constants and lower-order terms.",
+              "worked_example": "A loop running N times with an inner loop running N/2 times executes N*(N/2) = 0.5*N^2 operations => O(N^2).",
+              "content": "Foundational understanding of Big-O, Big-Omega, Big-Theta, and auxiliary space analysis for placement coding assessments."
+            },
+            {
+              "chunk_id": "DSA_10501_02",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Time & Space Complexity (Big-O Analysis)",
+              "topic": "Recursion Call Stack & Space Bounds",
+              "keywords": [
+                "recursion",
+                "call stack",
+                "auxiliary space",
+                "stack depth",
+                "fibonacci complexity"
+              ],
+              "definition": "Auxiliary space measures extra memory used beyond the input, dominated by function call frames in recursive algorithms.",
+              "formula_or_core_rule": "Max Call Stack Depth = Depth of the deepest recursive path in execution tree.",
+              "worked_example": "Binary search call stack is O(log N) deep, whereas unoptimized recursive Fibonacci call stack is O(N) deep.",
+              "content": "Techniques for assessing space complexity and memory limits during technical coding rounds."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10502,
+          "chapter_order": 2,
+          "title": "Arrays, Two Pointers & Sliding Window",
+          "estimated_minutes": 15,
+          "summary": "Master array operations, two-pointer convergence, prefix sums, and fixed/dynamic sliding window patterns.",
+          "syllabus": [
+            "Array Memory Layout & Cache Locality",
+            "Two Pointers on Sorted Arrays (Opposite & Same Direction)",
+            "Fixed vs Variable Sliding Window Strategy",
+            "Prefix Sum Arrays for O(1) Range Queries"
+          ],
+          "core_formulas": [
+            "PrefixSum[R] - PrefixSum[L - 1] = sum of subarray from index L to R",
+            "Two Pointers reduces O(N^2) pair matching to O(N) on sorted arrays",
+            "Sliding Window invariant: expand right pointer R, shrink left pointer L when invalid"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nTwo pointers are like two readers starting from the opposite ends of a dictionary searching for a matching word pair, meeting in the middle without rereading pages!\n\n### ⚡ Core Rule & Syntax\n```python\n# Two Pointers: 2-Sum in Sorted Array O(N) time, O(1) space\ndef two_sum_sorted(arr, target):\n    left, right = 0, len(arr) - 1\n    while left < right:\n        curr_sum = arr[left] + arr[right]\n        if curr_sum == target:\n            return (left, right)\n        elif curr_sum < target:\n            left += 1\n        else:\n            right -= 1\n    return None\n```\n\n### 🎯 Placement Interview Tip\nWhen an interview problem asks for 'subarray with sum K', use Prefix Sum + Hash Map for arrays with negative numbers, but use Sliding Window for non-negative numbers to achieve O(1) auxiliary space.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Two Pointers:** Opposite ends (`left`, `right`), fast/slow (`slow`, `fast`).\n* **Sliding Window:** Expand `right`, update window state, contract `left` while constraint is violated.\n* **Prefix Sum:** `prefix[i] = prefix[i-1] + arr[i]`. Range sum `[L, R] = prefix[R] - (prefix[L-1] if L > 0 else 0)`.",
+          "exam_tip": "Placement Tip: If an array problem mentions 'consecutive elements' or 'contiguous subarray', think Sliding Window or Prefix Sum immediately.",
+          "mcqs": [
+            {
+              "id": 105021,
+              "question_number": 1,
+              "question": "What is the time complexity of the Two-Pointer technique to find two numbers that sum to target in a SORTED array?",
+              "options": {
+                "A": "O(N^2)",
+                "B": "O(N)",
+                "C": "O(log N)",
+                "D": "O(1)"
+              },
+              "correct_option": "B",
+              "explanation": "Since each pointer moves at most N times in one direction, total time is O(N)."
+            },
+            {
+              "id": 105022,
+              "question_number": 2,
+              "question": "Which data structure enables finding a subarray with sum K in O(N) time when elements can be NEGATIVE?",
+              "options": {
+                "A": "Sliding Window",
+                "B": "Prefix Sum + Hash Map",
+                "C": "Binary Search Tree",
+                "D": "Priority Queue"
+              },
+              "correct_option": "B",
+              "explanation": "Negative numbers break monotonicity needed for sliding window, so Prefix Sum + Hash Map storing previous prefix sums is required."
+            },
+            {
+              "id": 105023,
+              "question_number": 3,
+              "question": "In a sliding window of fixed size K over array of size N, how many windows are evaluated?",
+              "options": {
+                "A": "N - K + 1",
+                "B": "N + K",
+                "C": "N * K",
+                "D": "N / K"
+              },
+              "correct_option": "A",
+              "explanation": "There are exactly N - K + 1 contiguous windows of size K in an array of length N."
+            },
+            {
+              "id": 105024,
+              "question_number": 4,
+              "question": "Why do arrays offer superior cache performance compared to linked lists?",
+              "options": {
+                "A": "They use less memory",
+                "B": "Contiguous memory layout provides spatial locality",
+                "C": "They are dynamic",
+                "D": "They don't store integers"
+              },
+              "correct_option": "B",
+              "explanation": "Contiguous memory allows the CPU cache line to prefetch subsequent array elements, minimizing cache misses."
+            },
+            {
+              "id": 105025,
+              "question_number": 5,
+              "question": "What is the space complexity of reversing an array in-place using two pointers?",
+              "options": {
+                "A": "O(N)",
+                "B": "O(log N)",
+                "C": "O(1)",
+                "D": "O(N^2)"
+              },
+              "correct_option": "C",
+              "explanation": "In-place reversal swaps elements using a single temporary variable, consuming O(1) auxiliary space."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "DSA_10502_01",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Arrays, Two Pointers & Sliding Window",
+              "topic": "Two-Pointer Optimization Patterns",
+              "keywords": [
+                "two pointers",
+                "sorted array",
+                "pair sum",
+                "palindrome check",
+                "array reversal"
+              ],
+              "definition": "The two-pointer technique uses two directional index markers traversing an iterable towards or away from each other.",
+              "formula_or_core_rule": "Reduces O(N^2) brute-force nested loops to O(N) linear time on monotonic/sorted sequences.",
+              "worked_example": "Finding pairs in [1, 3, 5, 7, 10] with target 12: 2 pointers check (1+10=11<12 => left++), (3+10=13>12 => right--), (5+7=12 => found).",
+              "content": "In-depth guide on applying two-pointer patterns to technical interviews."
+            },
+            {
+              "chunk_id": "DSA_10502_02",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Arrays, Two Pointers & Sliding Window",
+              "topic": "Sliding Window Algorithm Invariants",
+              "keywords": [
+                "sliding window",
+                "subarray",
+                "contiguous",
+                "frequency map",
+                "maximum sum window"
+              ],
+              "definition": "Sliding window maintains a dynamic subset of contiguous elements governed by start and end indices.",
+              "formula_or_core_rule": "Expand right index while condition holds; contract left index when window invariant is broken.",
+              "worked_example": "Longest Substring Without Repeating Characters: keep character last-seen index map and adjust left pointer.",
+              "content": "Sliding window patterns and state management strategies for placement coding."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10503,
+          "chapter_order": 3,
+          "title": "Linked Lists & Fast/Slow Pointers",
+          "estimated_minutes": 15,
+          "summary": "Master singly/doubly linked lists, in-place reversal, Floyd's cycle detection, and middle element lookup.",
+          "syllabus": [
+            "Singly vs Doubly Linked List Node Structure",
+            "Iterative & Recursive In-Place Reversal",
+            "Floyd's Tortoise & Hare Cycle Detection Algorithm",
+            "Finding Middle Element & Palindrome Linked List"
+          ],
+          "core_formulas": [
+            "Floyd's Cycle: fast moves 2 steps, slow moves 1 step. Collision proves cycle existence.",
+            "Cycle Start: Reset one pointer to head; move both 1 step until they meet.",
+            "In-place Reversal: prev = null, curr = head; while curr: next = curr.next, curr.next = prev, prev = curr, curr = next"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nA linked list is like a treasure hunt: each clue card has a message and coordinates pointing to the next card.\nFast & Slow pointers are like two athletes on a circular running track: the 2x runner will inevitably lap and bump into the 1x runner!\n\n### ⚡ Core Rule & Syntax\n```python\n# Floyd's Cycle Detection O(N) time, O(1) space\ndef has_cycle(head):\n    slow = fast = head\n    while fast and fast.next:\n        slow = slow.next\n        fast = fast.next.next\n        if slow == fast:\n            return True\n    return False\n```\n\n### 🎯 Placement Interview Tip\nWhen reversing a linked list, use a dummy head node `dummy = ListNode(0, head)` to eliminate edge cases when modifying the first node of the list.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Node Structure:** `val`, `next` (and `prev` for DLL).\n* **Middle of List:** When `fast` reaches end (`fast == None` or `fast.next == None`), `slow` is at the exact middle.\n* **Cycle Detection:** Floyd's Tortoise and Hare algorithm detects cycles in $O(N)$ time with $O(1)$ space.",
+          "exam_tip": "Placement Tip: Always verify null checks (`curr != null && curr.next != null`) before dereferencing pointers to avoid NullPointerException / AttributeError.",
+          "mcqs": [
+            {
+              "id": 105031,
+              "question_number": 1,
+              "question": "What is the time complexity to find the middle node of a singly linked list in a single pass?",
+              "options": {
+                "A": "O(1)",
+                "B": "O(log N)",
+                "C": "O(N)",
+                "D": "O(N^2)"
+              },
+              "correct_option": "C",
+              "explanation": "Using fast and slow pointers, the list is traversed once in O(N) time."
+            },
+            {
+              "id": 105032,
+              "question_number": 2,
+              "question": "In Floyd's Cycle Detection Algorithm, if a cycle exists, why must fast and slow pointers meet?",
+              "options": {
+                "A": "Fast pointer stops",
+                "B": "Relative distance between fast and slow decreases by 1 each step",
+                "C": "Slow pointer is faster",
+                "D": "Nodes are indexed"
+              },
+              "correct_option": "B",
+              "explanation": "Fast moves 2 steps while slow moves 1 step, so the distance between them shrinks by 1 step in each iteration inside the cycle."
+            },
+            {
+              "id": 105033,
+              "question_number": 3,
+              "question": "What is the auxiliary space complexity of iteratively reversing a singly linked list of N nodes?",
+              "options": {
+                "A": "O(N)",
+                "B": "O(log N)",
+                "C": "O(1)",
+                "D": "O(N^2)"
+              },
+              "correct_option": "C",
+              "explanation": "Iterative reversal modifies pointers in-place using three pointer variables, requiring O(1) space."
+            },
+            {
+              "id": 105034,
+              "question_number": 4,
+              "question": "What is the primary advantage of a Doubly Linked List over a Singly Linked List?",
+              "options": {
+                "A": "Uses less memory",
+                "B": "Allows bidirectional traversal and O(1) deletion given node pointer",
+                "C": "Random access O(1)",
+                "D": "Always sorted"
+              },
+              "correct_option": "B",
+              "explanation": "With previous pointers, a node can be unlinked in O(1) time without searching for the preceding node."
+            },
+            {
+              "id": 105035,
+              "question_number": 5,
+              "question": "What is the purpose of using a 'Dummy Head' (Sentinel Node) in linked list problems?",
+              "options": {
+                "A": "Reduces time complexity to O(1)",
+                "B": "Simplifies edge cases like inserting or deleting the head node",
+                "C": "Sorts the list automatically",
+                "D": "Prevents memory allocation"
+              },
+              "correct_option": "B",
+              "explanation": "A dummy node eliminates special-case branching when operating on the list head."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "DSA_10503_01",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Linked Lists & Fast/Slow Pointers",
+              "topic": "Floyd's Cycle Finding & Linked List Traversal",
+              "keywords": [
+                "linked list",
+                "floyd cycle",
+                "tortoise hare",
+                "cycle detection",
+                "middle node"
+              ],
+              "definition": "Floyd's cycle detection algorithm determines whether a linked list contains a loop using two pointers traversing at differing speeds.",
+              "formula_or_core_rule": "Fast moves 2x speed, slow moves 1x speed. Collision occurs in at most N steps if cycle exists.",
+              "worked_example": "Detecting cycle: slow and fast meet at node K. Reset slow to head, advance slow and fast by 1 step => they meet at cycle origin.",
+              "content": "Pointers manipulation, cycle detection, and linked list interview questions."
+            },
+            {
+              "chunk_id": "DSA_10503_02",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Linked Lists & Fast/Slow Pointers",
+              "topic": "In-Place Linked List Reversal",
+              "keywords": [
+                "reverse linked list",
+                "in-place",
+                "pointer manipulation",
+                "dummy node"
+              ],
+              "definition": "In-place linked list reversal alters node next pointers so the tail becomes the new head without allocating new node structures.",
+              "formula_or_core_rule": "Three pointers: prev, curr, next. Invert curr.next to point to prev and slide forward.",
+              "worked_example": "Reversing 1 -> 2 -> 3: iteratively rewire pointers yielding 3 -> 2 -> 1 -> null in O(N) time, O(1) space.",
+              "content": "Iterative and recursive techniques for reversing linked lists in placement rounds."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10504,
+          "chapter_order": 4,
+          "title": "Stacks, Queues & Monotonic Stack",
+          "estimated_minutes": 15,
+          "summary": "Master LIFO/FIFO fundamentals, circular queues, valid parentheses, and monotonic stack for next greater element.",
+          "syllabus": [
+            "Stack (LIFO) & Queue (FIFO) Implementations",
+            "Valid Parentheses Matching Algorithm",
+            "Circular Queue & Deque (Double-Ended Queue)",
+            "Monotonic Stack for Next Greater Element (NGE)"
+          ],
+          "core_formulas": [
+            "Stack: push O(1), pop O(1), peek O(1)",
+            "Queue: enqueue O(1), dequeue O(1)",
+            "Monotonic Stack: Each element pushed and popped at most once => O(N) total runtime"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nA stack is like a stack of cafeteria dinner plates: the plate placed on top last is the first one picked up (LIFO). A queue is like a cinema ticket line (FIFO).\nA monotonic stack is like a row of buildings: each newly constructed taller building blocks the view of shorter buildings behind it!\n\n### ⚡ Core Rule & Syntax\n```python\n# Next Greater Element via Monotonic Decreasing Stack O(N) time\ndef next_greater_elements(arr):\n    res = [-1] * len(arr)\n    stack = []  # stores indices\n    for i, num in enumerate(arr):\n        while stack and arr[stack[-1]] < num:\n            idx = stack.pop()\n            res[idx] = num\n        stack.append(i)\n    return res\n```\n\n### 🎯 Placement Interview Tip\nWhenever an interview problem asks for 'Next Greater Element', 'Stock Span', or 'Largest Rectangle in Histogram', use a Monotonic Stack to crush the problem in O(N) linear time.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **LIFO:** Stack (browser history, function calls).\n* **FIFO:** Queue (BFS, printer jobs, scheduling).\n* **Monotonic Stack:** Elements strictly increasing or decreasing. Every item pushed once, popped once => $O(N)$ amortized time.",
+          "exam_tip": "Placement Tip: When implementing a queue using two stacks, enqueue into Stack 1 and dequeue from Stack 2. Dequeue takes O(1) amortized time.",
+          "mcqs": [
+            {
+              "id": 105041,
+              "question_number": 1,
+              "question": "What is the time complexity of finding the Next Greater Element for all elements in an array of size N using a Monotonic Stack?",
+              "options": {
+                "A": "O(N^2)",
+                "B": "O(N)",
+                "C": "O(N log N)",
+                "D": "O(log N)"
+              },
+              "correct_option": "B",
+              "explanation": "Every element is pushed onto and popped from the stack at most once, resulting in O(N) total linear time."
+            },
+            {
+              "id": 105042,
+              "question_number": 2,
+              "question": "Which data structure is fundamentally utilized to evaluate and validate balanced parentheses in a code compiler?",
+              "options": {
+                "A": "Queue",
+                "B": "Stack",
+                "C": "Binary Search Tree",
+                "D": "Min-Heap"
+              },
+              "correct_option": "B",
+              "explanation": "A stack pushes opening brackets and pops matching closing brackets in LIFO order."
+            },
+            {
+              "id": 105043,
+              "question_number": 3,
+              "question": "How can a Queue be implemented using TWO Stacks with amortized O(1) operations?",
+              "options": {
+                "A": "Push to inStack, pop from outStack (refill outStack when empty)",
+                "B": "Push to both stacks",
+                "C": "Pop from both stacks",
+                "D": "Sort the stacks"
+              },
+              "correct_option": "A",
+              "explanation": "InStack receives new items, outStack dispenses them in FIFO order. Elements are transferred only when outStack is empty."
+            },
+            {
+              "id": 105044,
+              "question_number": 4,
+              "question": "What is the auxiliary space complexity of checking balanced parentheses for a string of length N?",
+              "options": {
+                "A": "O(1)",
+                "B": "O(N)",
+                "C": "O(log N)",
+                "D": "O(N^2)"
+              },
+              "correct_option": "B",
+              "explanation": "In the worst case (all opening brackets '((((...'), the stack holds N characters, requiring O(N) space."
+            },
+            {
+              "id": 105045,
+              "question_number": 5,
+              "question": "Which of the following is a key application of a Double-Ended Queue (Deque)?",
+              "options": {
+                "A": "Sliding Window Maximum in O(N) time",
+                "B": "Binary search",
+                "C": "QuickSort pivot",
+                "D": "Hash table collision"
+              },
+              "correct_option": "A",
+              "explanation": "A monotonic Deque enables computing sliding window maximums in O(N) time by pushing and popping from both ends."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "DSA_10504_01",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Stacks, Queues & Monotonic Stack",
+              "topic": "Monotonic Stack Pattern & Applications",
+              "keywords": [
+                "monotonic stack",
+                "next greater element",
+                "histogram",
+                "stock span",
+                "lifo"
+              ],
+              "definition": "A monotonic stack preserves elements in strictly ascending or descending order by evicting violating elements upon insertion.",
+              "formula_or_core_rule": "Every element enters and leaves the stack at most once, yielding O(N) amortized linear complexity.",
+              "worked_example": "Daily Temperatures problem: maintain decreasing stack of temperatures and calculate day differences upon finding warmer day.",
+              "content": "Deep dive into monotonic stack and deque strategies for campus placement rounds."
+            },
+            {
+              "chunk_id": "DSA_10504_02",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Stacks, Queues & Monotonic Stack",
+              "topic": "Stack & Queue Fundamentals",
+              "keywords": [
+                "stack",
+                "queue",
+                "parentheses matching",
+                "circular queue",
+                "fifo"
+              ],
+              "definition": "Stacks enforce Last-In-First-Out access, while Queues enforce First-In-First-Out access.",
+              "formula_or_core_rule": "Standard stack/queue push, pop, peek operations run in O(1) time.",
+              "worked_example": "Balanced parentheses: map opening brackets to closing equivalents and verify matching stack top.",
+              "content": "Foundational stack and queue algorithms frequently asked in technical interviews."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10505,
+          "chapter_order": 5,
+          "title": "Binary Search & Tree Traversals (BFS/DFS)",
+          "estimated_minutes": 15,
+          "summary": "Master binary search invariants, BST properties, Pre/In/Post-order traversals, and level-order BFS.",
+          "syllabus": [
+            "Binary Search Boundary Conditions & Invariants",
+            "Binary Search Tree (BST) Properties & Search",
+            "Tree Traversals: Pre-order, In-order, Post-order",
+            "Breadth-First Search (BFS) Level-Order Traversal"
+          ],
+          "core_formulas": [
+            "mid = low + (high - low) / 2 prevents 32-bit integer overflow",
+            "In-order traversal of a valid BST produces strictly sorted values",
+            "BFS Level Order uses a FIFO Queue: pop node, enqueue left, enqueue right"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nBinary search is like finding a name in a printed telephone directory: you flip to the exact middle, inspect the letter, and throw away half the book!\nBFS is like ripples spreading in a pond level by level, while DFS is like exploring one cave branch until you hit a wall.\n\n### ⚡ Core Rule & Syntax\n```python\n# In-order Traversal (Recursive): Left -> Root -> Right\ndef inorder(root):\n    return inorder(root.left) + [root.val] + inorder(root.right) if root else []\n\n# Level Order Traversal (BFS) using Queue\nfrom collections import deque\ndef level_order(root):\n    if not root: return []\n    q = deque([root])\n    result = []\n    while q:\n        level = []\n        for _ in range(len(q)):\n            node = q.popleft()\n            level.append(node.val)\n            if node.left: q.append(node.left)\n            if node.right: q.append(node.right)\n        result.append(level)\n    return result\n```\n\n### 🎯 Placement Interview Tip\nRemember `low + (high - low) // 2` to avoid integer overflow in languages like Java/C++. In BST verification, pass range boundaries `(min_val, max_val)` down the recursive tree.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Pre-order:** Root -> Left -> Right (tree cloning, serialization).\n* **In-order:** Left -> Root -> Right (BST yields sorted order).\n* **Post-order:** Left -> Right -> Root (tree deletion, bottom-up subproblem computation).\n* **Level-order:** Queue-based BFS (shortest path in unweighted graphs).",
+          "exam_tip": "Placement Tip: When asked 'Find depth/diameter of binary tree', think Post-order DFS where each node returns 1 + max(left_depth, right_depth).",
+          "mcqs": [
+            {
+              "id": 105051,
+              "question_number": 1,
+              "question": "Which tree traversal yields elements in ASCENDING sorted order when applied to a valid Binary Search Tree (BST)?",
+              "options": {
+                "A": "Pre-order",
+                "B": "In-order",
+                "C": "Post-order",
+                "D": "Level-order"
+              },
+              "correct_option": "B",
+              "explanation": "In-order traversal visits Left -> Root -> Right, which matches the ordering definition of a Binary Search Tree."
+            },
+            {
+              "id": 105052,
+              "question_number": 2,
+              "question": "Why is 'mid = low + (high - low) / 2' preferred over 'mid = (low + high) / 2' in Binary Search?",
+              "options": {
+                "A": "It executes in O(1) time",
+                "B": "It prevents 32-bit signed integer overflow when low + high exceeds 2^31 - 1",
+                "C": "It handles float values",
+                "D": "It works on unsorted arrays"
+              },
+              "correct_option": "B",
+              "explanation": "Adding two large 32-bit integers can exceed INT_MAX and produce negative indices; subtraction avoids overflow."
+            },
+            {
+              "id": 105053,
+              "question_number": 3,
+              "question": "What is the worst-case time complexity of searching in an UNBALANCED binary search tree of N nodes?",
+              "options": {
+                "A": "O(1)",
+                "B": "O(log N)",
+                "C": "O(N)",
+                "D": "O(N log N)"
+              },
+              "correct_option": "C",
+              "explanation": "In a degenerate skewed BST (like a linked list), search degrades to O(N) linear time."
+            },
+            {
+              "id": 105054,
+              "question_number": 4,
+              "question": "Which data structure is essential for performing Level-Order (Breadth-First Search) traversal of a binary tree?",
+              "options": {
+                "A": "Stack",
+                "B": "Queue",
+                "C": "Priority Queue",
+                "D": "Hash Map"
+              },
+              "correct_option": "B",
+              "explanation": "A FIFO queue processes tree nodes level by level in the order they are visited."
+            },
+            {
+              "id": 105055,
+              "question_number": 5,
+              "question": "What is the maximum number of nodes on level L of a binary tree (root at level 0)?",
+              "options": {
+                "A": "2^L",
+                "B": "2^(L + 1) - 1",
+                "C": "2 * L",
+                "D": "L^2"
+              },
+              "correct_option": "A",
+              "explanation": "Each level doubles the capacity of the previous level, so level L can hold up to 2^L nodes."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "DSA_10505_01",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Binary Search & Tree Traversals (BFS/DFS)",
+              "topic": "Binary Search Boundary Conditions",
+              "keywords": [
+                "binary search",
+                "search range",
+                "invariants",
+                "integer overflow",
+                "sorted array"
+              ],
+              "definition": "Binary search finds target positions within sorted arrays by halving search boundaries in logarithmic time.",
+              "formula_or_core_rule": "T(N) = T(N/2) + O(1) => O(log N) time, O(1) space.",
+              "worked_example": "Binary search on rotated sorted array: identify which half is sorted and determine if target falls within sorted boundary.",
+              "content": "Binary search algorithms, predicate matching, and lower/upper bound calculations."
+            },
+            {
+              "chunk_id": "DSA_10505_02",
+              "subject": "Data Structures & Algorithms",
+              "chapter": "Binary Search & Tree Traversals (BFS/DFS)",
+              "topic": "Tree Traversals (DFS vs BFS)",
+              "keywords": [
+                "tree traversal",
+                "dfs",
+                "bfs",
+                "inorder",
+                "level order"
+              ],
+              "definition": "Tree traversals systematically visit every node in a hierarchical tree structure via depth-first or breadth-first order.",
+              "formula_or_core_rule": "In-order traversal of BST produces sorted sequences. BFS uses Queue; DFS uses Stack/Recursion.",
+              "worked_example": "Validating BST: ensure root.val > max(left_subtree) and root.val < min(right_subtree) recursively.",
+              "content": "Comprehensive guide to tree traversals, tree depth, and BST validation for technical interviews."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "JAVA_OOPS",
+      "subject_id": 106,
+      "name": "Java & OOPs Mastery",
+      "slug": "java-oops-mastery",
+      "icon_symbol": "☕",
+      "color_hex": "#EC4899",
+      "category": "Placement Prep",
+      "description": "Master JVM architecture, the 4 OOP pillars, memory management, String Pool, Collections framework, and multithreading basics for enterprise placement rounds.",
+      "is_added": false,
+      "chapters": [
+        {
+          "chapter_id": 10601,
+          "chapter_order": 1,
+          "title": "JVM Architecture, Memory & Bytecode",
+          "estimated_minutes": 15,
+          "summary": "Master JVM memory layout (Heap, Stack, Method Area), class loading subsystem, JIT compiler, and garbage collection.",
+          "syllabus": [
+            "JVM Architecture: ClassLoader, Execution Engine, JIT",
+            "JVM Memory Areas: Heap, Stack, Method Area, PC Registers",
+            "StackOverflowError vs OutOfMemoryError",
+            "Garbage Collection Generations: Young, Old, Metaspace"
+          ],
+          "core_formulas": [
+            "Java is compiled to Bytecode (.class) and interpreted/JIT-compiled by JVM",
+            "Stack stores primitive variables & object references (per thread)",
+            "Heap stores all object instances and arrays (shared across all threads)"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nThe JVM is like an international translation team. `javac` compiles Java code into universal shorthand (Bytecode `.class`), and the JVM on Windows, Mac, or Linux translates it into native machine code (\"Write Once, Run Anywhere\").\n\n### ⚡ Core Rule & Syntax\n* **Heap:** Shared across all threads. Holds all objects created with `new`. Subject to Garbage Collection.\n* **Stack:** Private per thread. Holds local variables and method call frames. Fast and automatically reclaimed on method exit.\n\n```java\npublic class MemoryDemo {\n    public static void main(String[] args) {\n        int x = 10;            // 'x' stored in Stack\n        String name = \"Java\";  // 'name' reference in Stack, \"Java\" in String Pool\n        User u = new User();   // 'u' reference in Stack, User object in Heap\n    }\n}\n```\n\n### 🎯 Placement Interview Tip\nWhen asked 'Is Java purely pass-by-value?', always answer: **'Yes! Java is strictly pass-by-value.'** When passing objects, the value being passed is the copy of the reference address.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Memory Breakdown:**\n  - *Stack:* Method execution frames, local primitives, object reference variables.\n  - *Heap:* Young Generation (Eden, S0, S1) + Old/Tenured Generation.\n  - *Metaspace:* Class metadata (replaces PermGen in Java 8+).\n* **Errors:** `StackOverflowError` = deep recursion; `OutOfMemoryError` = heap exhausted.",
+          "exam_tip": "Placement Tip: When asked why Java doesn't support explicit pointers, reply: 'Security, memory safety, and abstraction: JVM handles memory management and Garbage Collection automatically.'",
+          "mcqs": [
+            {
+              "id": 106011,
+              "question_number": 1,
+              "question": "Where does the JVM allocate memory for an object instantiated using the 'new' keyword?",
+              "options": {
+                "A": "Call Stack",
+                "B": "Heap Memory",
+                "C": "Method Area",
+                "D": "PC Register"
+              },
+              "correct_option": "B",
+              "explanation": "All Java objects and arrays are dynamically allocated inside Heap memory, while references to them reside in Stack frames."
+            },
+            {
+              "id": 106012,
+              "question_number": 2,
+              "question": "What error occurs when a recursive function in Java lacks a proper base termination condition?",
+              "options": {
+                "A": "OutOfMemoryError",
+                "B": "StackOverflowError",
+                "C": "NullPointerException",
+                "D": "ClassCastException"
+              },
+              "correct_option": "B",
+              "explanation": "Infinite recursion pushes excessive method call frames onto the thread's call stack, triggering StackOverflowError."
+            },
+            {
+              "id": 106013,
+              "question_number": 3,
+              "question": "Which component of the JVM compiles frequently executed bytecode into native machine code at runtime?",
+              "options": {
+                "A": "ClassLoader",
+                "B": "JIT (Just-In-Time) Compiler",
+                "C": "Garbage Collector",
+                "D": "Security Manager"
+              },
+              "correct_option": "B",
+              "explanation": "The JIT compiler profiles 'hot spots' of bytecode and compiles them directly into native CPU instructions for peak performance."
+            },
+            {
+              "id": 106014,
+              "question_number": 4,
+              "question": "Is Java pass-by-value or pass-by-reference?",
+              "options": {
+                "A": "Pass-by-reference for objects, pass-by-value for primitives",
+                "B": "Strictly pass-by-value for everything",
+                "C": "Pass-by-reference for everything",
+                "D": "Depends on the JVM implementation"
+              },
+              "correct_option": "B",
+              "explanation": "Java is strictly pass-by-value. When an object is passed, a copy of the reference address is passed by value."
+            },
+            {
+              "id": 106015,
+              "question_number": 5,
+              "question": "In Java 8 and later, where is class metadata stored after the removal of PermGen?",
+              "options": {
+                "A": "Java Heap",
+                "B": "Metaspace (Native Memory)",
+                "C": "Thread Stack",
+                "D": "Code Cache"
+              },
+              "correct_option": "B",
+              "explanation": "Java 8 replaced Permanent Generation (PermGen) with Metaspace, which resides in off-heap native memory."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "JAVA_10601_01",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "JVM Architecture, Memory & Bytecode",
+              "topic": "JVM Memory Organization & Execution Model",
+              "keywords": [
+                "jvm architecture",
+                "heap",
+                "stack",
+                "bytecode",
+                "jit compiler",
+                "metaspace"
+              ],
+              "definition": "The JVM is the runtime engine executing compiled Java bytecode by managing memory partitions including Heap, Stack, and Metaspace.",
+              "formula_or_core_rule": "Heap stores objects (shared, GC managed). Stack stores method frames and local variables (thread-isolated).",
+              "worked_example": "String s = new String('hello'): reference 's' allocated on Stack, String object created in Heap, literal 'hello' in String Pool.",
+              "content": "JVM architecture, memory management, and execution lifecycle essentials for software engineering interviews."
+            },
+            {
+              "chunk_id": "JAVA_10601_02",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "JVM Architecture, Memory & Bytecode",
+              "topic": "Java Garbage Collection & Generational Model",
+              "keywords": [
+                "garbage collection",
+                "eden",
+                "survivor",
+                "old generation",
+                "stop the world"
+              ],
+              "definition": "Java Garbage Collection automatically reclaims heap memory occupied by unreferenced objects using generational tracking.",
+              "formula_or_core_rule": "Minor GC collects Young Gen (Eden/Survivor). Major/Full GC collects Old Gen.",
+              "worked_example": "Short-lived objects in Eden are collected quickly; surviving objects advance to Tenured/Old generation.",
+              "content": "Garbage collector strategies (G1, ZGC) and heap tuning questions asked in enterprise placement drives."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10602,
+          "chapter_order": 2,
+          "title": "OOPs 4 Pillars: Encapsulation, Inheritance, Polymorphism, Abstraction",
+          "estimated_minutes": 15,
+          "summary": "Master Encapsulation (data hiding), Inheritance (extends), Polymorphism (overloading/overriding), and Abstraction (interfaces vs abstract classes).",
+          "syllabus": [
+            "Encapsulation & Access Modifiers (private, default, protected, public)",
+            "Inheritance & 'super' keyword (single, multilevel, hierarchical)",
+            "Compile-time (Overloading) vs Runtime (Overriding) Polymorphism",
+            "Abstract Classes vs Interfaces (default/static methods in Java 8)"
+          ],
+          "core_formulas": [
+            "Encapsulation = Data Hiding + Getter/Setter Validation",
+            "Method Overriding: same signature, same or covariant return type, access cannot be more restrictive",
+            "Interface allows multiple inheritance of type; Abstract Class allows partial state implementation"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\n* **Encapsulation:** A medical capsule pill bundling active medication behind a protective gel coating (private fields + public getters/setters).\n* **Inheritance:** A smartphone inheriting basic phone calling features while adding touchscreen apps.\n* **Polymorphism:** A universal power button: on a TV it shows channels, on a PC it boots Windows (same method name, different behavior).\n* **Abstraction:** A car accelerator pedal: you press it to accelerate without knowing the fuel injector telemetry.\n\n### ⚡ Core Rule & Syntax\n```java\n// Runtime Polymorphism via Method Overriding\nclass Animal {\n    void speak() { System.out.println(\"Animal sound\"); }\n}\nclass Dog extends Animal {\n    @Override\n    void speak() { System.out.println(\"Bark\"); }\n}\n\nAnimal a = new Dog(); // Upcasting\na.speak(); // Prints 'Bark' at runtime via dynamic method dispatch!\n```\n\n### 🎯 Placement Interview Tip\nWhen asked 'Can static methods be overridden?', answer: **'No! Static methods cannot be overridden, only hidden (Method Hiding).'** Static binding occurs at compile time based on the reference type.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **4 Pillars:** Encapsulation, Inheritance, Polymorphism, Abstraction.\n* **Overloading:** Same class, same name, different parameter types/count. Compile-time.\n* **Overriding:** Parent-child classes, same name & parameters. Runtime.\n* **Abstract Class vs Interface:** Class can extend 1 abstract class, but implement multiple interfaces.",
+          "exam_tip": "Placement Tip: Remember the SOLID principles: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.",
+          "mcqs": [
+            {
+              "id": 106021,
+              "question_number": 1,
+              "question": "Which access modifier allows access within the same package and subclasses in other packages?",
+              "options": {
+                "A": "private",
+                "B": "default (package-private)",
+                "C": "protected",
+                "D": "public"
+              },
+              "correct_option": "C",
+              "explanation": "'protected' members are accessible within the same package and by child subclasses residing in external packages."
+            },
+            {
+              "id": 106022,
+              "question_number": 2,
+              "question": "Can static methods be overridden in Java subclasses?",
+              "options": {
+                "A": "Yes, using @Override",
+                "B": "No, static methods are resolved at compile time and undergo Method Hiding",
+                "C": "Yes, if declared public",
+                "D": "Only inside abstract classes"
+              },
+              "correct_option": "B",
+              "explanation": "Static methods are bound to class references at compile time (early binding), so redeclaring them is method hiding, not overriding."
+            },
+            {
+              "id": 106023,
+              "question_number": 3,
+              "question": "Why does Java NOT support multiple inheritance of classes (e.g., class C extends A, B)?",
+              "options": {
+                "A": "Bytecode size limit",
+                "B": "To avoid the Diamond Problem (ambiguity in inherited methods)",
+                "C": "Garbage Collector restrictions",
+                "D": "JVM speed"
+              },
+              "correct_option": "B",
+              "explanation": "Multiple inheritance of state causes the Diamond Problem when two parent classes declare the same method implementation."
+            },
+            {
+              "id": 106024,
+              "question_number": 4,
+              "question": "What is the key difference between Method Overloading and Method Overriding?",
+              "options": {
+                "A": "Overloading is compile-time with different parameter signatures; Overriding is runtime with identical signatures",
+                "B": "Overloading is runtime; Overriding is compile-time",
+                "C": "Both require inheritance",
+                "D": "Overloading requires abstract methods"
+              },
+              "correct_option": "A",
+              "explanation": "Overloading provides different method parameters in the same class (compile-time), while overriding redefines a parent method (runtime)."
+            },
+            {
+              "id": 106025,
+              "question_number": 5,
+              "question": "Since Java 8, which methods can have actual method bodies inside an interface?",
+              "options": {
+                "A": "abstract methods",
+                "B": "default and static methods",
+                "C": "final methods",
+                "D": "synchronized methods"
+              },
+              "correct_option": "B",
+              "explanation": "Java 8 introduced default and static methods with concrete bodies inside interfaces to enable backward-compatible API evolution."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "JAVA_10602_01",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "OOPs 4 Pillars: Encapsulation, Inheritance, Polymorphism, Abstraction",
+              "topic": "Polymorphism & Dynamic Method Dispatch",
+              "keywords": [
+                "polymorphism",
+                "method overriding",
+                "method overloading",
+                "dynamic dispatch",
+                "virtual methods"
+              ],
+              "definition": "Polymorphism allows objects to be treated as instances of their parent class while executing subtype-specific behaviors at runtime.",
+              "formula_or_core_rule": "Overriding: parent reference pointing to child object executes child method via virtual method table (vtable).",
+              "worked_example": "Shape s = new Circle(); s.draw() calls Circle's draw() implementation via dynamic dispatch.",
+              "content": "Comprehensive exploration of compile-time and runtime polymorphism in Java."
+            },
+            {
+              "chunk_id": "JAVA_10602_02",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "OOPs 4 Pillars: Encapsulation, Inheritance, Polymorphism, Abstraction",
+              "topic": "Abstract Classes vs Interfaces",
+              "keywords": [
+                "abstraction",
+                "interface",
+                "abstract class",
+                "multiple inheritance",
+                "default methods"
+              ],
+              "definition": "Abstraction separates interface specifications from concrete implementation mechanics.",
+              "formula_or_core_rule": "Interfaces define contracts ('can-do'), while Abstract classes represent partial hierarchies ('is-a').",
+              "worked_example": "Comparable<T> interface mandates compareTo() implementation across diverse domain models.",
+              "content": "Designing modular, extensible software systems using Java abstraction principles."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10603,
+          "chapter_order": 3,
+          "title": "Strings, String Pool & Immutability",
+          "estimated_minutes": 15,
+          "summary": "Master String immutability reasons, String Constant Pool (SCP), equals() vs ==, and StringBuilder vs StringBuffer.",
+          "syllabus": [
+            "String Immutability & Security Reasons",
+            "String Constant Pool (SCP) in Heap Memory",
+            "== (Reference Equality) vs .equals() (Value Equality)",
+            "StringBuilder (Fast, Non-synchronized) vs StringBuffer (Thread-safe)"
+          ],
+          "core_formulas": [
+            "String literal: String s = 'text' reuses instance from String Constant Pool",
+            "new String('text') explicitly creates a new Heap object outside the pool",
+            "s.intern() returns the canonical pool reference for the given string content"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nThe String Constant Pool is like a library reference desk: if 100 students request the same textbook title, the librarian doesn't print 100 books—they all reference the same master copy!\n\n### ⚡ Core Rule & Syntax\nStrings in Java are **immutable**. Once created, their internal `char[]` / `byte[]` value cannot be altered.\n\n```java\nString s1 = \"hello\";\nString s2 = \"hello\";\nString s3 = new String(\"hello\");\n\nSystem.out.println(s1 == s2);      // true (both point to same SCP object)\nSystem.out.println(s1 == s3);      // false (s3 is a new Heap object!)\nSystem.out.println(s1.equals(s3)); // true (compares character contents)\n```\n\n### 🎯 Placement Interview Tip\nWhen asked 'Why are Strings immutable in Java?', list 4 reasons: **Security** (database URLs/passwords can't be modified), **String Pool caching** (saves memory), **Thread Safety** (no synchronization needed), and **Hashcode Caching** (fast HashMap lookups).",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **String:** Immutable, thread-safe, slow for concatenation.\n* **StringBuilder:** Mutable, non-synchronized, fast (best for single-threaded loops).\n* **StringBuffer:** Mutable, synchronized methods, thread-safe (slower).\n* **Interning:** `s.intern()` puts string into SCP or returns existing pool instance.",
+          "exam_tip": "Placement Tip: Never use 'String s += next' in a loop! It creates N intermediate String objects. Use StringBuilder instead to run in O(N) rather than O(N^2).",
+          "mcqs": [
+            {
+              "id": 106031,
+              "question_number": 1,
+              "question": "What is the output of the following Java snippet?\nString a = \"java\";\nString b = \"java\";\nSystem.out.println(a == b);",
+              "options": {
+                "A": "false",
+                "B": "true",
+                "C": "Compilation Error",
+                "D": "NullPointerException"
+              },
+              "correct_option": "B",
+              "explanation": "Both string literals share the exact same object reference inside the String Constant Pool, so '==' reference comparison evaluates to true."
+            },
+            {
+              "id": 106032,
+              "question_number": 2,
+              "question": "How many total objects are created by the statement: String str = new String(\"hello\"); when \"hello\" is NOT already in the String Constant Pool?",
+              "options": {
+                "A": "1",
+                "B": "2",
+                "C": "3",
+                "D": "0"
+              },
+              "correct_option": "B",
+              "explanation": "Two objects: one literal in the String Constant Pool, and one distinct object in normal Heap memory referenced by str."
+            },
+            {
+              "id": 106033,
+              "question_number": 3,
+              "question": "Which of the following classes is MUTABLE and NOT synchronized (thread-safe)?",
+              "options": {
+                "A": "String",
+                "B": "StringBuffer",
+                "C": "StringBuilder",
+                "D": "Character"
+              },
+              "correct_option": "C",
+              "explanation": "StringBuilder is mutable and avoids synchronization overhead, making it significantly faster than StringBuffer."
+            },
+            {
+              "id": 106034,
+              "question_number": 4,
+              "question": "Why is String chosen as the most common key in Java HashMaps?",
+              "options": {
+                "A": "Strings use less RAM",
+                "B": "Immutability allows caching its computed hashCode() upon creation",
+                "C": "It implements List",
+                "D": "It extends Object"
+              },
+              "correct_option": "B",
+              "explanation": "Because Strings are immutable, their hashCode is cached after first calculation, enabling ultra-fast HashMap lookups."
+            },
+            {
+              "id": 106035,
+              "question_number": 5,
+              "question": "What does the method call str.intern() return?",
+              "options": {
+                "A": "Length of the string",
+                "B": "The canonical reference from the String Constant Pool",
+                "C": "A cloned copy in native memory",
+                "D": "A reversed string"
+              },
+              "correct_option": "B",
+              "explanation": "intern() searches the pool and returns the canonical pool reference matching the string's content."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "JAVA_10603_01",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "Strings, String Pool & Immutability",
+              "topic": "String Constant Pool (SCP) & Memory Optimization",
+              "keywords": [
+                "string constant pool",
+                "immutability",
+                "string interning",
+                "heap optimization"
+              ],
+              "definition": "The String Constant Pool is a dedicated heap cache storing unique string literals to prevent redundant memory allocation.",
+              "formula_or_core_rule": "Literals share pool instances. 'new String()' creates independent heap allocations.",
+              "worked_example": "String a = 'hi'; String b = new String('hi').intern() => a == b is true.",
+              "content": "Deep analysis of Java string interning, garbage collection in pool, and heap memory."
+            },
+            {
+              "chunk_id": "JAVA_10603_02",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "Strings, String Pool & Immutability",
+              "topic": "String vs StringBuilder vs StringBuffer",
+              "keywords": [
+                "stringbuilder",
+                "stringbuffer",
+                "string concatenation",
+                "thread safety"
+              ],
+              "definition": "StringBuilder and StringBuffer provide resizable, mutable character arrays for efficient string modifications.",
+              "formula_or_core_rule": "StringBuilder: unsynchronized, optimal performance. StringBuffer: synchronized, multi-thread safe.",
+              "worked_example": "Looping 10,000 concatenations: StringBuilder runs in ~2ms, String '+' runs in ~500ms due to garbage churn.",
+              "content": "String manipulation efficiency and benchmarking for placement coding assessments."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10604,
+          "chapter_order": 4,
+          "title": "Java Collections Framework (List, Set, Map, HashMap Internals)",
+          "estimated_minutes": 15,
+          "summary": "Master ArrayList vs LinkedList, HashSet/TreeSet, HashMap internal bucket hashing, collision resolution, and treeification.",
+          "syllabus": [
+            "Collections Hierarchy: Collection -> List, Set, Queue, and Map",
+            "ArrayList vs LinkedList (Random Access vs Insertion)",
+            "HashSet vs TreeSet (O(1) Hash vs O(log N) Red-Black Tree)",
+            "HashMap Internals: Hash function, Buckets, Load Factor, Treeification"
+          ],
+          "core_formulas": [
+            "HashMap index: index = (n - 1) & hash",
+            "Default capacity = 16, default load factor = 0.75, resize threshold = 12",
+            "Java 8 Treeification: bucket converts from LinkedList to Red-Black Tree when length >= 8"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nA HashMap is like a row of 16 mailboxes. You compute a hash code from the name on the envelope to determine which mailbox number to open, finding the letter inside in O(1) time!\n\n### ⚡ Core Rule & Syntax\n```java\n// HashMap Internals\nMap<String, Integer> map = new HashMap<>();\nmap.put(\"Kishore\", 98);\n\n// Key Contract Rule:\n// If two objects are equal according to equals(), \n// they MUST produce the exact same hashCode()!\n```\n\n### 🎯 Placement Interview Tip\nWhen asked 'What happens if you override equals() without overriding hashCode()?', answer: **'The HashMap contract is broken. Two logically equal keys will generate different hashCodes, landing in different buckets, so map.get(key) returns null!'**",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **List:** ArrayList (fast random access O(1), slow resize/insertion), LinkedList (O(1) node insertion, O(N) access).\n* **Set:** HashSet (O(1) lookup, unordered), TreeSet (O(log N), sorted Red-Black Tree).\n* **Map:** HashMap (O(1) avg), TreeMap (O(log N) sorted keys), ConcurrentHashMap (thread-safe without locking whole map).",
+          "exam_tip": "Placement Tip: When asked difference between HashMap and Hashtable, reply: 'HashMap allows 1 null key & multiple null values and is unsynchronized. Hashtable is legacy, synchronized, and permits zero nulls.'",
+          "mcqs": [
+            {
+              "id": 106041,
+              "question_number": 1,
+              "question": "What is the worst-case time complexity of searching a key in a Java 8 HashMap with heavy hash collisions?",
+              "options": {
+                "A": "O(1)",
+                "B": "O(N)",
+                "C": "O(log N)",
+                "D": "O(N^2)"
+              },
+              "correct_option": "C",
+              "explanation": "In Java 8, when a bucket exceeds 8 nodes, it treeifies into a Red-Black Tree, bounding worst-case lookup to O(log N)."
+            },
+            {
+              "id": 106042,
+              "question_number": 2,
+              "question": "What happens if you override equals() in a custom class but FAIL to override hashCode() before using it as a HashMap key?",
+              "options": {
+                "A": "Compiler error",
+                "B": "Equal keys produce different hashcodes and cannot be retrieved via get()",
+                "C": "HashMap crashes with NullPointerException",
+                "D": "HashMap operates normally"
+              },
+              "correct_option": "B",
+              "explanation": "Equal keys will land in different bucket indices, causing get() to fail to locate previously inserted entries."
+            },
+            {
+              "id": 106043,
+              "question_number": 3,
+              "question": "Which Set implementation in Java maintains elements in ASCENDING sorted order?",
+              "options": {
+                "A": "HashSet",
+                "B": "LinkedHashSet",
+                "C": "TreeSet",
+                "D": "EnumSet"
+              },
+              "correct_option": "C",
+              "explanation": "TreeSet is backed by a Red-Black Tree and maintains elements according to natural ordering or a supplied Comparator."
+            },
+            {
+              "id": 106044,
+              "question_number": 4,
+              "question": "What is the default initial capacity and load factor of a standard Java HashMap?",
+              "options": {
+                "A": "Capacity 10, Load Factor 0.5",
+                "B": "Capacity 16, Load Factor 0.75",
+                "C": "Capacity 32, Load Factor 0.8",
+                "D": "Capacity 64, Load Factor 1.0"
+              },
+              "correct_option": "B",
+              "explanation": "Standard HashMap defaults to an initial capacity of 16 and a load factor of 0.75 (resizing at 12 elements)."
+            },
+            {
+              "id": 106045,
+              "question_number": 5,
+              "question": "Why is ConcurrentHashMap preferred over Collections.synchronizedMap(map) in high-throughput multithreaded apps?",
+              "options": {
+                "A": "Uses less RAM",
+                "B": "Provides bucket-level locks / CAS operations rather than locking the entire map",
+                "C": "Supports null keys",
+                "D": "Does not use hash codes"
+              },
+              "correct_option": "B",
+              "explanation": "ConcurrentHashMap uses segmented locking and CAS at bucket heads, allowing concurrent reads and writes across different buckets."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "JAVA_10604_01",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "Java Collections Framework (List, Set, Map, HashMap Internals)",
+              "topic": "HashMap Internal Architecture & Treeification",
+              "keywords": [
+                "hashmap internals",
+                "bucket collision",
+                "load factor",
+                "treeification",
+                "red-black tree"
+              ],
+              "definition": "Java HashMap uses an array of buckets, hashing keys with bit-spreading and converting collision linked-lists into Red-Black trees.",
+              "formula_or_core_rule": "Bucket index = (capacity - 1) & hash. Treeifies when bucket size >= 8 and capacity >= 64.",
+              "worked_example": "Inserting 'A' and 'B' with collision: elements link together; upon reaching 8 elements, node structure transforms to TreeNode.",
+              "content": "Comprehensive mechanics of HashMap, resize doubling, rehashing, and collision resolution."
+            },
+            {
+              "chunk_id": "JAVA_10604_02",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "Java Collections Framework (List, Set, Map, HashMap Internals)",
+              "topic": "equals() and hashCode() Contract",
+              "keywords": [
+                "equals hashcode contract",
+                "custom keys",
+                "bucket mapping",
+                "hash collisions"
+              ],
+              "definition": "The equals-hashCode contract specifies that equal objects must yield identical hash values to ensure reliable bucket indexing.",
+              "formula_or_core_rule": "x.equals(y) == true => x.hashCode() == y.hashCode(). The inverse is not required.",
+              "worked_example": "Overriding Employee ID equals/hashCode ensures two Employee instances with ID 101 retrieve the exact same value in HashMap.",
+              "content": "Writing robust custom keys for Java Collections in enterprise software environments."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10605,
+          "chapter_order": 5,
+          "title": "Exception Handling, Multithreading & Concurrency Basics",
+          "estimated_minutes": 15,
+          "summary": "Master checked vs unchecked exceptions, try-with-resources, Thread lifecycle, synchronized blocks, and volatile keyword.",
+          "syllabus": [
+            "Exception Hierarchy: Throwable -> Error vs Exception",
+            "Checked (Compile-time) vs Unchecked (Runtime) Exceptions",
+            "Try-With-Resources & AutoCloseable (Java 7+)",
+            "Multithreading: Thread lifecycle, synchronized, volatile, and Deadlocks"
+          ],
+          "core_formulas": [
+            "Checked Exception: subclass of Exception excluding RuntimeException (must be caught or declared)",
+            "Unchecked Exception: subclass of RuntimeException (NullPointerException, ArrayIndexOutOfBounds)",
+            "volatile ensures visibility across CPU caches; synchronized ensures both visibility AND mutual exclusion"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nA checked exception is like a passport check before an international flight: the airline won't let you board unless you show it (compiler enforces handling).\nAn unchecked exception is tripping on a stair: an unexpected runtime stumble caused by a programming error.\n\n### ⚡ Core Rule & Syntax\n```java\n// Try-With-Resources automatically closes AutoCloseable streams\ntry (BufferedReader br = new BufferedReader(new FileReader(\"data.txt\"))) {\n    String line = br.readLine();\n} catch (IOException e) {\n    System.err.println(\"Read error: \" + e.getMessage());\n}\n```\n\n### 🎯 Placement Interview Tip\nWhen asked 'What is the difference between `volatile` and `synchronized`?', reply: **'`volatile` guarantees visibility of variable updates across CPU caches without blocking, but does NOT guarantee atomicity. `synchronized` guarantees both visibility and mutual exclusion (atomicity) by locking.'**",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Exceptions:**\n  - *Checked:* `IOException`, `SQLException` (checked by compiler).\n  - *Unchecked:* `NullPointerException`, `ArithmeticException` (runtime).\n* **Concurrency:**\n  - Implement `Runnable` or `Callable` (preferred over extending `Thread`).\n  - `volatile`: CPU cache flush to main RAM.\n  - `synchronized`: Mutual exclusion lock.",
+          "exam_tip": "Placement Tip: When asked how to stop a thread safely, never say 'Thread.stop()'! Reply: 'Use a volatile boolean flag or call Thread.interrupt() to cooperate with the running thread.'",
+          "mcqs": [
+            {
+              "id": 106051,
+              "question_number": 1,
+              "question": "Which of the following is a CHECKED exception that must be handled or declared in the method signature?",
+              "options": {
+                "A": "NullPointerException",
+                "B": "IllegalArgumentException",
+                "C": "IOException",
+                "D": "ArithmeticException"
+              },
+              "correct_option": "C",
+              "explanation": "IOException is a checked exception directly subclassing Exception, so the compiler enforces try-catch or 'throws'."
+            },
+            {
+              "id": 106052,
+              "question_number": 2,
+              "question": "What is the primary guarantee provided by the 'volatile' keyword on a variable in Java?",
+              "options": {
+                "A": "Atomicity for compound operations like count++",
+                "B": "Visibility: writes are immediately visible to all other threads via main memory",
+                "C": "Prevents garbage collection",
+                "D": "Locks the object monitor"
+              },
+              "correct_option": "B",
+              "explanation": "volatile prevents CPU cache staleness by reading and writing directly to main memory, ensuring visibility without lock overhead."
+            },
+            {
+              "id": 106053,
+              "question_number": 3,
+              "question": "What interface must a class implement to be safely used inside a Java 7+ try-with-resources statement?",
+              "options": {
+                "A": "Serializable",
+                "B": "AutoCloseable",
+                "C": "Cloneable",
+                "D": "Runnable"
+              },
+              "correct_option": "B",
+              "explanation": "Try-with-resources calls close() automatically on any object implementing AutoCloseable (or Closeable)."
+            },
+            {
+              "id": 106054,
+              "question_number": 4,
+              "question": "Why is implementing the Runnable interface preferred over extending the Thread class in Java?",
+              "options": {
+                "A": "Runnable creates faster threads",
+                "B": "Java only allows single inheritance of classes, so implementing Runnable preserves the ability to extend another class",
+                "C": "Runnable does not use memory",
+                "D": "Thread is deprecated"
+              },
+              "correct_option": "B",
+              "explanation": "Implementing Runnable separates the task from the thread runner and leaves the single inheritance slot open for domain classes."
+            },
+            {
+              "id": 106055,
+              "question_number": 5,
+              "question": "Which method in Java is used to start thread execution on a new OS call stack?",
+              "options": {
+                "A": "run()",
+                "B": "start()",
+                "C": "execute()",
+                "D": "launch()"
+              },
+              "correct_option": "B",
+              "explanation": "Calling start() allocates a new call stack and triggers the thread scheduler, whereas calling run() executes synchronously on the current thread."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "JAVA_10605_01",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "Exception Handling, Multithreading & Concurrency Basics",
+              "topic": "Java Concurrency & Thread Synchronization",
+              "keywords": [
+                "multithreading",
+                "synchronized",
+                "volatile",
+                "race condition",
+                "runnable"
+              ],
+              "definition": "Java multithreading allows concurrent execution of tasks across shared memory, coordinated using synchronization primitives.",
+              "formula_or_core_rule": "synchronized locks monitor; volatile guarantees visibility. AtomicInteger provides lock-free atomic increments.",
+              "worked_example": "Fixing race condition on counter: use AtomicInteger.incrementAndGet() or synchronize the increment method.",
+              "content": "Thread lifecycle, race conditions, deadlocks, and Java concurrency utilities."
+            },
+            {
+              "chunk_id": "JAVA_10605_02",
+              "subject": "Java & OOPs Mastery",
+              "chapter": "Exception Handling, Multithreading & Concurrency Basics",
+              "topic": "Exception Handling Architecture",
+              "keywords": [
+                "checked exceptions",
+                "runtime exceptions",
+                "try-with-resources",
+                "throwable",
+                "autocloseable"
+              ],
+              "definition": "Java exception handling separates error mitigation logic from normal program execution flow.",
+              "formula_or_core_rule": "Checked = compile-time enforced (recoverable). Unchecked = RuntimeException (developer bug).",
+              "worked_example": "Try-with-resources automatically closes FileInputStream without requiring manual finally blocks.",
+              "content": "Best practices for designing custom exceptions and error handling in enterprise applications."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "OS_CN",
+      "subject_id": 107,
+      "name": "OS & Computer Networks",
+      "slug": "os-computer-networks",
+      "icon_symbol": "🌐",
+      "color_hex": "#10B981",
+      "category": "Placement Prep",
+      "description": "Master core operating systems principles (processes, threads, scheduling, virtual memory) and computer networking (OSI, TCP/IP, DNS, HTTP/S) for placement rounds.",
+      "is_added": false,
+      "chapters": [
+        {
+          "chapter_id": 10701,
+          "chapter_order": 1,
+          "title": "Processes vs Threads, Concurrency & Deadlocks",
+          "estimated_minutes": 15,
+          "summary": "Master process memory layout, PCB, context switching, multithreading, race conditions, and Coffman's 4 deadlock conditions.",
+          "syllabus": [
+            "Process vs Thread Memory Architecture",
+            "Process Control Block (PCB) & Context Switching Overhead",
+            "Race Conditions, Mutex, Semaphores & Critical Section",
+            "Deadlock: Coffman's 4 Conditions & Banker's Algorithm"
+          ],
+          "core_formulas": [
+            "Process has independent address space; Threads share Code, Data, and Heap",
+            "Deadlock Coffman Conditions: Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait",
+            "Context switch time = Save CPU registers to PCB + Load new process registers + Invalidate TLB"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nA process is an entire restaurant building with its own private kitchen and supplies. Threads are individual chefs working in that same kitchen, sharing pots and ingredients (memory) while doing distinct tasks!\n\n### ⚡ Core Rule & Syntax\n* **Process:** Isolated virtual address space. Inter-Process Communication (IPC) requires Pipes, Sockets, or Shared Memory.\n* **Thread:** Lightweight unit within a process. Shares heap and static memory, but has private Stack and Program Counter (PC).\n\n### 🎯 Placement Interview Tip\nInterviewers test the **4 Coffman Conditions for Deadlock**:\n1. **Mutual Exclusion:** Resource held non-shareably.\n2. **Hold and Wait:** Process holds one resource while waiting for another.\n3. **No Preemption:** Resources cannot be forcibly taken away.\n4. **Circular Wait:** Closed chain of processes waiting on each other.\n*Breaking any single condition prevents deadlock entirely!*",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **PCB:** Stores PID, CPU registers, program counter, open file descriptors.\n* **Mutex:** Binary mutual exclusion lock (ownership held by single locker).\n* **Counting Semaphore:** Integer counter regulating access to a finite pool of resources.\n* **Deadlock Prevention:** Impose total resource ordering to eliminate circular wait.",
+          "exam_tip": "Placement Tip: When asked 'Why is thread context switching faster than process context switching?', reply: 'Threads share the same virtual memory space, so the MMU page table and TLB cache do not need to be flushed.'",
+          "mcqs": [
+            {
+              "id": 107011,
+              "question_number": 1,
+              "question": "Which of the following memory segments is SHARED among all threads of a single process?",
+              "options": {
+                "A": "Call Stack",
+                "B": "Program Counter",
+                "C": "Heap Memory",
+                "D": "CPU Register Set"
+              },
+              "correct_option": "C",
+              "explanation": "Threads share the process Heap, Code, and Data segments, but maintain private Stacks and Program Counters."
+            },
+            {
+              "id": 107012,
+              "question_number": 2,
+              "question": "Which of the following is NOT one of Coffman's four necessary conditions for a Deadlock to occur?",
+              "options": {
+                "A": "Mutual Exclusion",
+                "B": "Preemptive Scheduling",
+                "C": "Hold and Wait",
+                "D": "Circular Wait"
+              },
+              "correct_option": "B",
+              "explanation": "'No Preemption' is the necessary condition. If preemptive resource reclamation is allowed, deadlocks cannot form."
+            },
+            {
+              "id": 107013,
+              "question_number": 3,
+              "question": "What is the primary difference between a Mutex and a Semaphore?",
+              "options": {
+                "A": "Mutex is hardware; Semaphore is software",
+                "B": "Mutex is a locking mechanism with ownership; Semaphore is a signaling mechanism with counter",
+                "C": "Semaphore only permits 1 thread",
+                "D": "Mutex avoids context switching"
+              },
+              "correct_option": "B",
+              "explanation": "A Mutex has an owner that must unlock it, while a Semaphore is a signaling primitive that any thread can increment or decrement."
+            },
+            {
+              "id": 107014,
+              "question_number": 4,
+              "question": "What algorithm is historically utilized by operating systems for Deadlock Avoidance by checking safe states?",
+              "options": {
+                "A": "Round Robin",
+                "B": "Banker's Algorithm",
+                "C": "Dijkstra's Algorithm",
+                "D": "LRU Algorithm"
+              },
+              "correct_option": "B",
+              "explanation": "Dijkstra's Banker's Algorithm simulates resource allocation to verify that a safe sequence exists before granting requests."
+            },
+            {
+              "id": 107015,
+              "question_number": 5,
+              "question": "What is a 'Zombie Process' in Unix-like operating systems?",
+              "options": {
+                "A": "A process consuming 100% CPU",
+                "B": "A process that has finished execution but still has an entry in the process table because its parent hasn't read its exit code via wait()",
+                "C": "An orphaned background daemon",
+                "D": "A process that crashed due to segmentation fault"
+              },
+              "correct_option": "B",
+              "explanation": "A zombie process has terminated execution, but retains its PID entry in the process table until its parent reaps it using wait()."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "OS_10701_01",
+              "subject": "OS & Computer Networks",
+              "chapter": "Processes vs Threads, Concurrency & Deadlocks",
+              "topic": "Process vs Thread Architecture & Context Switching",
+              "keywords": [
+                "process",
+                "thread",
+                "pcb",
+                "context switch",
+                "shared memory",
+                "tlb flush"
+              ],
+              "definition": "Processes represent independent running programs with private memory, while threads are lightweight concurrent execution paths within a process.",
+              "formula_or_core_rule": "Process switch flushes MMU/TLB; Thread switch preserves page tables and caches.",
+              "worked_example": "Web browser tab crashing: multi-process architecture (Chrome) protects other tabs from crashing simultaneously.",
+              "content": "Process lifecycle, IPC mechanisms, and multithreading performance tradeoffs."
+            },
+            {
+              "chunk_id": "OS_10701_02",
+              "subject": "OS & Computer Networks",
+              "chapter": "Processes vs Threads, Concurrency & Deadlocks",
+              "topic": "Deadlock Characterization & Coffman Conditions",
+              "keywords": [
+                "deadlock",
+                "coffman conditions",
+                "mutex",
+                "circular wait",
+                "bankers algorithm"
+              ],
+              "definition": "A deadlock occurs when a set of concurrent processes are permanently blocked because each holds resources that others require.",
+              "formula_or_core_rule": "Deadlock requires all 4 Coffman conditions: Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait.",
+              "worked_example": "Dining Philosophers: assigning strict global lock order breaks circular wait and eliminates deadlock.",
+              "content": "Deadlock prevention, detection, and recovery strategies for technical placement interviews."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10702,
+          "chapter_order": 2,
+          "title": "CPU Scheduling & Virtual Memory (Paging, TLB)",
+          "estimated_minutes": 15,
+          "summary": "Master FCFS, SJF, Round Robin scheduling, Virtual Memory, Paging, Page Faults, TLB, and LRU replacement.",
+          "syllabus": [
+            "CPU Scheduling: Preemptive vs Non-preemptive, Round Robin, SJF",
+            "Virtual Memory & Address Translation (Page Table, MMU)",
+            "Translation Lookaside Buffer (TLB) Hit/Miss Ratios",
+            "Page Replacement Algorithms: FIFO, LRU, Optimal, and Belady's Anomaly"
+          ],
+          "core_formulas": [
+            "Turnaround Time = Completion Time - Arrival Time",
+            "Waiting Time = Turnaround Time - Burst Time",
+            "Effective Memory Access Time (EMAT) = TLB_hit_rate * (TLB_time + RAM_time) + (1 - TLB_hit_rate) * (TLB_time + 2 * RAM_time)"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nVirtual memory is like giving each worker in a company an illusion of having a 1,000-page private ledger, while the office only has 50 real physical binder pages (RAM), swapping pages to disk shelves as needed!\n\n### ⚡ Core Rule & Syntax\n* **Paging:** Divides virtual memory into fixed-size **Pages** (e.g., 4 KB) and physical memory into identical **Frames**.\n* **TLB (Translation Lookaside Buffer):** High-speed hardware cache holding recently translated Page -> Frame mappings.\n* **Page Fault:** CPU accesses a valid virtual page currently residing on disk rather than physical RAM. Triggers OS disk I/O interrupt.\n\n### 🎯 Placement Interview Tip\nInterviewers frequently ask about **Belady's Anomaly**: with the FIFO page replacement algorithm, increasing physical frame count can actually *increase* page faults! LRU (Least Recently Used) does NOT suffer from Belady's Anomaly.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Scheduling:** Round Robin (time quantum $Q$), SJF (optimal average waiting time, but starvation risk).\n* **Page Fault Flow:** Trap to OS -> Save state -> Read page from disk swap -> Write to free frame -> Update page table -> Restart instruction.\n* **Thrashing:** System spends more time swapping pages in/out than executing instructions.",
+          "exam_tip": "Placement Tip: When asked how to stop Thrashing, reply: 'Reduce degree of multiprogramming or increase physical RAM so working sets of active processes fit in memory.'",
+          "mcqs": [
+            {
+              "id": 107021,
+              "question_number": 1,
+              "question": "Which CPU scheduling algorithm provides the MINIMUM average waiting time for a given set of stationary processes?",
+              "options": {
+                "A": "First Come First Served (FCFS)",
+                "B": "Shortest Job First (SJF)",
+                "C": "Round Robin",
+                "D": "Priority Scheduling"
+              },
+              "correct_option": "B",
+              "explanation": "Shortest Job First (SJF / SRTF) is mathematically proven to yield minimum average waiting time, though CPU burst times must be estimated."
+            },
+            {
+              "id": 107022,
+              "question_number": 2,
+              "question": "What is the phenomenon called where increasing the number of physical page frames results in MORE page faults under FIFO replacement?",
+              "options": {
+                "A": "Thrashing",
+                "B": "Belady's Anomaly",
+                "C": "Convoy Effect",
+                "D": "Cache Invalidation"
+              },
+              "correct_option": "B",
+              "explanation": "Belady's Anomaly occurs in FIFO replacement where adding page frames paradoxically increases total page faults."
+            },
+            {
+              "id": 107023,
+              "question_number": 3,
+              "question": "What happens when an operating system experiences 'Thrashing'?",
+              "options": {
+                "A": "CPU runs at 100% calculation efficiency",
+                "B": "The system spends more time paging data to/from disk than executing program instructions",
+                "C": "All deadlocks are automatically resolved",
+                "D": "The network interface disconnects"
+              },
+              "correct_option": "B",
+              "explanation": "Thrashing happens when the working sets of active processes exceed physical memory, forcing continuous page faulting and disk swapping."
+            },
+            {
+              "id": 107024,
+              "question_number": 4,
+              "question": "What is the primary function of the Translation Lookaside Buffer (TLB)?",
+              "options": {
+                "A": "To store executable binary code",
+                "B": "To cache virtual-to-physical address translations for fast MMU resolution",
+                "C": "To schedule processes",
+                "D": "To handle network packets"
+              },
+              "correct_option": "B",
+              "explanation": "The TLB is an associative hardware cache that speeds up virtual-to-physical address translation without extra memory lookups."
+            },
+            {
+              "id": 107025,
+              "question_number": 5,
+              "question": "In a Round Robin scheduling algorithm, what occurs if the time quantum Q is set extremely LARGE?",
+              "options": {
+                "A": "Degrades to FCFS (First Come First Served)",
+                "B": "Causes severe context switching overhead",
+                "C": "Eliminates all waiting time",
+                "D": "Triggers deadlocks"
+              },
+              "correct_option": "A",
+              "explanation": "If the time quantum exceeds all process burst lengths, each process completes without preemption, behaving identical to FCFS."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "OS_10702_01",
+              "subject": "OS & Computer Networks",
+              "chapter": "CPU Scheduling & Virtual Memory (Paging, TLB)",
+              "topic": "Virtual Memory & Paging Mechanics",
+              "keywords": [
+                "virtual memory",
+                "paging",
+                "page fault",
+                "mmu",
+                "tlb",
+                "beladys anomaly"
+              ],
+              "definition": "Virtual memory maps isolated program address spaces onto physical RAM and secondary storage using fixed-size pages.",
+              "formula_or_core_rule": "Virtual address = (Page Number, Offset). Frame address = (Frame Number, Offset).",
+              "worked_example": "Accessing page not in RAM generates Page Fault trap: OS fetches page from swap file, populates frame, resumes execution.",
+              "content": "Paging, multi-level page tables, and memory management unit hardware operation."
+            },
+            {
+              "chunk_id": "OS_10702_02",
+              "subject": "OS & Computer Networks",
+              "chapter": "CPU Scheduling & Virtual Memory (Paging, TLB)",
+              "topic": "CPU Scheduling Algorithms & Metrics",
+              "keywords": [
+                "cpu scheduling",
+                "round robin",
+                "shortest job first",
+                "turnaround time",
+                "context switch"
+              ],
+              "definition": "CPU scheduling assigns CPU cores to ready processes to maximize throughput and minimize latency.",
+              "formula_or_core_rule": "Turnaround = Completion - Arrival. Waiting = Turnaround - Burst.",
+              "worked_example": "Round Robin with quantum=4ms: long processes yield after 4ms, ensuring fair interactive response times.",
+              "content": "Detailed scheduling algorithm comparisons and metrics for placement interviews."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10703,
+          "chapter_order": 3,
+          "title": "OSI vs TCP/IP Models & Network Layers",
+          "estimated_minutes": 15,
+          "summary": "Master the 7-Layer OSI model, 4-Layer TCP/IP suite, encapsulation, packet headers, MAC vs IP addressing, and ARP.",
+          "syllabus": [
+            "OSI 7 Layers (Physical, Data Link, Network, Transport, Session, Presentation, Application)",
+            "TCP/IP 4-Layer Model Mapping",
+            "Data Encapsulation: Bits -> Frames -> Packets -> Segments -> Data",
+            "MAC Addressing (Layer 2) vs IP Addressing (Layer 3) & ARP Protocol"
+          ],
+          "core_formulas": [
+            "PDU: L7-L5 (Data), L4 Transport (Segment), L3 Network (Packet), L2 Data Link (Frame), L1 Physical (Bits)",
+            "ARP (Address Resolution Protocol): Resolves known IP address to physical MAC address on local network"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nThe OSI model is like postal delivery logistics: writing your letter (Application), translating language (Presentation), tracking envelope receipt (Transport), routing postal trucks across highways (Network), moving through neighborhood mail carriers (Data Link), and tires on asphalt road (Physical).\n\n### ⚡ Core Rule & Syntax\n* **OSI Mnemonic:** **A**ll **P**eople **S**eem **T**o **N**eed **D**ata **P**rocessing (Application, Presentation, Session, Transport, Network, Data Link, Physical).\n* **Encapsulation:** Outgoing data is wrapped with headers down each layer; incoming data is unwrapped (decapsulated) up each layer.\n\n### 🎯 Placement Interview Tip\nWhen asked 'At which layer does a Switch operate versus a Router?', reply: **'A traditional network Switch operates at Layer 2 (Data Link) using MAC addresses, while a Router operates at Layer 3 (Network) using IP addresses.'**",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Layer 7 (Application):** HTTP, HTTPS, FTP, DNS, SMTP.\n* **Layer 4 (Transport):** TCP, UDP, port numbers (e.g. 80, 443).\n* **Layer 3 (Network):** IP, ICMP, ARP, Routers, logical addressing.\n* **Layer 2 (Data Link):** Ethernet, MAC addresses, Switches, Frames.\n* **Layer 1 (Physical):** Cables, fiber optics, Hubs, Bits.",
+          "exam_tip": "Placement Tip: When asked what ARP does, say: 'ARP broadcasts an ARP Request: Who has IP X.X.X.X? Tell MAC Y:Y:Y:Y and receives a unicast ARP Reply.'",
+          "mcqs": [
+            {
+              "id": 107031,
+              "question_number": 1,
+              "question": "What is the Protocol Data Unit (PDU) at the Transport Layer (Layer 4) of the OSI model called?",
+              "options": {
+                "A": "Frame",
+                "B": "Packet",
+                "C": "Segment",
+                "D": "Bit"
+              },
+              "correct_option": "C",
+              "explanation": "Layer 4 produces Segments (TCP) or Datagrams (UDP). Layer 3 produces Packets, and Layer 2 produces Frames."
+            },
+            {
+              "id": 107032,
+              "question_number": 2,
+              "question": "Which protocol is responsible for mapping a known Layer 3 IP address to a Layer 2 physical MAC address?",
+              "options": {
+                "A": "DNS",
+                "B": "DHCP",
+                "C": "ARP (Address Resolution Protocol)",
+                "D": "ICMP"
+              },
+              "correct_option": "C",
+              "explanation": "ARP broadcasts on the local network segment to discover the hardware MAC address associated with an IPv4 address."
+            },
+            {
+              "id": 107033,
+              "question_number": 3,
+              "question": "At which OSI layer does a standard network Router inspect destination addresses to forward packets across networks?",
+              "options": {
+                "A": "Layer 1 (Physical)",
+                "B": "Layer 2 (Data Link)",
+                "C": "Layer 3 (Network)",
+                "D": "Layer 4 (Transport)"
+              },
+              "correct_option": "C",
+              "explanation": "Routers operate at Layer 3 (Network Layer) inspecting IP header addresses to make routing path decisions."
+            },
+            {
+              "id": 107034,
+              "question_number": 4,
+              "question": "How many bits are in an IPv4 address versus an IPv6 address?",
+              "options": {
+                "A": "32 bits vs 64 bits",
+                "B": "32 bits vs 128 bits",
+                "C": "64 bits vs 128 bits",
+                "D": "16 bits vs 32 bits"
+              },
+              "correct_option": "B",
+              "explanation": "IPv4 addresses are 32 bits long (4 bytes), while IPv6 addresses are 128 bits long (16 bytes)."
+            },
+            {
+              "id": 107035,
+              "question_number": 5,
+              "question": "Which OSI layer is responsible for data encryption, compression, and character code translation (e.g., ASCII to Unicode)?",
+              "options": {
+                "A": "Session Layer",
+                "B": "Presentation Layer (Layer 6)",
+                "C": "Application Layer",
+                "D": "Network Layer"
+              },
+              "correct_option": "B",
+              "explanation": "The Presentation Layer formats, encrypts, and compresses data so the Application layer can interpret it."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "OS_10703_01",
+              "subject": "OS & Computer Networks",
+              "chapter": "OSI vs TCP/IP Models & Network Layers",
+              "topic": "OSI 7-Layer Architecture & Encapsulation",
+              "keywords": [
+                "osi model",
+                "tcp ip suite",
+                "encapsulation",
+                "pdu",
+                "router",
+                "switch"
+              ],
+              "definition": "The OSI model is a 7-layer theoretical framework standardizing computer network communication protocols.",
+              "formula_or_core_rule": "Application -> Presentation -> Session -> Transport -> Network -> Data Link -> Physical.",
+              "worked_example": "Web browser sends HTTP: payload encapsulated into TCP Segment -> IP Packet -> Ethernet Frame -> Physical bits.",
+              "content": "Comprehensive guide to network layering, headers, and hardware devices across network tiers."
+            },
+            {
+              "chunk_id": "OS_10703_02",
+              "subject": "OS & Computer Networks",
+              "chapter": "OSI vs TCP/IP Models & Network Layers",
+              "topic": "Addressing & ARP Protocol",
+              "keywords": [
+                "mac address",
+                "ip address",
+                "arp protocol",
+                "broadcast",
+                "subnetting"
+              ],
+              "definition": "Network communications use logical IP addresses for global routing and physical MAC addresses for local link delivery.",
+              "formula_or_core_rule": "ARP resolves IP to MAC on local Ethernet subnet via broadcast request and unicast response.",
+              "worked_example": "Device 192.168.1.5 broadcasts ARP who-has 192.168.1.1; Default Gateway replies with its MAC address.",
+              "content": "IP subnetting, MAC addressing, and local network packet forwarding mechanics."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10704,
+          "chapter_order": 4,
+          "title": "TCP vs UDP, Three-Way Handshake & Flow Control",
+          "estimated_minutes": 15,
+          "summary": "Master TCP reliability, 3-way handshake, 4-way termination, sliding window flow control, and UDP low-latency streaming.",
+          "syllabus": [
+            "TCP (Connection-Oriented, Reliable) vs UDP (Connectionless, Low-Latency)",
+            "TCP 3-Way Handshake (SYN, SYN-ACK, ACK)",
+            "TCP 4-Way Connection Teardown (FIN, ACK, FIN, ACK)",
+            "Flow Control (Sliding Window) & Congestion Control (Slow Start)"
+          ],
+          "core_formulas": [
+            "3-Way Handshake: Client -> SYN(seq=x) -> Server -> SYN-ACK(seq=y, ack=x+1) -> Client -> ACK(ack=y+1)",
+            "Sliding Window prevents sender from overflowing receiver's buffer: WindowSize = advertised receiver buffer",
+            "Congestion Window (cwnd) doubles during Slow Start until threshold (ssthresh) is reached"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nTCP is like registered postal mail: you receive signed tracking confirmation for every single letter, and if a letter is lost, it is resent automatically.\nUDP is like a live FM radio broadcast: sound waves are pushed into the air, and if you drive into a tunnel and miss 3 seconds of a song, the DJ doesn't replay it for you!\n\n### ⚡ Core Rule & Syntax\n* **TCP:** Reliable, ordered, connection-oriented, flow & congestion controlled. Used by HTTP/S, SSH, FTP, SMTP.\n* **UDP:** Unreliable, unordered, lightweight (8-byte header vs 20-byte TCP header). Used by Video Streaming, DNS, VoIP, Online Gaming.\n\n### 🎯 Placement Interview Tip\nInterviewers love asking about **TIME_WAIT state in TCP**: After sending the final ACK, the active closer waits for $2 \times \text{MSL}$ (Maximum Segment Lifetime, usually 60-120s) to guarantee the final ACK reached the other end without being lost.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Handshake:** SYN -> SYN-ACK -> ACK.\n* **Teardown:** FIN -> ACK -> FIN -> ACK.\n* **Flow Control:** Receiver-driven (advertised window in TCP header).\n* **Congestion Control:** Network-driven (Slow Start, Congestion Avoidance, Fast Retransmit via 3 duplicate ACKs).",
+          "exam_tip": "Placement Tip: When asked why DNS uses UDP: 'DNS queries are small single-packet requests (under 512 bytes). Avoiding TCP's 3-way handshake round trips makes resolution 3x faster.'",
+          "mcqs": [
+            {
+              "id": 107041,
+              "question_number": 1,
+              "question": "What is the sequence of flag packets exchanged during a standard TCP Three-Way Handshake?",
+              "options": {
+                "A": "ACK -> SYN -> FIN",
+                "B": "SYN -> SYN-ACK -> ACK",
+                "C": "SYN -> ACK -> DATA",
+                "D": "FIN -> ACK -> SYN"
+              },
+              "correct_option": "B",
+              "explanation": "The client sends SYN, the server responds with SYN-ACK, and the client returns ACK to establish the connection."
+            },
+            {
+              "id": 107042,
+              "question_number": 2,
+              "question": "Which protocol is preferred for real-time video streaming, VoIP calls, and online multiplayer gaming?",
+              "options": {
+                "A": "TCP",
+                "B": "UDP",
+                "C": "FTP",
+                "D": "SMTP"
+              },
+              "correct_option": "B",
+              "explanation": "UDP avoids retransmission delays and connection handshakes, providing minimal latency essential for real-time media."
+            },
+            {
+              "id": 107043,
+              "question_number": 3,
+              "question": "How does TCP implement Flow Control to prevent a fast sender from overwhelming a slow receiver?",
+              "options": {
+                "A": "By dropping all packets",
+                "B": "Using the Advertised Sliding Window size in TCP header",
+                "C": "By switching to UDP",
+                "D": "By disconnecting the session"
+              },
+              "correct_option": "B",
+              "explanation": "The receiver advertises its available buffer space (Window Size) in each ACK, capping the sender's unacknowledged in-flight data."
+            },
+            {
+              "id": 107044,
+              "question_number": 4,
+              "question": "What is the size of the basic UDP header compared to the standard minimal TCP header?",
+              "options": {
+                "A": "8 bytes vs 20 bytes",
+                "B": "20 bytes vs 40 bytes",
+                "C": "4 bytes vs 16 bytes",
+                "D": "12 bytes vs 24 bytes"
+              },
+              "correct_option": "A",
+              "explanation": "UDP header is just 8 bytes (Source Port, Dest Port, Length, Checksum), while a standard TCP header is at least 20 bytes."
+            },
+            {
+              "id": 107045,
+              "question_number": 5,
+              "question": "What triggers a TCP Fast Retransmit without waiting for the retransmission timeout timer to expire?",
+              "options": {
+                "A": "Receiving a FIN packet",
+                "B": "Receiving 3 Duplicate ACKs for the same sequence number",
+                "C": "Network card disconnection",
+                "D": "DNS lookup failure"
+              },
+              "correct_option": "B",
+              "explanation": "Three duplicate ACKs indicate that subsequent packets arrived but one specific packet was lost, prompting immediate retransmission."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "OS_10704_01",
+              "subject": "OS & Computer Networks",
+              "chapter": "TCP vs UDP, Three-Way Handshake & Flow Control",
+              "topic": "TCP Handshake, Teardown & Connection States",
+              "keywords": [
+                "tcp handshake",
+                "syn ack",
+                "time wait",
+                "connection teardown",
+                "fin packet"
+              ],
+              "definition": "TCP is a connection-oriented transport protocol establishing synchronized sequence numbers via a 3-way handshake.",
+              "formula_or_core_rule": "SYN -> SYN-ACK -> ACK establishes session. FIN -> ACK -> FIN -> ACK closes session cleanly.",
+              "worked_example": "Client initiates connection: sends SYN seq=100. Server acknowledges with ACK=101 and SYN=500. Client confirms ACK=501.",
+              "content": "Detailed mechanics of TCP state machine, sequence numbers, and TIME_WAIT socket states."
+            },
+            {
+              "chunk_id": "OS_10704_02",
+              "subject": "OS & Computer Networks",
+              "chapter": "TCP vs UDP, Three-Way Handshake & Flow Control",
+              "topic": "TCP Flow Control & Congestion Control",
+              "keywords": [
+                "flow control",
+                "sliding window",
+                "congestion window",
+                "slow start",
+                "fast retransmit"
+              ],
+              "definition": "TCP regulates network traffic through receiver-limited Flow Control and network-limited Congestion Control.",
+              "formula_or_core_rule": "Max in-flight bytes = min(Advertised Receiver Window, Congestion Window cwnd).",
+              "worked_example": "Packet loss triggers: cwnd drops to 1 MSS, ssthresh set to half cwnd, Slow Start reinitiates exponential growth.",
+              "content": "In-depth guide on TCP congestion control algorithms (Reno, Cubic) for systems engineering interviews."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10705,
+          "chapter_order": 5,
+          "title": "HTTP/HTTPS, DNS, SSL/TLS & Socket Programming",
+          "estimated_minutes": 15,
+          "summary": "Master HTTP/1.1 vs HTTP/2 vs HTTP/3, HTTPS SSL/TLS encryption handshake, DNS resolution tree, and client-server socket programming.",
+          "syllabus": [
+            "HTTP Methods (GET, POST, PUT, DELETE, PATCH) & Status Codes (2xx, 3xx, 4xx, 5xx)",
+            "HTTP/1.1 vs HTTP/2 (Multiplexing) vs HTTP/3 (QUIC over UDP)",
+            "HTTPS & SSL/TLS Handshake (Symmetric vs Asymmetric Encryption)",
+            "DNS Hierarchical Resolution (Root, TLD, Authoritative, Caching)"
+          ],
+          "core_formulas": [
+            "HTTP Status Codes: 200 OK, 201 Created, 301 Moved, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 500 Internal Error",
+            "TLS Handshake: Asymmetric cryptography (RSA/ECC) securely shares a symmetric session key (AES-GCM) for data transmission",
+            "Socket API: server calls socket() -> bind() -> listen() -> accept() -> read()/write()"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nDNS is the phonebook of the Internet: you know your friend's name (`google.com`), and DNS translates it into their phone number (`142.250.190.46`).\nHTTPS is like placing your bank letter into a tamper-proof titanium lockbox with a lock that can only be opened with the bank's secret key!\n\n### ⚡ Core Rule & Syntax\n* **PUT vs PATCH:** `PUT` replaces the entire resource; `PATCH` updates specific partial fields.\n* **Idempotence:** An HTTP method is **idempotent** if making multiple identical requests has the exact same side-effect as a single request (`GET`, `PUT`, `DELETE` are idempotent; `POST` is NOT).\n\n```python\n# Basic TCP Socket Client in Python\nimport socket\ns = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\ns.connect((\"example.com\", 80))\ns.sendall(b\"GET / HTTP/1.1\\r\\nHost: example.com\\r\\n\\r\\n\")\nresponse = s.recv(4096)\ns.close()\n```\n\n### 🎯 Placement Interview Tip\nInterviewers love asking: *'What happens when you type `https://google.com` into your browser and press Enter?'*\n1. Browser checks DNS cache -> queries recursive resolver.\n2. TCP 3-way handshake established.\n3. TLS handshake performs certificate verification and negotiates AES session key.\n4. Browser sends `GET / HTTP/1.1` over TLS.\n5. Server returns HTML/CSS -> Browser parses DOM, renders page.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **HTTP Versions:**\n  - HTTP/1.1: Persistent connections, head-of-line blocking.\n  - HTTP/2: Binary framing, multiplexing multiple streams over 1 TCP connection.\n  - HTTP/3: Built on QUIC (UDP) eliminating TCP head-of-line blocking.\n* **TLS Handshake:** Verify Certificate -> Exchange Public Keys -> Derive Symmetric Session Key.",
+          "exam_tip": "Placement Tip: When asked difference between symmetric and asymmetric encryption: 'Asymmetric (RSA) is slow, uses public/private key pair for authentication and key exchange. Symmetric (AES) is fast, uses single shared secret key for bulk data.'",
+          "mcqs": [
+            {
+              "id": 107051,
+              "question_number": 1,
+              "question": "Which HTTP method is NOT idempotent according to RFC specifications?",
+              "options": {
+                "A": "GET",
+                "B": "PUT",
+                "C": "POST",
+                "D": "DELETE"
+              },
+              "correct_option": "C",
+              "explanation": "POST is not idempotent because repeating the request typically creates multiple resource records."
+            },
+            {
+              "id": 107052,
+              "question_number": 2,
+              "question": "What is the primary technological upgrade of HTTP/2 over HTTP/1.1?",
+              "options": {
+                "A": "Switches from TCP to UDP",
+                "B": "Binary multiplexing over a single TCP connection, eliminating head-of-line blocking at the application layer",
+                "C": "Removes cookies",
+                "D": "Disables SSL encryption"
+              },
+              "correct_option": "B",
+              "explanation": "HTTP/2 introduces binary framing and multiplexed concurrent streams over a single TCP socket."
+            },
+            {
+              "id": 107053,
+              "question_number": 3,
+              "question": "What role does Asymmetric Encryption play during an HTTPS SSL/TLS Handshake?",
+              "options": {
+                "A": "It encrypts every video byte streamed",
+                "B": "It authenticates the server's identity and securely exchanges the symmetric session key",
+                "C": "It replaces DNS",
+                "D": "It compress images"
+              },
+              "correct_option": "B",
+              "explanation": "Asymmetric encryption verifies digital certificates and establishes a shared symmetric key, which encrypts bulk traffic."
+            },
+            {
+              "id": 107054,
+              "question_number": 4,
+              "question": "What HTTP response status code represents '401 Unauthorized' vs '403 Forbidden'?",
+              "options": {
+                "A": "401 means authentication required/failed; 403 means authenticated but insufficient access permissions",
+                "B": "401 is server error; 403 is client error",
+                "C": "401 is permanent redirect; 403 is temporary redirect",
+                "D": "They are identical"
+              },
+              "correct_option": "A",
+              "explanation": "401 Unauthorized indicates unauthenticated requests (missing/invalid token); 403 Forbidden indicates the user is identified but forbidden from accessing the resource."
+            },
+            {
+              "id": 107055,
+              "question_number": 5,
+              "question": "In Unix socket programming, which system call binds a created socket to a specific local IP address and port number?",
+              "options": {
+                "A": "listen()",
+                "B": "bind()",
+                "C": "accept()",
+                "D": "connect()"
+              },
+              "correct_option": "B",
+              "explanation": "bind() associates the socket file descriptor with an address structure containing the IP address and port."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "OS_10705_01",
+              "subject": "OS & Computer Networks",
+              "chapter": "HTTP/HTTPS, DNS, SSL/TLS & Socket Programming",
+              "topic": "HTTPS Security & TLS Handshake",
+              "keywords": [
+                "https",
+                "tls handshake",
+                "symmetric encryption",
+                "asymmetric encryption",
+                "certificates"
+              ],
+              "definition": "HTTPS layers HTTP over TLS encryption to guarantee confidentiality, message integrity, and server authentication.",
+              "formula_or_core_rule": "Asymmetric encryption establishes symmetric session key (AES-GCM) for high-speed bulk transmission.",
+              "worked_example": "Browser verifies Certificate Authority signature on server cert, encrypts pre-master secret using server public key.",
+              "content": "SSL/TLS handshake protocols, public key infrastructure, and web security engineering."
+            },
+            {
+              "chunk_id": "OS_10705_02",
+              "subject": "OS & Computer Networks",
+              "chapter": "HTTP/HTTPS, DNS, SSL/TLS & Socket Programming",
+              "topic": "DNS Hierarchy & Resolution Architecture",
+              "keywords": [
+                "dns resolution",
+                "recursive resolver",
+                "root server",
+                "tld server",
+                "authoritative dns"
+              ],
+              "definition": "DNS resolves human-readable hostnames into network routable IP addresses via hierarchical distributed database servers.",
+              "formula_or_core_rule": "Resolution order: Browser Cache -> OS Cache -> Recursive Resolver -> Root Server -> TLD Server -> Authoritative Server.",
+              "worked_example": "Looking up synapse.ai: queries .ai TLD server to discover authoritative nameservers for synapse.ai domain.",
+              "content": "DNS lookup flow, DNS records (A, AAAA, CNAME, MX), and latency optimization."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANDROID_DEV",
+      "subject_id": 108,
+      "name": "Android & App Architecture",
+      "slug": "android-app-architecture",
+      "icon_symbol": "📱",
+      "color_hex": "#6366F1",
+      "category": "App Architecture",
+      "description": "Master native Android app engineering, Activity/Fragment lifecycle, MVVM clean architecture, Jetpack Compose, Kotlin Coroutines/Flows, and Room/Retrofit offline-first systems.",
+      "is_added": false,
+      "chapters": [
+        {
+          "chapter_id": 10801,
+          "chapter_order": 1,
+          "title": "Android Fundamentals, Activity & Fragment Lifecycle",
+          "estimated_minutes": 15,
+          "summary": "Master Activity and Fragment states, lifecycle callbacks, configuration changes (screen rotation), and process death.",
+          "syllabus": [
+            "Activity Lifecycle: onCreate, onStart, onResume, onPause, onStop, onDestroy",
+            "Fragment Lifecycle & FragmentManager Backstack",
+            "Configuration Changes & onSaveInstanceState vs ViewModel",
+            "Android Application Sandboxing & ART (Android Runtime)"
+          ],
+          "core_formulas": [
+            "Lifecycle order: onCreate() -> onStart() -> onResume() -> onPause() -> onStop() -> onDestroy()",
+            "Screen rotation destroys and recreates Activity: ViewModel survives, while Activity state must be restored",
+            "Foreground priority: onResume() has highest priority; background processes in onStop() can be killed by OS under memory pressure"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nAn Activity lifecycle is like an actor's performance day: waking up backstage (`onCreate`), walking onto the stage (`onStart`), looking directly at the cheering audience ready to act (`onResume`), taking a brief pause when phone rings (`onPause`), stepping offstage (`onStop`), and going to sleep (`onDestroy`).\n\n### ⚡ Core Rule & Syntax\n```kotlin\nclass MainActivity : ComponentActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        // Initialize dependencies and UI bindings\n    }\n    override fun onResume() {\n        super.onResume()\n        // Resume camera, location listeners, audio\n    }\n    override fun onPause() {\n        super.onPause()\n        // Pause sensors and release heavy resources\n    }\n}\n```\n\n### 🎯 Placement Interview Tip\nWhen asked 'What happens when a user rotates their Android phone?', answer: **'The OS destroys the current Activity (`onPause -> onStop -> onDestroy`) and instantiates a brand new Activity (`onCreate -> onStart -> onResume`) with new configuration resources.'** ViewModels retain state across this cycle without restarting queries.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Active / Resumed:** Activity visible and in foreground holding focus.\n* **Paused:** Partially visible (e.g., covered by a permission dialog).\n* **Stopped:** Completely hidden in background (can be terminated by OS under memory pressure).\n* **Destroyed:** Reclaimed from RAM.",
+          "exam_tip": "Placement Tip: Never hold Activity Context inside a Singleton or ViewModel! It causes Memory Leaks because the destroyed Activity cannot be garbage collected. Use ApplicationContext instead.",
+          "mcqs": [
+            {
+              "id": 108011,
+              "question_number": 1,
+              "question": "Which lifecycle callback is called immediately when an Activity becomes visible to the user but has not yet gained interactive focus?",
+              "options": {
+                "A": "onCreate()",
+                "B": "onStart()",
+                "C": "onResume()",
+                "D": "onRestart()"
+              },
+              "correct_option": "B",
+              "explanation": "onStart() makes the Activity visible, whereas onResume() brings it to the foreground with interactive focus."
+            },
+            {
+              "id": 108012,
+              "question_number": 2,
+              "question": "What happens by default to an Activity when the user rotates the device screen from portrait to landscape?",
+              "options": {
+                "A": "Nothing happens",
+                "B": "The Activity is destroyed and recreated",
+                "C": "Only the UI redraws without lifecycle calls",
+                "D": "The app minimizes"
+              },
+              "correct_option": "B",
+              "explanation": "Configuration changes destroy and recreate the Activity so it can reload landscape resource assets."
+            },
+            {
+              "id": 108013,
+              "question_number": 3,
+              "question": "Why does storing an Activity Context inside a long-lived Singleton cause a serious Memory Leak in Android?",
+              "options": {
+                "A": "Activity uses too much CPU",
+                "B": "The Singleton retains a reference to the destroyed Activity, preventing the Garbage Collector from freeing its view hierarchy",
+                "C": "It crashes Retrofit",
+                "D": "Singletons are not supported in Kotlin"
+              },
+              "correct_option": "B",
+              "explanation": "A static or singleton reference prevents GC from collecting the Activity after onDestroy(), leaking all its Views and Bitmaps."
+            },
+            {
+              "id": 108014,
+              "question_number": 4,
+              "question": "Which Android runtime replaced the legacy Dalvik VM in Android 5.0+, utilizing AOT and JIT hybrid compilation?",
+              "options": {
+                "A": "JVM",
+                "B": "ART (Android Runtime)",
+                "C": "GraalVM",
+                "D": "Node.js"
+              },
+              "correct_option": "B",
+              "explanation": "ART compiles app DEX bytecode using Ahead-Of-Time (AOT) and JIT compilation with improved garbage collection."
+            },
+            {
+              "id": 108015,
+              "question_number": 5,
+              "question": "What component is used in modern Android to persist small UI state across Process Death caused by low memory?",
+              "options": {
+                "A": "SavedStateHandle in ViewModel",
+                "B": "Static global variables",
+                "C": "SQLite directly in onCreate()",
+                "D": "BroadcastReceiver"
+              },
+              "correct_option": "A",
+              "explanation": "SavedStateHandle enables ViewModels to persist and restore bundle state across process termination by the Android OS."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "AND_10801_01",
+              "subject": "Android & App Architecture",
+              "chapter": "Android Fundamentals, Activity & Fragment Lifecycle",
+              "topic": "Activity Lifecycle & Configuration Changes",
+              "keywords": [
+                "activity lifecycle",
+                "configuration change",
+                "viewmodel",
+                "memory leak",
+                "context"
+              ],
+              "definition": "The Activity lifecycle manages application UI states and memory reclamation across foreground, background, and rotation states.",
+              "formula_or_core_rule": "onCreate -> onStart -> onResume (active) -> onPause -> onStop (hidden) -> onDestroy.",
+              "worked_example": "Device rotation: Activity is destroyed and recreated; ViewModel preserves repository data, avoiding network re-fetching.",
+              "content": "Deep dive into Android Activity lifecycle callbacks, resource management, and leak prevention."
+            },
+            {
+              "chunk_id": "AND_10801_02",
+              "subject": "Android & App Architecture",
+              "chapter": "Android Fundamentals, Activity & Fragment Lifecycle",
+              "topic": "Process Death & SavedStateHandle",
+              "keywords": [
+                "process death",
+                "savedstatehandle",
+                "viewmodel state",
+                "bundle restoration",
+                "low memory"
+              ],
+              "definition": "Process death occurs when Android terminates background apps under RAM pressure, requiring state restoration upon return.",
+              "formula_or_core_rule": "Use SavedStateHandle to retain lightweight navigation IDs and user input across system kills.",
+              "worked_example": "User fills checkout form, switches apps to copy OTP, OS kills background app: form inputs restored via SavedStateHandle.",
+              "content": "Handling low memory scenarios and process death in production Android applications."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10802,
+          "chapter_order": 2,
+          "title": "Modern Android Architecture (MVVM, Clean Architecture, Repository Pattern)",
+          "estimated_minutes": 15,
+          "summary": "Master separation of concerns, MVVM layers, Repository pattern for single source of truth, and Clean Architecture use cases.",
+          "syllabus": [
+            "MVVM Architecture: Model, View, ViewModel",
+            "Single Source of Truth (SSOT) with Repository Pattern",
+            "Clean Architecture Layers (UI, Domain, Data)",
+            "Unidirectional Data Flow (UDF) Principles"
+          ],
+          "core_formulas": [
+            "UDF: State flows Down from ViewModel to UI; Events flow Up from UI to ViewModel",
+            "Repository coordinates between local Room DB (cache) and remote Retrofit API (network)",
+            "Domain layer (UseCases) encapsulates pure business logic independent of Android frameworks"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nMVVM is like a fine restaurant: the dining table is the **View** (pure presentation), the waiter holding the order sheet is the **ViewModel** (state manager), the executive chef organizing ingredients is the **Repository**, and the local refrigerator and fresh market suppliers are **Room** and **Retrofit**!\n\n### ⚡ Core Rule & Syntax\n* **View:** Displays UI and forwards clicks/events to ViewModel. Zero business logic.\n* **ViewModel:** Holds `StateFlow<UiState>` and executes use cases. Never references Views or Activity Context.\n* **Repository:** Single source of truth. Checks local Room DB first, queries network if stale, updates DB, and emits updates to ViewModel.\n\n### 🎯 Placement Interview Tip\nAlways explain **Unidirectional Data Flow (UDF)**: Events travel *Up* (User taps 'Submit' -> ViewModel receives event), while State travels *Down* (ViewModel updates `UiState` -> UI recomposes to display loading indicator or success card).",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Layers:**\n  - *UI Layer:* Composables / Activities + ViewModels.\n  - *Domain Layer (Optional):* UseCases / Interactors (pure Kotlin, no Android imports).\n  - *Data Layer:* Repositories + DataSources (Room, Retrofit, Datastore).\n* **UDF:** Single source of truth, testable in isolation.",
+          "exam_tip": "Placement Tip: When asked why Repository pattern is used, reply: 'It abstracts data origins, provides an offline-first cache strategy, and facilitates unit testing with fake repositories.'",
+          "mcqs": [
+            {
+              "id": 108021,
+              "question_number": 1,
+              "question": "In MVVM with Unidirectional Data Flow (UDF), how do events and state move between View and ViewModel?",
+              "options": {
+                "A": "State flows Up, Events flow Down",
+                "B": "Events flow Up to ViewModel, State flows Down to View",
+                "C": "Both flow bidirectionally without structure",
+                "D": "View modifies ViewModel state directly"
+              },
+              "correct_option": "B",
+              "explanation": "UDF specifies that UI events flow Up from the View to ViewModel, while immutable UiState flows Down from ViewModel to View."
+            },
+            {
+              "id": 108022,
+              "question_number": 2,
+              "question": "What is the primary role of the Repository in modern Android architecture?",
+              "options": {
+                "A": "To render Jetpack Compose graphics",
+                "B": "To act as a single source of truth mediating between local database and remote network sources",
+                "C": "To handle device rotation",
+                "D": "To replace the Activity"
+              },
+              "correct_option": "B",
+              "explanation": "A Repository abstracts data access logic and coordinates caching between local Room database and remote network APIs."
+            },
+            {
+              "id": 108023,
+              "question_number": 3,
+              "question": "Why should a ViewModel NEVER reference an Activity, View, or View Context?",
+              "options": {
+                "A": "It violates compile-time syntax",
+                "B": "ViewModels outlive Activities during rotation, so referencing them causes critical memory leaks",
+                "C": "It slows down Kotlin compilation",
+                "D": "Room database prohibits it"
+              },
+              "correct_option": "B",
+              "explanation": "ViewModels survive configuration changes, so holding a destroyed Activity reference prevents garbage collection and leaks memory."
+            },
+            {
+              "id": 108024,
+              "question_number": 4,
+              "question": "In Clean Architecture, which layer contains pure business logic and should NOT depend on Android framework classes?",
+              "options": {
+                "A": "UI Layer",
+                "B": "Domain Layer (Use Cases)",
+                "C": "Data Layer",
+                "D": "Gradle Build Scripts"
+              },
+              "correct_option": "B",
+              "explanation": "The Domain Layer encapsulates pure business rules and use cases, remaining independent of Android platform libraries."
+            },
+            {
+              "id": 108025,
+              "question_number": 5,
+              "question": "What is the main benefit of an 'Offline-First' architecture in mobile apps?",
+              "options": {
+                "A": "Saves 100% of battery",
+                "B": "Users can view and interact with cached data seamlessly without an active internet connection",
+                "C": "Removes the need for a backend server",
+                "D": "Avoids using Room database"
+              },
+              "correct_option": "B",
+              "explanation": "Offline-first apps read from local Room DB as source of truth, syncing with remote backend APIs in the background."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "AND_10802_01",
+              "subject": "Android & App Architecture",
+              "chapter": "Modern Android Architecture (MVVM, Clean Architecture, Repository Pattern)",
+              "topic": "MVVM Architecture & Unidirectional Data Flow",
+              "keywords": [
+                "mvvm",
+                "udf",
+                "viewmodel",
+                "uistate",
+                "unidirectional data flow",
+                "clean architecture"
+              ],
+              "definition": "MVVM decouples presentation from business logic using reactive state holders and unidirectional event dispatching.",
+              "formula_or_core_rule": "Events flow Up (UI -> VM); State flows Down (VM -> UI). VM exposes StateFlow<UiState>.",
+              "worked_example": "User clicks like button: View emits onLikeClicked event; ViewModel executes useCase and updates post.isLiked in UiState.",
+              "content": "Designing resilient, testable Android architectures using Google's modern app architecture guidelines."
+            },
+            {
+              "chunk_id": "AND_10802_02",
+              "subject": "Android & App Architecture",
+              "chapter": "Modern Android Architecture (MVVM, Clean Architecture, Repository Pattern)",
+              "topic": "Repository Pattern & Single Source of Truth",
+              "keywords": [
+                "repository pattern",
+                "ssot",
+                "single source of truth",
+                "offline-first",
+                "caching"
+              ],
+              "definition": "The Repository pattern abstracts data sources (network, disk, cache) into a clean, unified data access API.",
+              "formula_or_core_rule": "Repository exposes Flow<Resource<T>> emitting local cached database state first, then syncing from network.",
+              "worked_example": "FeedRepository queries Room DB Flow, fetches fresh items via Retrofit in background, and updates Room DB to trigger UI update.",
+              "content": "Building scalable offline-first Android apps with repository caching and synchronization."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10803,
+          "chapter_order": 3,
+          "title": "Jetpack Compose: State, Recomposition & UI Declarative Model",
+          "estimated_minutes": 15,
+          "summary": "Master declarative UI paradigm, remember vs rememberSaveable, recomposition optimization, and Side-Effects (LaunchedEffect).",
+          "syllabus": [
+            "Declarative vs Imperative UI Paradigm (Compose vs XML)",
+            "State Hoisting & Unidirectional Data Flow in Compose",
+            "remember vs rememberSaveable across Recomposition and Rotation",
+            "Side-Effects: LaunchedEffect, rememberCoroutineScope, DisposableEffect"
+          ],
+          "core_formulas": [
+            "UI = f(State): The user interface is a pure declarative projection of state",
+            "Recomposition skips composables whose input parameters have not changed (Smart Recomposition)",
+            "LaunchedEffect(key) runs suspend functions bound to the composable lifecycle, restarting when key changes"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nImperative UI (old XML) is like giving a painter step-by-step orders: *\"repaint button border green, now if clicked, repaint it red\"*.\nDeclarative Compose is describing the finished painting: *\"render button with color based on `isClicked` state\"*. When state changes, Compose automatically redraws the affected parts!\n\n### ⚡ Core Rule & Syntax\n```kotlin\n@Composable\nfun CounterScreen() {\n    // remember survives recomposition; rememberSaveable survives rotation!\n    var count by rememberSaveable { mutableIntStateOf(0) }\n    \n    Column(modifier = Modifier.padding(16.dp)) {\n        Text(text = \"Count: $count\")\n        Button(onClick = { count++ }) {\n            Text(\"Increment\")\n        }\n    }\n}\n```\n\n### 🎯 Placement Interview Tip\nWhen asked 'How do you optimize Recomposition in Jetpack Compose?', mention 3 techniques: **State Hoisting** (pass only values and lambdas), **using `@Stable` or `@Immutable` data classes** so Compose knows objects cannot change without new instances, and **using `derivedStateOf`** for high-frequency state like scroll offsets.",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **remember:** Retains state across recomposition within the same Activity.\n* **rememberSaveable:** Retains state across recomposition AND configuration changes/process death.\n* **Side-Effects:**\n  - `LaunchedEffect`: Run one-shot suspend work tied to composable lifecycle.\n  - `rememberCoroutineScope`: Launch coroutines from button click callbacks.\n  - `DisposableEffect`: Clean up listeners when composable leaves composition.",
+          "exam_tip": "Placement Tip: Never execute suspend functions or trigger API calls directly in the body of a Composable function without LaunchedEffect! It will fire repeatedly on every recomposition.",
+          "mcqs": [
+            {
+              "id": 108031,
+              "question_number": 1,
+              "question": "What is the primary difference between 'remember' and 'rememberSaveable' in Jetpack Compose?",
+              "options": {
+                "A": "remember is faster",
+                "B": "rememberSaveable survives device configuration changes (e.g., screen rotation) and process death, while remember does not",
+                "C": "remember is only used for Strings",
+                "D": "There is no difference"
+              },
+              "correct_option": "B",
+              "explanation": "rememberSaveable automatically stores state in the Android Bundle, surviving activity recreation upon screen rotation."
+            },
+            {
+              "id": 108032,
+              "question_number": 2,
+              "question": "What is 'Recomposition' in Jetpack Compose?",
+              "options": {
+                "A": "Compiling Kotlin code into Dalvik bytecode",
+                "B": "The process of re-executing Composable functions when their underlying state changes to update the UI tree",
+                "C": "Garbage collection of views",
+                "D": "Restarting the Activity"
+              },
+              "correct_option": "B",
+              "explanation": "Recomposition calls composables again with new inputs to update the visual representation when observed state changes."
+            },
+            {
+              "id": 108033,
+              "question_number": 3,
+              "question": "Which Side-Effect API should be used to run a suspend function (like an initial network load) tied to a Composable lifecycle?",
+              "options": {
+                "A": "rememberCoroutineScope",
+                "B": "LaunchedEffect",
+                "C": "DisposableEffect",
+                "D": "SideEffect"
+              },
+              "correct_option": "B",
+              "explanation": "LaunchedEffect launches a coroutine scoped to the composable's lifecycle, automatically cancelling it when leaving composition."
+            },
+            {
+              "id": 108034,
+              "question_number": 4,
+              "question": "What is 'State Hoisting' in Jetpack Compose best practices?",
+              "options": {
+                "A": "Moving state to a global singleton",
+                "B": "Pattern of moving state to a caller to make a composable stateless and reusable",
+                "C": "Storing all state inside Room database",
+                "D": "Using mutableStateOf in XML"
+              },
+              "correct_option": "B",
+              "explanation": "State hoisting replaces internal state with a value parameter and an onValueChange event lambda, making components testable and stateless."
+            },
+            {
+              "id": 108035,
+              "question_number": 5,
+              "question": "Why is 'derivedStateOf' recommended when reading rapidly changing state like LazyListState.firstVisibleItemIndex?",
+              "options": {
+                "A": "It converts lists to sets",
+                "B": "It buffers calculations and triggers recomposition only when the derived calculation result actually changes",
+                "C": "It avoids using coroutines",
+                "D": "It runs in native C++"
+              },
+              "correct_option": "B",
+              "explanation": "derivedStateOf minimizes recompositions by filtering high-frequency state updates to only fire when the derived Boolean/result flips."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "AND_10803_01",
+              "subject": "Android & App Architecture",
+              "chapter": "Jetpack Compose: State, Recomposition & UI Declarative Model",
+              "topic": "Compose State Management & Recomposition",
+              "keywords": [
+                "jetpack compose",
+                "recomposition",
+                "remember",
+                "remembersaveable",
+                "state hoisting"
+              ],
+              "definition": "Jetpack Compose is Android's modern toolkit for building native UI using declarative Kotlin composables driven by observable state.",
+              "formula_or_core_rule": "UI = f(State). Smart recomposition skips unaffected composables whose parameters remain equal.",
+              "worked_example": "val text by viewModel.uiState.collectAsStateWithLifecycle(): UI updates automatically when StateFlow emits.",
+              "content": "Deep dive into declarative UI rendering, recomposition lifecycles, and performance tuning."
+            },
+            {
+              "chunk_id": "AND_10803_02",
+              "subject": "Android & App Architecture",
+              "chapter": "Jetpack Compose: State, Recomposition & UI Declarative Model",
+              "topic": "Compose Side-Effects & Coroutine Scopes",
+              "keywords": [
+                "side-effects",
+                "launchedeffect",
+                "remembercoroutinescope",
+                "disposableeffect"
+              ],
+              "definition": "Side-effects in Compose execute operations that escape the scope of a composable without breaking the declarative model.",
+              "formula_or_core_rule": "LaunchedEffect runs suspend code on enter/key-change. rememberCoroutineScope launches coroutines in UI callbacks.",
+              "worked_example": "LaunchedEffect(userId) { viewModel.loadUserProfile(userId) }: fetches data whenever userId parameter changes.",
+              "content": "Handling side-effects, lifecycle events, and coroutine scopes in Jetpack Compose."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10804,
+          "chapter_order": 4,
+          "title": "Kotlin Coroutines & StateFlow / SharedFlow for Async Work",
+          "estimated_minutes": 15,
+          "summary": "Master suspend functions, CoroutineScope, Dispatchers, structured concurrency, StateFlow vs SharedFlow, and Cold vs Hot streams.",
+          "syllabus": [
+            "Suspend Functions & Continuation-Passing Style (CPS)",
+            "Dispatchers: Main, IO, Default, Unconfined",
+            "Structured Concurrency & CoroutineScope (viewModelScope, lifecycleScope)",
+            "StateFlow (Hot State) vs SharedFlow (Hot Events) vs Flow (Cold Stream)"
+          ],
+          "core_formulas": [
+            "Dispatchers.Main (UI thread), Dispatchers.IO (Network/DB blocking I/O), Dispatchers.Default (CPU-intensive calculations)",
+            "StateFlow: Hot stream, always holds latest value, requires initial value, conflates duplicate emissions",
+            "SharedFlow: Hot stream for one-off events (snackbars, navigation), configurable replay buffer"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nCoroutines are lightweight virtual workers. Instead of hiring 1,000 expensive heavy trucks (heavy OS threads), you hire 1 truck with 1,000 nimble couriers that pause (`suspend`) without blocking the driver and resume when their delivery arrives!\n\n### ⚡ Core Rule & Syntax\n```kotlin\nclass HomeViewModel(private val repo: CourseRepository) : ViewModel() {\n    // StateFlow holds immutable UI state\n    private val _uiState = MutableStateFlow<UiState>(UiState.Loading)\n    val uiState: StateFlow<UiState> = _uiState.asStateFlow()\n    \n    fun fetchCourses() {\n        viewModelScope.launch(Dispatchers.IO) {\n            val result = repo.getCourses()\n            _uiState.update { UiState.Success(result) }\n        }\n    }\n}\n```\n\n### 🎯 Placement Interview Tip\nWhen asked 'What is Structured Concurrency in Kotlin?', answer: **'It guarantees that child coroutines cannot outlive their parent CoroutineScope. If a parent scope is cancelled or an unhandled exception occurs, all running child jobs are automatically cancelled, preventing memory and thread leaks!'**",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Dispatchers:**\n  - `Dispatchers.Main`: UI operations, light work.\n  - `Dispatchers.IO`: Disk reads/writes, network calls, Room queries.\n  - `Dispatchers.Default`: Sorting big lists, JSON parsing, heavy math.\n* **Flows:**\n  - `Flow`: Cold stream (runs on collect).\n  - `StateFlow`: Hot state holder (replay=1).\n  - `SharedFlow`: Hot event bus (one-time navigation/toast events).",
+          "exam_tip": "Placement Tip: In Jetpack Compose, always collect Flows using 'collectAsStateWithLifecycle()' instead of 'collectAsState()'. This automatically pauses collection when the app is in the background, saving CPU and battery.",
+          "mcqs": [
+            {
+              "id": 108041,
+              "question_number": 1,
+              "question": "Which Coroutine Dispatcher should be specified when performing database disk I/O or network REST API calls?",
+              "options": {
+                "A": "Dispatchers.Main",
+                "B": "Dispatchers.IO",
+                "C": "Dispatchers.Default",
+                "D": "Dispatchers.Unconfined"
+              },
+              "correct_option": "B",
+              "explanation": "Dispatchers.IO uses an elastic thread pool optimized for blocking disk reads, writes, and network socket operations."
+            },
+            {
+              "id": 108042,
+              "question_number": 2,
+              "question": "What is the primary difference between a Cold Flow and a Hot Flow (StateFlow / SharedFlow) in Kotlin?",
+              "options": {
+                "A": "Cold Flow is slower",
+                "B": "Cold Flow does not produce data until a terminal collector subscribes; Hot Flow produces data regardless of active collectors",
+                "C": "Hot Flow only runs on the Main thread",
+                "D": "Cold Flow cannot emit objects"
+              },
+              "correct_option": "B",
+              "explanation": "Cold streams start producer code anew for each collector, whereas Hot streams emit data independently of whether collectors exist."
+            },
+            {
+              "id": 108043,
+              "question_number": 3,
+              "question": "What is 'Structured Concurrency' in Kotlin Coroutines?",
+              "options": {
+                "A": "Writing coroutines using structured SQL queries",
+                "B": "A design paradigm ensuring child coroutines are bound to the lifecycle of their parent scope, preventing orphaned leaked jobs",
+                "C": "Compiling coroutines without JVM bytecode",
+                "D": "Executing only one thread at a time"
+              },
+              "correct_option": "B",
+              "explanation": "Structured concurrency guarantees that parent scopes wait for children and cancel all child jobs if the parent cancels or fails."
+            },
+            {
+              "id": 108044,
+              "question_number": 4,
+              "question": "Why is StateFlow ideal for holding UI State compared to SharedFlow?",
+              "options": {
+                "A": "StateFlow is synchronized",
+                "B": "StateFlow always retains the latest state value with replay=1 and conflates identical sequential values",
+                "C": "StateFlow can only emit integers",
+                "D": "SharedFlow is deprecated"
+              },
+              "correct_option": "B",
+              "explanation": "StateFlow always provides an immediate current value to new collectors and conflates duplicate values, matching UI state needs."
+            },
+            {
+              "id": 108045,
+              "question_number": 5,
+              "question": "Why should Compose apps collect flows using 'collectAsStateWithLifecycle()' instead of 'collectAsState()'?",
+              "options": {
+                "A": "It executes on C++ threads",
+                "B": "It cancels flow collection when the Android lifecycle drops below STARTED, saving CPU and battery when in background",
+                "C": "It removes null pointers",
+                "D": "It avoids recomposition completely"
+              },
+              "correct_option": "B",
+              "explanation": "collectAsStateWithLifecycle safely halts collection when the app is in the background (STOPPED), avoiding wasted resources."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "AND_10804_01",
+              "subject": "Android & App Architecture",
+              "chapter": "Kotlin Coroutines & StateFlow / SharedFlow for Async Work",
+              "topic": "Coroutines, Dispatchers & Structured Concurrency",
+              "keywords": [
+                "coroutines",
+                "dispatchers",
+                "suspend functions",
+                "structured concurrency",
+                "viewmodelscope"
+              ],
+              "definition": "Kotlin Coroutines provide cooperative multitasking by suspending execution without blocking underlying operating system threads.",
+              "formula_or_core_rule": "viewModelScope.launch cancels automatically when ViewModel clears on Activity destruction.",
+              "worked_example": "withContext(Dispatchers.IO) switches context to background thread for Room query, returning result back to Main thread.",
+              "content": "Asynchronous programming patterns, exception handling (CoroutineExceptionHandler), and supervisor jobs."
+            },
+            {
+              "chunk_id": "AND_10804_02",
+              "subject": "Android & App Architecture",
+              "chapter": "Kotlin Coroutines & StateFlow / SharedFlow for Async Work",
+              "topic": "StateFlow vs SharedFlow vs Cold Flow",
+              "keywords": [
+                "stateflow",
+                "sharedflow",
+                "reactive streams",
+                "hot flow",
+                "cold flow"
+              ],
+              "definition": "Kotlin Flows are asynchronous data streams offering cold pipelines and hot state-sharing primitives for reactive Android architectures.",
+              "formula_or_core_rule": "StateFlow retains latest value for UI state; SharedFlow broadcasts one-off UI events (e.g. toasts, navigation).",
+              "worked_example": "_eventFlow.emit(UiEvent.ShowSnackbar('Saved')): single-fire event received once without repeating on rotation.",
+              "content": "Reactive stream modeling, flow operators (map, filter, combine, flatMapLatest), and lifecycle collection."
+            }
+          ]
+        },
+        {
+          "chapter_id": 10805,
+          "chapter_order": 5,
+          "title": "Room Database, Retrofit Networking & Dependency Injection (Hilt)",
+          "estimated_minutes": 15,
+          "summary": "Master Room SQLite abstraction (Entity, DAO, Database), Retrofit REST client with OkHttp interceptors, and Hilt DI container.",
+          "syllabus": [
+            "Room Database: @Entity, @Dao, @Database, Migrations & Flow queries",
+            "Retrofit & OkHttp: Converters, Interceptors, and Authenticator",
+            "Dependency Injection Principles & Dagger Hilt Architecture",
+            "Offline-First Network-Bound-Resource Pattern"
+          ],
+          "core_formulas": [
+            "Room verifies SQL queries at compile time, eliminating runtime SQLite syntax errors",
+            "Hilt: @AndroidEntryPoint injects dependencies into Activities/Fragments; @HiltViewModel into ViewModels",
+            "Network Bound Resource: emit cached Room data -> fetch API -> save to Room -> Room auto-emits updated data via Flow"
+          ],
+          "part1_title": "2-Min Concept Card",
+          "part1_content": "### 💡 Real-Life Analogy\nDependency Injection is like having your computer custom-built by an expert assembly shop according to your parts list (`@Inject`), instead of you fabricating silicon chips, soldering motherboards, and wiring power cables yourself in your bedroom!\n\n### ⚡ Core Rule & Syntax\n```kotlin\n// Room DAO with Reactive Flow\n@Dao\ninterface SubjectDao {\n    @Query(\"SELECT * FROM subjects ORDER BY title ASC\")\n    fun getAllSubjects(): Flow<List<SubjectEntity>>\n    \n    @Insert(onConflict = OnConflictStrategy.REPLACE)\n    suspend fun insertAll(subjects: List<SubjectEntity>)\n}\n\n// Retrofit API Interface\ninterface SynapseApi {\n    @GET(\"curriculum/subjects\")\n    suspend fun getSubjects(): Response<List<SubjectDto>>\n}\n```\n\n### 🎯 Placement Interview Tip\nWhen asked 'How does Room notify UI when the database table updates?', reply: **'When a DAO method returns a `Flow<T>`, Room observes table invalidation triggers in SQLite. Whenever any INSERT/UPDATE/DELETE touches that table, Room automatically queries the new dataset and re-emits down the Flow!'**",
+          "part2_title": "Quick Cheat Sheet",
+          "part2_content": "* **Room:** `@Entity` (table schema), `@Dao` (queries/operations), `@Database` (database holder, version, migrations).\n* **Retrofit:** Uses OkHttp for HTTP/2 connection pooling, caching, and interceptors.\n* **Hilt:** `@Singleton`, `@ActivityScoped`, `@ViewModelScoped` manage lifecycle of injected singletons and repositories.",
+          "exam_tip": "Placement Tip: When asked difference between OkHttp Interceptor and Authenticator: 'Interceptors append headers (like auth Bearer tokens) to all requests; Authenticator specifically handles 401 Unauthorized responses to refresh expired tokens.'",
+          "mcqs": [
+            {
+              "id": 108051,
+              "question_number": 1,
+              "question": "What is the primary advantage of using Room Database over raw SQLiteOpenHelper in Android?",
+              "options": {
+                "A": "Room does not use SQLite",
+                "B": "Room performs compile-time verification of SQL queries and returns reactive Flow/LiveData observables",
+                "C": "Room only stores JSON strings",
+                "D": "Room executes without background threads"
+              },
+              "correct_option": "B",
+              "explanation": "Room validates SQL queries at compile time to eliminate runtime syntax crashes and natively integrates with Kotlin Coroutines/Flow."
+            },
+            {
+              "id": 108052,
+              "question_number": 2,
+              "question": "What happens when a Room DAO method returns a 'Flow<List<T>>' and a new record is inserted into that table?",
+              "options": {
+                "A": "The Flow completes immediately",
+                "B": "Room detects table invalidation and automatically queries and emits the updated list to active collectors",
+                "C": "The app crashes with an exception",
+                "D": "The table is cleared"
+              },
+              "correct_option": "B",
+              "explanation": "Room installs an invalidation tracker that triggers automatic query re-execution and emissions whenever table records change."
+            },
+            {
+              "id": 108053,
+              "question_number": 3,
+              "question": "In Retrofit with OkHttp, which component is specifically responsible for handling HTTP 401 Unauthorized errors to transparently refresh expired tokens?",
+              "options": {
+                "A": "LoggingInterceptor",
+                "B": "OkHttp Authenticator",
+                "C": "Converter.Factory",
+                "D": "CallAdapter"
+              },
+              "correct_option": "B",
+              "explanation": "OkHttp Authenticator interceptor triggers upon receiving a 401 status to refresh JWT tokens and retry the original failed request."
+            },
+            {
+              "id": 108054,
+              "question_number": 4,
+              "question": "What annotation in Dagger Hilt marks an Android Activity for dependency injection?",
+              "options": {
+                "A": "@HiltViewModel",
+                "B": "@AndroidEntryPoint",
+                "C": "@Module",
+                "D": "@Provides"
+              },
+              "correct_option": "B",
+              "explanation": "@AndroidEntryPoint generates individual Hilt dependency containers for Activities, Fragments, and Services."
+            },
+            {
+              "id": 108055,
+              "question_number": 5,
+              "question": "What is the scope of a dependency annotated with '@Singleton' in Hilt?",
+              "options": {
+                "A": "Lives as long as the current Activity",
+                "B": "A single shared instance is preserved across the entire Application lifecycle",
+                "C": "Created fresh for every Composable call",
+                "D": "Cleared when the screen rotates"
+              },
+              "correct_option": "B",
+              "explanation": "@Singleton binds the dependency instance to the ApplicationComponent, persisting across the full application lifespan."
+            }
+          ],
+          "rag_chunks": [
+            {
+              "chunk_id": "AND_10805_01",
+              "subject": "Android & App Architecture",
+              "chapter": "Room Database, Retrofit Networking & Dependency Injection (Hilt)",
+              "topic": "Room Database & Reactive Data Access",
+              "keywords": [
+                "room database",
+                "sqlite",
+                "dao",
+                "entity",
+                "flow queries",
+                "migrations"
+              ],
+              "definition": "Room provides an abstraction layer over SQLite to enable robust, type-safe database access with reactive flow observing.",
+              "formula_or_core_rule": "@Entity defines schema; @Dao defines queries. Returning Flow<T> creates real-time reactive table listeners.",
+              "worked_example": "dao.observeNotes(): UI automatically reflects newly inserted or edited notes without manual refresh calls.",
+              "content": "Designing normalized SQLite schemas, relational queries, database migrations, and reactive flows."
+            },
+            {
+              "chunk_id": "AND_10805_02",
+              "subject": "Android & App Architecture",
+              "chapter": "Room Database, Retrofit Networking & Dependency Injection (Hilt)",
+              "topic": "Retrofit & Dependency Injection with Hilt",
+              "keywords": [
+                "retrofit",
+                "hilt",
+                "dependency injection",
+                "okhttp",
+                "authenticator",
+                "androidentrypoint"
+              ],
+              "definition": "Retrofit turns REST APIs into type-safe Kotlin interfaces, integrated cleanly via Hilt dependency injection.",
+              "formula_or_core_rule": "@Provides @Singleton provides Retrofit, Room, and Repositories to @HiltViewModel constructors.",
+              "worked_example": "class HomeViewModel @Inject constructor(private val repo: Repo): automatically supplied by Hilt container.",
+              "content": "Architecting modern network clients, interceptors, and modular dependency injection graphs."
+            }
+          ]
+        }
+      ]
     }
   ]
 }
