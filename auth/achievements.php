@@ -46,6 +46,18 @@ try {
 
     $uid = (int)$user['id'];
 
+    // Ensure user_achievements table exists
+    try {
+        $pdo->query("CREATE TABLE IF NOT EXISTS user_achievements (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            badge_id INT NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY user_badge (user_id, badge_id)
+        )");
+    } catch (Exception $e) {}
+
     // POST: Unlock / Record Achievement Milestone
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $badgeId = (int)($input['badge_id'] ?? $input['id'] ?? $_POST['badge_id'] ?? 1);
@@ -75,7 +87,7 @@ try {
         exit();
     }
 
-    // Compute achievements from Core Tables (quiz_records & study_notes)
+    // Compute achievements from Core Tables (quiz_records, study_notes, completions, sessions)
     $quizStmt = $pdo->prepare("SELECT COUNT(*) FROM quiz_records WHERE user_id = :uid");
     $quizStmt->execute(['uid' => $uid]);
     $quizCount = (int)$quizStmt->fetchColumn();
@@ -84,15 +96,38 @@ try {
     $notesStmt->execute(['uid' => $uid]);
     $notesCount = (int)$notesStmt->fetchColumn();
 
+    $unlockedMap = [];
+    try {
+        $uStmt = $pdo->prepare("SELECT badge_id, unlocked_at FROM user_achievements WHERE user_id = :uid");
+        $uStmt->execute(['uid' => $uid]);
+        while ($r = $uStmt->fetch()) {
+            $unlockedMap[(int)$r['badge_id']] = $r['unlocked_at'];
+        }
+    } catch (Exception $e) {}
+
+    $compCount = 0;
+    try {
+        $cStmt = $pdo->prepare("SELECT COUNT(DISTINCT chapter_id) FROM user_chapter_completions WHERE user_id = :uid");
+        $cStmt->execute(['uid' => $uid]);
+        $compCount = (int)$cStmt->fetchColumn();
+    } catch (Exception $e) {}
+
+    $streakDays = 0;
+    try {
+        $sStmt = $pdo->prepare("SELECT COUNT(DISTINCT study_date) FROM study_sessions WHERE user_id = :uid");
+        $sStmt->execute(['uid' => $uid]);
+        $streakDays = (int)$sStmt->fetchColumn();
+    } catch (Exception $e) {}
+
     $badges = [
-        ['id' => 1, 'title' => 'Quick Learner', 'desc' => 'Completed your first AI lessons', 'icon' => '⚡', 'unlocked' => true],
-        ['id' => 2, 'title' => 'Streak Master', 'desc' => 'Studied consecutively for 3 days', 'icon' => '🔥', 'unlocked' => true],
-        ['id' => 3, 'title' => 'Quiz Master', 'desc' => 'Completed quiz assessments', 'icon' => '🎯', 'unlocked' => ($quizCount > 0)],
-        ['id' => 4, 'title' => 'Note Taker', 'desc' => 'Saved comprehensive study notes', 'icon' => '📝', 'unlocked' => ($notesCount > 0)],
-        ['id' => 5, 'title' => 'Problem Solver', 'desc' => 'Solved academic challenges', 'icon' => '🧩', 'unlocked' => true],
-        ['id' => 6, 'title' => 'AI Explorer', 'desc' => 'Explored on-device neural tutor', 'icon' => '🤖', 'unlocked' => true],
-        ['id' => 7, 'title' => 'Consistent Scholar', 'desc' => 'Maintained active daily study', 'icon' => '📚', 'unlocked' => true],
-        ['id' => 8, 'title' => 'Early Bird', 'desc' => 'Completed morning study sessions', 'icon' => '🌅', 'unlocked' => true]
+        ['id' => 1, 'title' => 'Quick Learner', 'desc' => 'Completed your first AI lessons', 'icon' => '⚡', 'unlocked' => ($compCount > 0 || isset($unlockedMap[1]))],
+        ['id' => 2, 'title' => 'Streak Master', 'desc' => 'Studied consecutively for 3 days', 'icon' => '🔥', 'unlocked' => ($streakDays >= 3 || isset($unlockedMap[2]))],
+        ['id' => 3, 'title' => 'Quiz Master', 'desc' => 'Completed quiz assessments', 'icon' => '🎯', 'unlocked' => ($quizCount > 0 || isset($unlockedMap[3]))],
+        ['id' => 4, 'title' => 'Note Taker', 'desc' => 'Saved comprehensive study notes', 'icon' => '📝', 'unlocked' => ($notesCount > 0 || isset($unlockedMap[4]))],
+        ['id' => 5, 'title' => 'Problem Solver', 'desc' => 'Solved academic challenges', 'icon' => '🧩', 'unlocked' => (($compCount >= 3 && $quizCount >= 1) || isset($unlockedMap[5]))],
+        ['id' => 6, 'title' => 'AI Explorer', 'desc' => 'Explored on-device neural tutor', 'icon' => '🤖', 'unlocked' => ($streakDays > 0 || $compCount > 0 || isset($unlockedMap[6]))],
+        ['id' => 7, 'title' => 'Consistent Scholar', 'desc' => 'Maintained active daily study across 5+ lessons', 'icon' => '📚', 'unlocked' => ($compCount >= 5 || isset($unlockedMap[7]))],
+        ['id' => 8, 'title' => 'Early Bird', 'desc' => 'Completed morning study sessions', 'icon' => '🌅', 'unlocked' => isset($unlockedMap[8])]
     ];
 
     $unlockedCount = count(array_filter($badges, fn($b) => $b['unlocked']));

@@ -95,7 +95,7 @@ try {
     $profileStmt->execute(['uid' => $uid]);
     $profileData = $profileStmt->fetch();
 
-    $interests = ['Computer Science', 'Artificial Intelligence', 'Mathematics'];
+    $interests = ['Python & Coding Logic', 'SQL & Database Management', 'AI & Modern Tech Concepts', 'Aptitude & Interview Prep'];
     if (!empty($profileData['selected_interests'])) {
         $decoded = json_decode($profileData['selected_interests'], true);
         $interests = is_array($decoded) ? $decoded : array_map('trim', explode(',', $profileData['selected_interests']));
@@ -175,7 +175,7 @@ try {
             'category' => ucfirst($row['subject_id']),
             'subjectSlug' => strtolower($row['subject_id']),
             'timeAgo' => formatHomeTimeAgo($row['created_at']),
-            'progress' => 0.85
+            'progress' => 1.0
         ];
     }
 
@@ -238,7 +238,32 @@ try {
 
     $calculatedTopicsDone = $totalCompletedChapters + $totalQuizzesAttempted;
     $overallProgress = (int)round((min(20, $calculatedTopicsDone) / 20.0) * 100);
-    $studyStreakDays = ($calculatedTopicsDone > 0 || $totalQuizzesAttempted > 0) ? 1 : 0;
+
+    // Compute real continuous study streak from study_sessions
+    $studyStreakDays = 0;
+    try {
+        $stkStmt = $pdo->prepare("SELECT DISTINCT study_date FROM study_sessions WHERE user_id = :uid ORDER BY study_date DESC");
+        $stkStmt->execute(['uid' => $uid]);
+        $activeDates = $stkStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $today = date('Y-m-d');
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $cursor = null;
+        if (in_array($today, $activeDates)) {
+            $cursor = $today;
+        } elseif (in_array($yesterday, $activeDates)) {
+            $cursor = $yesterday;
+        }
+
+        if ($cursor !== null) {
+            $tempDate = $cursor;
+            while (in_array($tempDate, $activeDates)) {
+                $studyStreakDays++;
+                $tempDate = date('Y-m-d', strtotime($tempDate . ' -1 day'));
+            }
+        }
+    } catch (Exception $e) {}
+
     $student['user_streak'] = $studyStreakDays . ' Day Streak 🔥';
 
     $brainMap = [
