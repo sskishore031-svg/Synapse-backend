@@ -1,3 +1,4 @@
+
 <?php
 // Chemistry Endpoint - Synapse AI Backend (5 Core Tables)
 header("Content-Type: application/json; charset=UTF-8");

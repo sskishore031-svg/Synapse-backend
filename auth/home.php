@@ -1,4 +1,5 @@
 <?php
+<?php
 // ==============================================================================
 // Home Dashboard API Endpoint - Synapse AI Backend (5 Core Tables)
 // Route: GET /home.php or GET /auth/home.php

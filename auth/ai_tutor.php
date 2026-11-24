@@ -862,10 +862,11 @@ try {
         }
     }
 
-    // Dynamic length control: Shorten queries ("give me short", "short ha sollu", "chinadha thaa")
+    // Dynamic length control: Shorten queries ("give me short", "short ha sollu", "chinadha thaa", "explain shortly")
     $shortPhrases = [
         'give me short', 'short ha sollu', 'short-aa sollu', 'chinadha thaa', 'make it short',
-        'in short', 'short summary', 'short note', 'short please', 'give short', 'solu short', 'short'
+        'in short', 'short summary', 'short note', 'short please', 'give short', 'solu short', 'short',
+        'explain shortly', 'shortly', 'give me a short summary', 'give a summary', 'summarize', 'briefly'
     ];
 
     $lastTopic = trim($input['last_topic'] ?? $_GET['last_topic'] ?? $input['lastTopic'] ?? $_GET['lastTopic'] ?? '');
@@ -1511,13 +1512,7 @@ try {
     }
 
     // Unclear query or out-of-scope fallback
-    if ($consecutiveUnclear >= 1 || $normalizedScore < 0.25) {
-        $unclearReply = "That falls outside my placement and technical scope. I'm SYNAPSE AI—built specifically to help you master Python, SQL, Modern AI concepts, and Placement Aptitude!";
-    } else {
-        $unclearReply = ($preferredName !== '')
-            ? "I didn't understand that, $preferredName. Could you please explain clearly which subject or topic you need help with?"
-            : "I didn't understand that. Could you please explain clearly which subject or topic you need help with?";
-    }
+    $unclearReply = "I don't have the answer to that. Please ask me anything related to your placement subjects, coding, SQL, AI, or aptitude!";
 
     echo json_encode([
         'status' => 'success',
