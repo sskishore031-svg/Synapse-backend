@@ -84,11 +84,15 @@ if ($action === 'sync_progress' || $action === 'complete' || $_SERVER['REQUEST_M
     $lessonId = trim($input['lesson_id'] ?? $input['chapter_id'] ?? $_POST['lesson_id'] ?? $_POST['chapter_id'] ?? $_GET['lesson_id'] ?? '10101');
     $trackId = strtolower(trim($input['track_id'] ?? $input['subject_id'] ?? $_POST['track_id'] ?? $_POST['subject_id'] ?? $_GET['track_id'] ?? 'python'));
     
-    // Normalize trackId
+    // Normalize trackId across all 8 tracks
     if (strpos($trackId, 'python') !== false || $trackId === '101') $trackId = 'python';
     elseif (strpos($trackId, 'sql') !== false || $trackId === '102') $trackId = 'sql';
     elseif (strpos($trackId, 'ai') !== false || $trackId === '103') $trackId = 'ai';
     elseif (strpos($trackId, 'aptitude') !== false || $trackId === '104') $trackId = 'aptitude';
+    elseif (strpos($trackId, 'dsa') !== false || $trackId === '105') $trackId = 'dsa';
+    elseif (strpos($trackId, 'java') !== false || strpos($trackId, 'oops') !== false || $trackId === '106') $trackId = 'java_oops';
+    elseif (strpos($trackId, 'os') !== false || strpos($trackId, 'cn') !== false || strpos($trackId, 'network') !== false || $trackId === '107') $trackId = 'os_cn';
+    elseif (strpos($trackId, 'android') !== false || $trackId === '108') $trackId = 'android_dev';
     else $trackId = 'python';
 
     $lessonCompleted = !empty($input['lesson_completed'] ?? $_POST['lesson_completed'] ?? true) ? 1 : 0;

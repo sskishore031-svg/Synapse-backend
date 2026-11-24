@@ -83,7 +83,7 @@ try {
     // =========================================================================
     // STAGE 1: User Asking for Their Own Name ("say my name", "what is my name", "who am i")
     // =========================================================================
-    $effectiveName = !empty($preferredName) ? $preferredName : (!empty($user['name']) ? trim($user['name']) : '');
+    $effectiveName = !empty($preferredName) ? $preferredName : (!empty($user['name']) ? trim($user['name']) : 'Kishore');
 
     $hasYourRef = in_array('your', $cleanWords, true) || in_array('ur', $cleanWords, true) || in_array('synapse', $cleanWords, true);
 
