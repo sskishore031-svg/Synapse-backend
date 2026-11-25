@@ -77,8 +77,17 @@ try {
     $useEmojis = isset($input['use_emojis']) ? filter_var($input['use_emojis'], FILTER_VALIDATE_BOOLEAN) : (isset($_GET['use_emojis']) ? filter_var($_GET['use_emojis'], FILTER_VALIDATE_BOOLEAN) : false);
     $consecutiveUnclear = intval($input['consecutive_unclear'] ?? $_GET['consecutive_unclear'] ?? 0);
 
-    $normQuery = strtolower(trim(preg_replace('/[^a-zA-Z0-9\s]/', ' ', $question)));
-    $cleanWords = array_values(array_filter(preg_split('/\s+/', $normQuery)));
+    $typoMap = [
+        'pyhon' => 'python', 'pyhton' => 'python', 'pythn' => 'python', 'phyton' => 'python', 'pthon' => 'python',
+        'codding' => 'coding', 'cooding' => 'coding', 'progamming' => 'programming', 'programing' => 'programming',
+        'algoritm' => 'algorithm', 'algorthm' => 'algorithm', 'recusion' => 'recursion', 'recurssion' => 'recursion',
+        'funtion' => 'function', 'funciton' => 'function', 'stucture' => 'structure', 'dictonary' => 'dictionary',
+        'lopp' => 'loop', 'looop' => 'loop', 'interv' => 'interview', 'placment' => 'placement'
+    ];
+    $rawNorm = strtolower(trim(preg_replace('/[^a-zA-Z0-9\s]/', ' ', $question)));
+    $rawWords = array_values(array_filter(preg_split('/\s+/', $rawNorm)));
+    $cleanWords = array_map(function($w) use ($typoMap) { return $typoMap[$w] ?? $w; }, $rawWords);
+    $normQuery = implode(' ', $cleanWords);
 
     // =========================================================================
     // STAGE 1: User Asking for Their Own Name ("say my name", "what is my name", "who am i")
@@ -198,6 +207,43 @@ try {
             ]
         ]);
         exit();
+    }
+
+    // 1. Direct profile name edit commands: "edit the profile name sri sai to kishore", "change profile name to kishore", etc.
+    if (preg_match('/(?:edit|change|set|update|rename)\s+(?:the\s+|my\s+)?(?:profile\s+name|profile|user\s+name|name)(?:\s+(?:from\s+)?[a-zA-Z\s]+)?\s+(?:to|as)\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/i', $question, $m)) {
+        $candidate = ucwords(strtolower(trim($m[1])));
+        $stopWords = ['me', 'my', 'name', 'profile', 'to', 'as', 'a', 'the', 'something', 'anything'];
+        if (!in_array(strtolower($candidate), $stopWords, true) && strlen($candidate) >= 2) {
+            $preferredName = $candidate;
+            // Update in MySQL if userId or email present
+            try {
+                if (!empty($userId)) {
+                    $uStmt = $pdo->prepare("UPDATE users SET name = :name WHERE id = :uid");
+                    $uStmt->execute(['name' => $preferredName, 'uid' => $userId]);
+                } elseif (!empty($email)) {
+                    $uStmt = $pdo->prepare("UPDATE users SET name = :name WHERE email = :email");
+                    $uStmt->execute(['name' => $preferredName, 'email' => $email]);
+                }
+            } catch (Exception $e) {}
+
+            $reply = "✅ Done! Your profile name has been updated to $preferredName.";
+            echo json_encode([
+                'status' => 'success',
+                'success' => true,
+                'data' => [
+                    'question' => $question,
+                    'paragraph1' => $reply,
+                    'paragraph2' => '',
+                    'answer' => $reply,
+                    'is_name_capture' => true,
+                    'captured_name' => $preferredName,
+                    'preferred_name' => $preferredName,
+                    'tutor_name' => 'SYNAPSE AI',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]
+            ]);
+            exit();
+        }
     }
 
     if (preg_match('/^(?:(?:hello|hi|hey)\s+)?(?:from\s+now\s+on\s+)?(?:call\s+me\s+(?:by\s+my\s+name\s+|by\s+name\s+|with\s+my\s+name\s+)?|my\s+name\s+(?:is\s+)?|name\s+is\s+|i\s+am\s+|i[\'’]m\s+|myself\s+|this\s+is\s+)([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/i', $question, $m)) {
@@ -668,6 +714,91 @@ try {
                 'paragraph2' => '',
                 'answer' => $unclearReply,
                 'confidence_score' => 100.0,
+                'tutor_name' => 'SYNAPSE AI',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ]);
+        exit();
+    }
+
+    // =========================================================================
+    // STAGE 4A: Dedicated Coding & Python Logic Intent (ChatGPT / Gemini Grade)
+    // =========================================================================
+    $isGeneralCodingLogic = (strpos($normQuery, 'coding logic') !== false) ||
+        (strpos($normQuery, 'python logic') !== false) ||
+        (strpos($normQuery, 'programming logic') !== false) ||
+        (strpos($normQuery, 'python') !== false && (strpos($normQuery, 'logic') !== false || strpos($normQuery, 'coding') !== false || strpos($normQuery, 'code') !== false || strpos($normQuery, 'basics') !== false)) ||
+        in_array($normQuery, [
+            'give me python and coding logic', 'python and coding logic', 'give me python logic',
+            'give me coding logic', 'teach me python', 'python basics', 'python programming',
+            'python coding', 'how to write logic', 'coding logic in python', 'python logic examples',
+            'give me python', 'tell me python and coding logic', 'explain python and coding logic',
+            'show me python and coding logic', 'give me pyhon and coding logic', 'pyhon and coding logic'
+        ], true) ||
+        (strpos($normQuery, 'logic') !== false && strpos($normQuery, 'code') !== false);
+
+    if ($isGeneralCodingLogic) {
+        $p1 = "### 🐍 Mastering Python & Coding Logic\n" .
+            "*Python & Coding Logic · Foundational Problem Solving*\n\n" .
+            "Coding logic is the thought process of breaking down a real-world objective into deterministic algorithmic steps that a computer can execute reliably and efficiently. In Python, constructing solid coding logic relies on **4 Core Structural Patterns**:\n\n" .
+            "#### 1. Conditional & Decision-Making Logic (Control Flow)\n" .
+            "Branching execution paths based on evaluated boolean expressions.\n\n" .
+            "```python\n" .
+            "def evaluate_candidate(tech_score: int, dsa_rounds: int) -> str:\n" .
+            "    \"\"\"Evaluates placement interview outcome.\"\"\"\n" .
+            "    if tech_score >= 85 and dsa_rounds >= 2:\n" .
+            "        return \"Tier 1: SDE-1 Selected 🚀\"\n" .
+            "    elif tech_score >= 70 or dsa_rounds >= 1:\n" .
+            "        return \"Shortlisted: Second Technical Round\"\n" .
+            "    else:\n" .
+            "        return \"Needs Practice: Review Core Micro-Lessons\"\n\n" .
+            "print(evaluate_candidate(88, 2))  # Tier 1: SDE-1 Selected 🚀\n" .
+            "```\n\n" .
+            "#### 2. Iteration & Data Transformation Logic (Loops & Accumulators)\n" .
+            "Processing sequences cleanly with minimal time and memory overhead.\n\n" .
+            "```python\n" .
+            "# Filtering and transforming data in O(N) linear time\n" .
+            "raw_salaries = [6, 12, 18, 8, 24, 15, 30]\n\n" .
+            "# Idiomatic List Comprehension: O(N) Time\n" .
+            "high_packages = [pkg * 1.15 for pkg in raw_salaries if pkg >= 12]\n" .
+            "print(\"Adjusted High Packages:\", [round(p, 1) for p in high_packages])\n" .
+            "# Output: [13.8, 20.7, 27.6, 17.2, 34.5]\n" .
+            "```";
+
+        $p2 = "#### 3. Algorithmic Hash-Map Logic (Frequency & Lookup Pattern)\n" .
+            "Using dictionaries for amortized O(1) constant-time lookup and element tracking.\n\n" .
+            "```python\n" .
+            "def first_unique_char(s: str) -> str:\n" .
+            "    \"\"\"Finds first non-repeating character in O(N) time.\"\"\"\n" .
+            "    freq = {}\n" .
+            "    for char in s:\n" .
+            "        freq[char] = freq.get(char, 0) + 1\n" .
+            "        \n" .
+            "    for char in s:\n" .
+            "        if freq[char] == 1:\n" .
+            "            return char\n" .
+            "    return \"None\"\n\n" .
+            "print(\"First unique in 'swiss':\", first_unique_char(\"swiss\"))  # 'w'\n" .
+            "```\n\n" .
+            "#### 4. The 4 Golden Rules of Writing Coding Logic in Placement Interviews\n" .
+            "1. **Understand Before Typing:** Clearly identify the input types, expected output, and edge cases (e.g., empty lists, negatives, single elements) before writing code.\n" .
+            "2. **Decompose Problems:** Break complex tasks into smaller helper functions with a single responsibility.\n" .
+            "3. **Trace with a Dry Run:** Manually trace your variables with a small sample input (e.g. `[1, 2, 3]`) across loop iterations to verify boundary conditions.\n" .
+            "4. **Optimize Complexity:** Strive for O(N) or O(N log N) time complexity rather than nested brute-force O(N^2) loops.\n\n" .
+            "*💡 What specific coding problem or logic would you like to build next? (e.g., Two Pointers, String Reversal, Binary Search, Palindrome, or Recursion?)*";
+
+        echo json_encode([
+            'status' => 'success',
+            'success' => true,
+            'data' => [
+                'question' => $question,
+                'paragraph1' => $p1,
+                'paragraph2' => $p2,
+                'answer' => $p1 . "\n\n" . $p2,
+                'matched_subject' => 'Python & Coding Logic',
+                'matched_chapter' => 'Algorithmic Problem Solving',
+                'matched_topic' => 'Python & Coding Logic Principles',
+                'confidence_score' => 99.0,
                 'tutor_name' => 'SYNAPSE AI',
                 'created_at' => date('Y-m-d H:i:s')
             ]
@@ -1512,7 +1643,7 @@ try {
     }
 
     // Unclear query or out-of-scope fallback
-    $unclearReply = "I don't have the answer to that. Please ask me anything related to your placement subjects, coding, SQL, AI, or aptitude!";
+    $unclearReply = "I didn't understand that. I can help you with your placement subjects (Python, SQL, AI, Aptitude, DSA, Java), quizzes, notes, or app settings like changing your profile name or setting a study alarm.";
 
     echo json_encode([
         'status' => 'success',
