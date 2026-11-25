@@ -95,9 +95,11 @@ if ($action === 'sync_progress' || $action === 'complete' || $_SERVER['REQUEST_M
     elseif (strpos($trackId, 'android') !== false || $trackId === '108') $trackId = 'android_dev';
     else $trackId = 'python';
 
-    $lessonCompleted = !empty($input['lesson_completed'] ?? $_POST['lesson_completed'] ?? true) ? 1 : 0;
-    $quizCompleted = !empty($input['quiz_completed'] ?? $_POST['quiz_completed'] ?? false) ? 1 : 0;
-    $isCompleted = !empty($input['is_completed'] ?? $_POST['is_completed'] ?? true) ? 1 : 0;
+    $conceptDone = !empty($input['concept_done'] ?? $input['conceptDone'] ?? $input['lesson_completed'] ?? $_POST['concept_done'] ?? $_POST['conceptDone'] ?? $_POST['lesson_completed'] ?? false) ? 1 : 0;
+    $quizDone = !empty($input['quiz_done'] ?? $input['quizDone'] ?? $input['quiz_completed'] ?? $_POST['quiz_done'] ?? $_POST['quizDone'] ?? $_POST['quiz_completed'] ?? false) ? 1 : 0;
+    $lessonCompleted = $conceptDone;
+    $quizCompleted = $quizDone;
+    $isCompleted = ($conceptDone || $quizDone || !empty($input['is_completed'] ?? $_POST['is_completed'])) ? 1 : 0;
 
     try {
         $stmt = $pdo->prepare("
@@ -154,7 +156,8 @@ if ($action === 'sync_progress' || $action === 'complete' || $_SERVER['REQUEST_M
 try {
     $stmt = $pdo->prepare("
         SELECT track_id as trackId, lesson_id as lessonId, lesson_completed as lessonCompleted,
-               quiz_completed as quizCompleted, is_completed as isCompleted, UNIX_TIMESTAMP(completed_at) * 1000 as completedAt
+               lesson_completed as conceptDone, quiz_completed as quizCompleted, quiz_completed as quizDone,
+               is_completed as isCompleted, UNIX_TIMESTAMP(completed_at) * 1000 as completedAt
         FROM user_lesson_progress
         WHERE user_id = :uid AND is_completed = 1
         ORDER BY completed_at ASC
@@ -167,6 +170,8 @@ try {
             'lessonId' => (string)$r['lessonId'],
             'trackId' => (string)$r['trackId'],
             'userId' => (string)$uid,
+            'conceptDone' => (bool)$r['conceptDone'],
+            'quizDone' => (bool)$r['quizDone'],
             'lessonCompleted' => (bool)$r['lessonCompleted'],
             'quizCompleted' => (bool)$r['quizCompleted'],
             'isCompleted' => (bool)$r['isCompleted'],
