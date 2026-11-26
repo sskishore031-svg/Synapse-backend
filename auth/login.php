@@ -38,9 +38,17 @@ try {
         }
     } catch (Exception $e) {}
 
+    $profileImageCol = "";
+    try {
+        $checkImg = $pdo->query("SHOW COLUMNS FROM users LIKE 'profile_image'")->fetch();
+        if ($checkImg) {
+            $profileImageCol = ", u.profile_image";
+        }
+    } catch (Exception $e) {}
+
     $sql = "
         SELECT 
-            u.id, u.name, u.email $phoneCol, u.password_hash, u.created_at,
+            u.id, u.name, u.email $phoneCol $profileImageCol, u.password_hash, u.created_at,
             p.selected_interests, p.avatar_url
         FROM users u
         LEFT JOIN user_profiles p ON u.id = p.user_id
@@ -74,8 +82,9 @@ try {
 
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $avatarUrl = !empty($user['avatar_url']) 
-        ? (str_starts_with($user['avatar_url'], 'http') ? $user['avatar_url'] : $protocol . $host . "/Synapse_backend/" . ltrim($user['avatar_url'], '/'))
+    $rawAvatar = !empty($user['profile_image']) ? $user['profile_image'] : (!empty($user['avatar_url']) ? $user['avatar_url'] : null);
+    $avatarUrl = !empty($rawAvatar) 
+        ? (str_starts_with($rawAvatar, 'http') ? $rawAvatar : $protocol . $host . "/Synapse_backend/" . ltrim($rawAvatar, '/'))
         : null;
 
     // 3. Generate auth token and record session in user_sessions (Core Table 3)
@@ -113,7 +122,8 @@ try {
             'study_goal' => '25 min / day',
             'notifications_enabled' => true,
             'avatar_url' => $avatarUrl,
-            'profile_photo' => $avatarUrl,
+            'profile_photo' => $rawAvatar ?: $avatarUrl,
+            'profile_image' => $rawAvatar ?: $avatarUrl,
             'photo_url' => $avatarUrl,
             'user_streak' => '1 Day Streak 🔥',
             'created_at' => $user['created_at']

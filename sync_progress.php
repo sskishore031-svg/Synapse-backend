@@ -28,6 +28,8 @@ try {
             `lesson_id` VARCHAR(50) NOT NULL,
             `lesson_completed` TINYINT(1) NOT NULL DEFAULT 0,
             `quiz_completed` TINYINT(1) NOT NULL DEFAULT 0,
+            `concept_done` TINYINT(1) NOT NULL DEFAULT 0,
+            `quiz_done` TINYINT(1) NOT NULL DEFAULT 0,
             `is_completed` TINYINT(1) NOT NULL DEFAULT 1,
             `completed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             UNIQUE KEY `uniq_user_track_lesson` (`user_id`, `track_id`, `lesson_id`),
@@ -35,6 +37,9 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 } catch (Exception $e) {}
+
+try { $pdo->exec("ALTER TABLE user_lesson_progress ADD COLUMN concept_done TINYINT(1) NOT NULL DEFAULT 0"); } catch (Exception $e) {}
+try { $pdo->exec("ALTER TABLE user_lesson_progress ADD COLUMN quiz_done TINYINT(1) NOT NULL DEFAULT 0"); } catch (Exception $e) {}
 
 try {
     $pdo->exec("
@@ -80,6 +85,53 @@ try {
 $uid = $user ? (int)$user['id'] : 1;
 $action = $_GET['action'] ?? $input['action'] ?? $_POST['action'] ?? ($_SERVER['REQUEST_METHOD'] === 'POST' ? 'sync_progress' : 'get_progress');
 
+// Handle Reset Action
+if ($action === 'reset' || !empty($input['reset']) || !empty($_POST['reset'])) {
+    $lessonId = trim($input['lesson_id'] ?? $input['chapter_id'] ?? $_POST['lesson_id'] ?? $_POST['chapter_id'] ?? $_GET['lesson_id'] ?? '');
+    $trackId = strtolower(trim($input['track_id'] ?? $input['subject_id'] ?? $_POST['track_id'] ?? $_POST['subject_id'] ?? $_GET['track_id'] ?? 'python'));
+    
+    // Normalize trackId across all 8 tracks
+    if (strpos($trackId, 'python') !== false || $trackId === '101') $trackId = 'python';
+    elseif (strpos($trackId, 'sql') !== false || $trackId === '102') $trackId = 'sql';
+    elseif (strpos($trackId, 'ai') !== false || $trackId === '103') $trackId = 'ai';
+    elseif (strpos($trackId, 'aptitude') !== false || $trackId === '104') $trackId = 'aptitude';
+    elseif (strpos($trackId, 'dsa') !== false || $trackId === '105') $trackId = 'dsa';
+    elseif (strpos($trackId, 'java') !== false || strpos($trackId, 'oops') !== false || $trackId === '106') $trackId = 'java_oops';
+    elseif (strpos($trackId, 'os') !== false || strpos($trackId, 'cn') !== false || strpos($trackId, 'network') !== false || $trackId === '107') $trackId = 'os_cn';
+    elseif (strpos($trackId, 'android') !== false || $trackId === '108') $trackId = 'android_dev';
+    else $trackId = 'python';
+
+    try {
+        if (!empty($lessonId)) {
+            $delStmt = $pdo->prepare("DELETE FROM user_lesson_progress WHERE user_id = :uid AND track_id = :track AND lesson_id = :lesson");
+            $delStmt->execute(['uid' => $uid, 'track' => $trackId, 'lesson' => $lessonId]);
+
+            $numCid = (int)$lessonId;
+            $compDel = $pdo->prepare("DELETE FROM user_chapter_completions WHERE user_id = :uid AND subject_id = :track AND chapter_id = :cid");
+            $compDel->execute(['uid' => $uid, 'track' => $trackId, 'cid' => $numCid]);
+        } else {
+            // Reset entire track
+            $delStmt = $pdo->prepare("DELETE FROM user_lesson_progress WHERE user_id = :uid AND track_id = :track");
+            $delStmt->execute(['uid' => $uid, 'track' => $trackId]);
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => "Progress reset successfully for track $trackId" . (!empty($lessonId) ? ", lesson $lessonId" : ""),
+            'data' => [
+                'userId' => (string)$uid,
+                'trackId' => $trackId,
+                'lessonId' => $lessonId,
+                'isCompleted' => false
+            ]
+        ]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['status' => 'error', 'message' => 'Failed to reset progress: ' . $e->getMessage()]);
+    }
+    exit();
+}
+
 if ($action === 'sync_progress' || $action === 'complete' || $_SERVER['REQUEST_METHOD'] === 'POST') {
     $lessonId = trim($input['lesson_id'] ?? $input['chapter_id'] ?? $_POST['lesson_id'] ?? $_POST['chapter_id'] ?? $_GET['lesson_id'] ?? '10101');
     $trackId = strtolower(trim($input['track_id'] ?? $input['subject_id'] ?? $_POST['track_id'] ?? $_POST['subject_id'] ?? $_GET['track_id'] ?? 'python'));
@@ -103,11 +155,13 @@ if ($action === 'sync_progress' || $action === 'complete' || $_SERVER['REQUEST_M
 
     try {
         $stmt = $pdo->prepare("
-            INSERT INTO user_lesson_progress (user_id, track_id, lesson_id, lesson_completed, quiz_completed, is_completed, completed_at)
-            VALUES (:uid, :track, :lesson, :lcomp, :qcomp, :iscomp, CURRENT_TIMESTAMP)
+            INSERT INTO user_lesson_progress (user_id, track_id, lesson_id, lesson_completed, quiz_completed, concept_done, quiz_done, is_completed, completed_at)
+            VALUES (:uid, :track, :lesson, :lcomp, :qcomp, :cdone, :qdone, :iscomp, CURRENT_TIMESTAMP)
             ON DUPLICATE KEY UPDATE 
                 lesson_completed = GREATEST(lesson_completed, VALUES(lesson_completed)),
                 quiz_completed = GREATEST(quiz_completed, VALUES(quiz_completed)),
+                concept_done = GREATEST(concept_done, VALUES(concept_done)),
+                quiz_done = GREATEST(quiz_done, VALUES(quiz_done)),
                 is_completed = 1,
                 completed_at = CURRENT_TIMESTAMP
         ");
@@ -117,6 +171,8 @@ if ($action === 'sync_progress' || $action === 'complete' || $_SERVER['REQUEST_M
             'lesson' => $lessonId,
             'lcomp' => $lessonCompleted,
             'qcomp' => $quizCompleted,
+            'cdone' => $conceptDone,
+            'qdone' => $quizDone,
             'iscomp' => $isCompleted
         ]);
 
@@ -140,6 +196,8 @@ if ($action === 'sync_progress' || $action === 'complete' || $_SERVER['REQUEST_M
                 'userId' => (string)$uid,
                 'trackId' => $trackId,
                 'lessonId' => $lessonId,
+                'conceptDone' => (bool)$conceptDone,
+                'quizDone' => (bool)$quizDone,
                 'lessonCompleted' => (bool)$lessonCompleted,
                 'quizCompleted' => (bool)$quizCompleted,
                 'isCompleted' => true
@@ -156,7 +214,8 @@ if ($action === 'sync_progress' || $action === 'complete' || $_SERVER['REQUEST_M
 try {
     $stmt = $pdo->prepare("
         SELECT track_id as trackId, lesson_id as lessonId, lesson_completed as lessonCompleted,
-               lesson_completed as conceptDone, quiz_completed as quizCompleted, quiz_completed as quizDone,
+               COALESCE(concept_done, lesson_completed) as conceptDone,
+               quiz_completed as quizCompleted, COALESCE(quiz_done, quiz_completed) as quizDone,
                is_completed as isCompleted, UNIX_TIMESTAMP(completed_at) * 1000 as completedAt
         FROM user_lesson_progress
         WHERE user_id = :uid AND is_completed = 1

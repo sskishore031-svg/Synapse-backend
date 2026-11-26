@@ -30,8 +30,8 @@ function formatUserResponse($user, $pdo) {
         $interests = is_array($decoded) ? $decoded : array_map('trim', explode(',', $user['selected_interests']));
     }
 
-    $avatarUrl = buildPhotoUrl($user['avatar_url'] ?? null);
-    $rawPath = $user['avatar_url'] ?? null;
+    $rawPath = !empty($user['profile_image']) ? $user['profile_image'] : ($user['avatar_url'] ?? null);
+    $avatarUrl = buildPhotoUrl($rawPath);
 
     // Count quizzes and notes completed
     $quizCount = 0;
@@ -64,6 +64,7 @@ function formatUserResponse($user, $pdo) {
         'notifications_enabled' => true,
         'avatar_url' => $avatarUrl,
         'profile_photo' => $rawPath ?: $avatarUrl,
+        'profile_image' => $rawPath ?: $avatarUrl,
         'photo_url' => $avatarUrl,
         'achievements_count' => ($quizCount + $notesCount) . " milestones",
         'user_streak' => '1 Day Streak 🔥',
@@ -101,8 +102,14 @@ if ($method === 'GET') {
             if ($checkCol) { $phoneCol = ", u.phone"; }
         } catch (Exception $e) {}
 
+        $profileImageCol = "";
+        try {
+            $checkImg = $pdo->query("SHOW COLUMNS FROM users LIKE 'profile_image'")->fetch();
+            if ($checkImg) { $profileImageCol = ", u.profile_image"; }
+        } catch (Exception $e) {}
+
         $sql = "
-            SELECT u.id, u.name, u.email $phoneCol, u.created_at, 
+            SELECT u.id, u.name, u.email $phoneCol $profileImageCol, u.created_at, 
                    p.selected_interests, p.avatar_url, p.course, p.study_goal, p.bio
             FROM users u
             LEFT JOIN user_profiles p ON u.id = p.user_id

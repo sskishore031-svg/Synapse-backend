@@ -1,0 +1,7 @@
+# Synapse AI Backend .gitignore
+uploads/*
+!uploads/.gitkeep
+upload/profile/*
+!upload/profile/32db90ffd177bcb98748b5913c5968ee.jpg
+!upload/profile/9c85a09a98c7e009d59b2e4d688e3311.jpg
+!upload/loki-season-2-artwork-kr.jpg

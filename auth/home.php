@@ -60,6 +60,12 @@ try {
             $userFields = "id, name, email, phone, created_at";
         }
     } catch (Exception $e) {}
+    try {
+        $checkImg = $pdo->query("SHOW COLUMNS FROM users LIKE 'profile_image'")->fetch();
+        if ($checkImg) {
+            $userFields .= ", profile_image";
+        }
+    } catch (Exception $e) {}
 
     if (!empty($userId)) {
         $stmt = $pdo->prepare("SELECT $userFields FROM users WHERE id = :id LIMIT 1");
@@ -101,8 +107,8 @@ try {
         $interests = is_array($decoded) ? $decoded : array_map('trim', explode(',', $profileData['selected_interests']));
     }
 
-    $avatarUrl = buildHomePhotoUrl($profileData['avatar_url'] ?? null);
-    $rawAvatar = $profileData['avatar_url'] ?? null;
+    $rawAvatar = !empty($user['profile_image']) ? $user['profile_image'] : (!empty($profileData['avatar_url']) ? $profileData['avatar_url'] : null);
+    $avatarUrl = buildHomePhotoUrl($rawAvatar);
 
     $userPhone = !empty($user['phone']) ? $user['phone'] : '';
 
@@ -117,6 +123,7 @@ try {
         'selected_interests' => $interests,
         'study_goal' => !empty($profileData['study_goal']) ? $profileData['study_goal'] : '15 min / day',
         'profile_photo' => $rawAvatar ?: $avatarUrl,
+        'profile_image' => $rawAvatar ?: $avatarUrl,
         'photo_url' => $avatarUrl,
         'avatar_url' => $avatarUrl,
         'user_streak' => '0 Day Streak 🔥'

@@ -115,37 +115,45 @@ try {
     $name = trim($_POST["name"] ?? "");
     $interestsInput = $_POST["selected_interests"] ?? $_POST["interests"] ?? null;
 
-    // 3. Handle File Upload if provided
+    // 3. Handle File Upload or Removal if provided
     $avatarUrl = $user["avatar_url"];
-    if (isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] === UPLOAD_ERR_OK) {
-        $file = $_FILES["profile_photo"];
-        $uploadDir = __DIR__ . "/../upload/profile/";
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
+    $removePhoto = filter_var($_POST['remove_photo'] ?? $_POST['removePhoto'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
-        if (in_array($ext, ["jpg", "jpeg", "png", "webp"])) {
-            $filename = md5(uniqid($uid, true)) . "." . $ext;
+    if ($removePhoto) {
+        $avatarUrl = null;
+    } else {
+        $uploadedFile = $_FILES["profile_photo"] ?? $_FILES["photo"] ?? $_FILES["avatar"] ?? $_FILES["image"] ?? $_FILES["file"] ?? null;
+        if ($uploadedFile && isset($uploadedFile["error"]) && $uploadedFile["error"] === UPLOAD_ERR_OK) {
+            $file = $uploadedFile;
+            $uploadDir = __DIR__ . "/../uploads/avatars/";
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
+            if (!in_array($ext, ["jpg", "jpeg", "png", "webp"])) {
+                $ext = "jpg";
+            }
+            $filename = "user_" . $uid . "_" . time() . "." . $ext;
             $destination = $uploadDir . $filename;
             if (move_uploaded_file($file["tmp_name"], $destination)) {
-                $avatarUrl = "upload/profile/" . $filename;
+                $avatarUrl = "uploads/avatars/" . $filename;
             }
-        }
-    } elseif (!empty($_POST["profile_image_base64"]) || !empty($_POST["avatar_base64"]) || (isset($_POST["profile_photo"]) && str_starts_with($_POST["profile_photo"], "data:image"))) {
-        $base64Image = $_POST["profile_image_base64"] ?? $_POST["avatar_base64"] ?? $_POST["profile_photo"];
-        $uploadDir = __DIR__ . "/../upload/profile/";
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
-        if (strpos($base64Image, 'base64,') !== false) {
-            $base64Image = explode('base64,', $base64Image)[1];
-        }
-        $decodedData = base64_decode($base64Image);
-        if ($decodedData !== false) {
-            $filename = "avatar_" . $uid . "_" . time() . ".jpg";
-            file_put_contents($uploadDir . $filename, $decodedData);
-            $avatarUrl = "upload/profile/" . $filename;
+        } elseif (!empty($_POST["profile_image_base64"]) || !empty($_POST["avatar_base64"]) || (isset($_POST["profile_photo"]) && str_starts_with($_POST["profile_photo"], "data:image"))) {
+            $base64Image = $_POST["profile_image_base64"] ?? $_POST["avatar_base64"] ?? $_POST["profile_photo"];
+            $uploadDir = __DIR__ . "/../uploads/avatars/";
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            if (strpos($base64Image, 'base64,') !== false) {
+                $base64Image = explode('base64,', $base64Image)[1];
+            }
+            $decodedData = base64_decode($base64Image);
+            if ($decodedData !== false) {
+                $filename = "user_" . $uid . "_" . time() . ".jpg";
+                file_put_contents($uploadDir . $filename, $decodedData);
+                $avatarUrl = "uploads/avatars/" . $filename;
+            }
         }
     }
 
@@ -167,7 +175,7 @@ try {
         VALUES (:uid, :interests, :avatar)
         ON DUPLICATE KEY UPDATE 
             selected_interests = COALESCE(:interests_update, selected_interests),
-            avatar_url = COALESCE(:avatar_update, avatar_url)
+            avatar_url = :avatar_update
     ");
     $updProfile->execute([
         "uid" => $uid,
@@ -176,6 +184,10 @@ try {
         "interests_update" => $interestsJson,
         "avatar_update" => $avatarUrl
     ]);
+
+    try {
+        $pdo->prepare("UPDATE users SET profile_image = :avatar WHERE id = :id")->execute(['avatar' => $avatarUrl, 'id' => $uid]);
+    } catch (Exception $e) {}
 
     // 6. Fetch updated record
     $fetch = $pdo->prepare($sql . " WHERE u.id = :id");
